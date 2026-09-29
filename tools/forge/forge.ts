@@ -21,12 +21,19 @@ import { LampsFamily } from '../../app/src/core/families/lamps';
 import { GearsFamily } from '../../app/src/core/families/gears';
 import { SequencesFamily } from '../../app/src/core/families/sequences';
 import { ScalesFamily } from '../../app/src/core/families/scales';
+import { PatternsFamily } from '../../app/src/core/families/patterns';
+import { LiarsFamily } from '../../app/src/core/families/liars';
+import { ThreadsFamily } from '../../app/src/core/families/threads';
+import { MirrorsFamily } from '../../app/src/core/families/mirrors';
+import { InquiriesFamily } from '../../app/src/core/families/inquiries';
+import { MarquetryFamily, SILHOUETTES } from '../../app/src/core/families/marquetry';
 import { DailyPlanner } from '../../app/src/core/game/daily';
 import { addDays, dayKey, daysBetween } from '../../app/src/core/game/dayKey';
 import { Fixed, PROTOTYPE_DAILY, PROTOTYPE_ROOM, TUTORIAL } from './fixed';
 
-export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA';
-export const FORGE_VERSION = 1;
+export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA';
+const ALL: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI'];
+export const FORGE_VERSION = 2;
 
 // ---------------------------------------------------------------- families
 
@@ -38,9 +45,15 @@ const THRESHOLDS: Record<Code, TierThresholds> = {
   CA: new TierThresholds([34, 40, 50, 70, 84]),
   EN: new TierThresholds([13, 31, 50, 70, 86]),
   SU: new TierThresholds([13, 30, 62, 80, 95]),
+  MO: new TierThresholds([24, 38, 55, 72, 90]),
+  ME: TierThresholds.standard,
+  FI: TierThresholds.standard,
+  MI: TierThresholds.standard,
+  EQ: TierThresholds.standard,
+  MA: new TierThresholds([16, 26, 38, 50, 65]),
 };
 /** Highest tier a family can produce today. */
-export const MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, BA: 5, SU: 3 };
+export const MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, BA: 5, SU: 3, MO: 4, ME: 5, FI: 4, MI: 5, EQ: 5, MA: 3 };
 
 function withThresholds<F extends object>(family: F, t: TierThresholds): F {
   const f = Object.create(family) as F;
@@ -55,7 +68,21 @@ const FAMILIES: Record<Code, PuzzleFamily<any, any, any, any>> = {
   EN: withThresholds(new GearsFamily(), THRESHOLDS.EN),
   SU: withThresholds(new SequencesFamily(), THRESHOLDS.SU),
   BA: withThresholds(new ScalesFamily(), THRESHOLDS.BA),
+  MO: withThresholds(new PatternsFamily(), THRESHOLDS.MO),
+  ME: withThresholds(new LiarsFamily(), THRESHOLDS.ME),
+  FI: withThresholds(new ThreadsFamily(), THRESHOLDS.FI),
+  MI: withThresholds(new MirrorsFamily(), THRESHOLDS.MI),
+  EQ: withThresholds(new InquiriesFamily(), THRESHOLDS.EQ),
+  MA: withThresholds(new MarquetryFamily(), THRESHOLDS.MA),
 };
+const SIL = Object.keys(SILHOUETTES);
+const SMALL_SIL = ['lanterne', 'maison', 'phare', 'horloge'];
+const LIE_EASY = ['liar', 'honest', 'atLeastOneLiar'];
+const LIE_MID = ['liar', 'honest', 'atLeastOneLiar', 'exactlyLiars'];
+const LIE_HARD = ['liar', 'honest', 'exactlyLiars', 'same', 'ifThen'];
+const LIE_ALL = ['liar', 'honest', 'exactlyLiars', 'same', 'different', 'ifThen', 'allLiars'];
+const EQ_DIRECT = ['has', 'at', 'hasNot', 'notAt'];
+const EQ_ALL = ['has', 'hasNot', 'at', 'notAt', 'objectAt', 'objectNotAt', 'either'];
 
 /** Candidate parameters per family and tier, best first. */
 const PARAMS: Record<Code, unknown[][]> = {
@@ -94,6 +121,25 @@ const PARAMS: Record<Code, unknown[][]> = {
   SU: [
     [{ complexity: 1 }], [{ complexity: 1 }], [{ complexity: 2 }, { complexity: 3 }], [{ complexity: 3 }], [], [],
   ],
+  MO: [[{ active: 1 }], [{ active: 1 }, { active: 2 }], [{ active: 2 }, { active: 2, distribution: true }], [{ active: 2, distribution: true }, { active: 3, distribution: true }], [{ active: 3, distribution: true }], []],
+  ME: [
+    [{ characters: 3, kinds: LIE_EASY }], [{ characters: 4, kinds: LIE_MID }, { characters: 3, kinds: LIE_EASY }], [{ characters: 4, kinds: LIE_MID }, { characters: 5, kinds: LIE_HARD }],
+    [{ characters: 5, kinds: LIE_HARD }], [{ characters: 6, kinds: LIE_ALL }], [{ characters: 6, kinds: LIE_ALL }],
+  ],
+  FI: [
+    [{ rows: 4, columns: 4, wallPercent: 20 }], [{ rows: 5, columns: 5, wallPercent: 25 }], [{ rows: 6, columns: 6, wallPercent: 20 }],
+    [{ rows: 7, columns: 7, wallPercent: 15 }], [{ rows: 8, columns: 8, wallPercent: 15 }, { rows: 7, columns: 7, wallPercent: 5 }], [{ rows: 8, columns: 8, wallPercent: 10 }],
+  ],
+  MI: [
+    [{ rows: 5, columns: 5, mirrors: 1, targets: 2, obstaclePercent: 10 }], [{ rows: 5, columns: 5, mirrors: 2, targets: 3, obstaclePercent: 12 }],
+    [{ rows: 6, columns: 6, mirrors: 3, targets: 4, obstaclePercent: 12 }], [{ rows: 6, columns: 6, mirrors: 4, targets: 5, obstaclePercent: 12 }, { rows: 7, columns: 7, mirrors: 4, targets: 5, obstaclePercent: 12 }],
+    [{ rows: 7, columns: 7, mirrors: 4, targets: 5, obstaclePercent: 12 }, { rows: 7, columns: 7, mirrors: 5, targets: 6, obstaclePercent: 12 }], [{ rows: 7, columns: 7, mirrors: 5, targets: 6, obstaclePercent: 12 }, { rows: 8, columns: 8, mirrors: 5, targets: 6, obstaclePercent: 12 }],
+  ],
+  EQ: [[{ size: 3, kinds: EQ_DIRECT }], [{ size: 3, kinds: EQ_ALL }], [{ size: 4, kinds: EQ_ALL }], [{ size: 4, kinds: EQ_ALL }], [{ size: 5, kinds: EQ_ALL }], [{ size: 5, kinds: EQ_ALL }]],
+  MA: [
+    [{ silhouettes: SMALL_SIL, pieceSize: [3, 4] }], [{ silhouettes: SIL, pieceSize: [3, 4] }, { silhouettes: SIL, pieceSize: [4, 5] }],
+    [{ silhouettes: SIL, pieceSize: [3, 5], flips: true }, { silhouettes: SIL, pieceSize: [3, 4] }], [{ silhouettes: SIL, pieceSize: [3, 5], flips: true }, { silhouettes: SIL, pieceSize: [4, 5], flips: true }], [], [],
+  ],
   BA: [
     [{ unknowns: 2, maxWeight: 20 }],
     [{ unknowns: 2, maxWeight: 20 }],
@@ -104,7 +150,7 @@ const PARAMS: Record<Code, unknown[][]> = {
   ],
 };
 
-const seen: Record<Code, Set<string>> = { IN: new Set(), CA: new Set(), LA: new Set(), EN: new Set(), SU: new Set(), BA: new Set() };
+const seen = Object.fromEntries(ALL.map((c) => [c, new Set<string>()])) as Record<Code, Set<string>>;
 
 /** Generates one puzzle of `code` as close as possible to `tier`. */
 export function forgePuzzle(code: Code, tier: Tier, id: string, maxAttempts = 400): { data: unknown; tier: Tier; score: number } {
@@ -131,15 +177,13 @@ interface DistrictPlan { id: string; main: Code[]; guests: Code[]; tiers: number
 /** Tier distribution per district, in % (GAME_DESIGN § 4.2). */
 const PLAN: DistrictPlan[] = [
   { id: 'phare', main: ['IN', 'LA', 'SU'], guests: [], tiers: [70, 30, 0, 0, 0, 0], buildings: 1, rooms: [6, 6, 6, 6], unlock: { kind: 'always' }, lettersFromKeystone4: false },
-  // Design families not implemented yet stand in as follows (they will be swapped in when ready):
-  // Motifs → Suites/Cadenas, Fil & Marqueterie → Lampes/Engrenages, Menteurs & Enquêtes → Cadenas/Balances, Miroirs → Engrenages.
-  { id: 'biblio', main: ['SU', 'CA'], guests: ['IN', 'LA'], tiers: [25, 45, 25, 5, 0, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 14 }, lettersFromKeystone4: true },
-  { id: 'horlo', main: ['EN', 'CA'], guests: ['SU', 'LA', 'IN'], tiers: [10, 35, 35, 15, 5, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 110 }, lettersFromKeystone4: true },
-  { id: 'serre', main: ['LA', 'EN'], guests: ['IN', 'SU'], tiers: [5, 25, 40, 20, 10, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 206 }, lettersFromKeystone4: true },
-  { id: 'marche', main: ['BA', 'CA'], guests: ['SU', 'EN', 'LA'], tiers: [0, 15, 35, 30, 15, 5], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 302 }, lettersFromKeystone4: true },
-  { id: 'theatre', main: ['CA', 'BA'], guests: ['SU', 'LA', 'IN'], tiers: [0, 10, 30, 30, 20, 10], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 398 }, lettersFromKeystone4: true },
-  { id: 'obs', main: ['EN', 'LA'], guests: ['CA', 'IN', 'BA', 'SU'], tiers: [0, 0, 25, 30, 30, 15], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 494 }, lettersFromKeystone4: true },
-  { id: 'grenier', main: ['EN', 'LA', 'CA', 'IN', 'BA', 'SU'], guests: [], tiers: [0, 0, 0, 25, 45, 30], buildings: 1, rooms: [16], unlock: { kind: 'totalLightsAndLetters', lights: 590, letters: 4 }, lettersFromKeystone4: false },
+  { id: 'biblio', main: ['SU', 'MO'], guests: ['IN', 'LA', 'CA'], tiers: [25, 45, 25, 5, 0, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 14 }, lettersFromKeystone4: true },
+  { id: 'horlo', main: ['EN', 'CA'], guests: ['SU', 'MO', 'LA', 'IN'], tiers: [10, 35, 35, 15, 5, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 110 }, lettersFromKeystone4: true },
+  { id: 'serre', main: ['FI', 'MA'], guests: ['EN', 'LA', 'MO'], tiers: [5, 25, 40, 20, 10, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 206 }, lettersFromKeystone4: true },
+  { id: 'marche', main: ['BA', 'CA'], guests: ['MA', 'FI', 'SU', 'EN'], tiers: [0, 15, 35, 30, 15, 5], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 302 }, lettersFromKeystone4: true },
+  { id: 'theatre', main: ['ME', 'EQ'], guests: ['BA', 'MO', 'FI'], tiers: [0, 10, 30, 30, 20, 10], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 398 }, lettersFromKeystone4: true },
+  { id: 'obs', main: ['MI', 'MO'], guests: ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'FI', 'IN'], tiers: [0, 0, 25, 30, 30, 15], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 494 }, lettersFromKeystone4: true },
+  { id: 'grenier', main: ['EN', 'LA', 'CA', 'IN', 'BA', 'MI', 'ME', 'EQ', 'FI', 'MO'], guests: [], tiers: [0, 0, 0, 25, 45, 30], buildings: 1, rooms: [16], unlock: { kind: 'totalLightsAndLetters', lights: 590, letters: 4 }, lettersFromKeystone4: false },
 ];
 
 /** Tier at quantile q of a distribution in %. */
@@ -244,7 +288,7 @@ function main() {
     if (++count % 100 === 0) process.stderr.write(`  ${count} lanterns (${((Date.now() - t0) / 1000).toFixed(0)} s)\n`);
   }
   // Daily puzzles: deterministic from the date (DailyPlanner), prepared in advance.
-  const planner = new DailyPlanner(['IN', 'CA', 'LA', 'EN', 'SU', 'BA'], 'fr', FORGE_VERSION);
+  const planner = new DailyPlanner(ALL, 'fr', FORGE_VERSION);
   const daily: Record<string, { f: Code; t: Tier; p: unknown }> = {};
   const first = dayKey(2026, 9, 1), last = dayKey(2028, 12, 31);
   for (let day = first; daysBetween(last, day) >= 0; day = addDays(day, 1)) {

@@ -4,7 +4,7 @@ Jeu de casse-têtes premium pour iPhone, iPad et Android : le joueur rallume, é
 
 ## État du projet
 
-Conception validée (phase 6). Développement en cours (phase 8), avec **Expo (React Native, TypeScript)** dans [`app/`](app). Le cœur du jeu est porté en TypeScript et testé ; il produit les mêmes puzzles, au bit près, que la version Swift d'origine. Les écrans sont en cours.
+Conception validée (phase 6). Développement en cours (phase 8), avec **Expo (React Native, TypeScript)** dans [`app/`](app). Le cœur du jeu est en TypeScript et testé. L'app est complète en français ; elle n'a pas encore été essayée sur un vrai téléphone.
 
 ## App Expo
 
@@ -16,7 +16,9 @@ npm run typecheck
 npx expo start      # puis scanner le QR code avec Expo Go sur le téléphone
 ```
 
-Contenu jouable aujourd'hui (repris de la maquette) : accueil, carte de Vesper, Horlogerie, Atelier des Ressorts, Salle 2 « L'Établi » et ses 10 lanternes, les 6 familles de puzzles avec indices, annulation et pause, écran de réussite, objet trouvé, défi du soir. La progression est sauvegardée sur l'appareil. Pas encore dans l'app : son, carnet, réglages, personnalisation de Nilo, écrans d'introduction.
+Contenu de l'app : les 12 familles de puzzles (Interrupteurs, Cadenas, Lampes, Engrenages, Suites, Balances, Motifs, Menteurs, Fil, Miroirs, Enquêtes, Marqueterie), les 7 quartiers de Vesper et le Grenier (1000 lanternes, contenu généré à l'avance par `tools/forge`), le défi du soir jusqu'à fin 2028 (puis généré sur l'appareil), les indices, l'annulation, la pause, la réussite, les objets, habitants, gardiens et lettres, le carnet (succès, statistiques, Vesper), les éclats et la personnalisation de Nilo, les réglages, l'introduction et le tutoriel, le son (effets et ambiances, rendus depuis la maquette par `tools/audio`), les rappels locaux. La progression est sauvegardée sur l'appareil.
+
+Limites actuelles : français seulement ; toutes les salles réutilisent le même décor teinté ; les lanternes-clés sont des puzzles générés, pas des énigmes écrites à la main ; la police des titres est Georgia (système).
 
 | Document | Contenu |
 |---|---|

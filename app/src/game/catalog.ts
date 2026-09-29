@@ -10,13 +10,19 @@ import { LampsFamily } from '../core/families/lamps';
 import { GearsFamily } from '../core/families/gears';
 import { SequencesFamily } from '../core/families/sequences';
 import { ScalesFamily } from '../core/families/scales';
+import { PatternsFamily } from '../core/families/patterns';
+import { LiarsFamily } from '../core/families/liars';
+import { ThreadsFamily } from '../core/families/threads';
+import { MirrorsFamily } from '../core/families/mirrors';
+import { InquiriesFamily } from '../core/families/inquiries';
+import { MarquetryFamily } from '../core/families/marquetry';
 import { DailyPlanner } from '../core/game/daily';
 import { DayKey, daysBetween } from '../core/game/dayKey';
 import { Building, District, Lantern, Room, World } from '../core/game/world';
 import { DistrictId, DISTRICT_BY_ID } from '../content/vesper';
 
-export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA';
-export const CODES: Code[] = ['IN', 'CA', 'LA', 'EN', 'SU', 'BA'];
+export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA';
+export const CODES: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI'];
 
 export interface FamilyInfo {
   code: Code;
@@ -36,6 +42,12 @@ export const FAMILIES: Record<Code, FamilyInfo> = {
   EN: { code: 'EN', name: 'Engrenages', answer: false, rule: 'Tourne les tuiles pour conduire la lumière à toutes les lanternes, sans fuite.', engine: new GearsFamily(), achievement: 'Horloger' },
   SU: { code: 'SU', name: 'Suites', answer: true, rule: 'Trouve le nombre suivant.', engine: new SequencesFamily(), achievement: 'Mathématicien' },
   BA: { code: 'BA', name: 'Balances', answer: true, rule: 'Les balances sont en équilibre. Combien pèse l’objet marqué ?', engine: new ScalesFamily(), achievement: 'Marchand' },
+  MO: { code: 'MO', name: 'Motifs', answer: true, rule: 'Quelle pièce complète le tableau ?', engine: new PatternsFamily(), achievement: 'Cartographe' },
+  ME: { code: 'ME', name: 'Menteurs', answer: true, rule: 'Chacun dit toujours la vérité ou ment toujours. Qui ment ?', engine: new LiarsFamily(), achievement: 'Juge de paix' },
+  FI: { code: 'FI', name: 'Fil', answer: false, rule: 'Trace un seul fil qui passe par toutes les cases, d’une lanterne à l’autre.', engine: new ThreadsFamily(), achievement: 'Fileur' },
+  MI: { code: 'MI', name: 'Miroirs', answer: false, rule: 'Place les miroirs pour que le rayon atteigne toutes les cibles.', engine: new MirrorsFamily(), achievement: 'Opticien' },
+  EQ: { code: 'EQ', name: 'Enquêtes', answer: true, rule: 'Associe chaque habitant à son objet et à son lieu grâce aux indices.', engine: new InquiriesFamily(), achievement: 'Détective' },
+  MA: { code: 'MA', name: 'Marqueterie', answer: false, rule: 'Remplis la silhouette avec toutes les pièces. Tu peux les tourner.', engine: new MarquetryFamily(), achievement: 'Ébéniste' },
 };
 
 export const TIER_NAMES = ['Étincelle', 'Lueur', 'Flamme', 'Brasier', 'Fanal', 'Astre'] as const;
@@ -92,11 +104,14 @@ export function puzzleFor(id: string): PlayablePuzzle | null {
 // ---------------------------------------------------------------- daily
 
 const planner = new DailyPlanner([...CODES], 'fr', P.version);
-const DAILY_MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, SU: 3, BA: 4 };
+const DAILY_MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, SU: 3, BA: 4, MO: 4, ME: 5, FI: 4, MI: 5, EQ: 4, MA: 3 };
 /** On-device fallback beyond the prepared range: light parameters only (fast). */
 const DAILY_FALLBACK: Record<Code, unknown> = {
   IN: { rows: 4, columns: 4, presses: [4, 7] }, CA: { length: 3, clueCount: [4, 7] }, LA: { rows: 6, columns: 6 },
   EN: { rows: 5, columns: 5 }, SU: { complexity: 2 }, BA: { unknowns: 3, maxWeight: 20 },
+  MO: { active: 2 }, ME: { characters: 4, kinds: ['liar', 'honest', 'atLeastOneLiar', 'exactlyLiars'] }, FI: { rows: 5, columns: 5, wallPercent: 25 },
+  MI: { rows: 6, columns: 6, mirrors: 3, targets: 4, obstaclePercent: 12 }, EQ: { size: 4, kinds: ['has', 'hasNot', 'at', 'notAt', 'objectAt', 'objectNotAt'] },
+  MA: { silhouettes: ['lanterne', 'cle', 'theiere', 'maison', 'bateau', 'horloge'], pieceSize: [3, 5] },
 };
 
 export function dailyPuzzle(day: DayKey): PlayablePuzzle | null {

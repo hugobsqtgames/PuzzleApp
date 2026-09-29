@@ -80,7 +80,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: `family.${code}`, name: FAMILIES[code].achievement, description: `Résous 25 puzzles de ${FAMILIES[code].name}.`, reward: 20,
     progress: ({ solvedByFamily }) => [Math.min(25, (solvedByFamily[code] ?? []).length), 25],
   })),
-  { id: 'polymath', name: 'Polymathe', description: 'Allume au moins un Fanal dans chaque famille.', reward: 40, progress: ({ solvedByFamily }) => [CODES.filter((c) => (solvedByFamily[c] ?? []).some((l) => l.tier >= Tier.Beacon)).length, CODES.length] },
+  { id: 'polymath', name: 'Polymathe', description: 'Allume au moins un Brasier dans chaque famille.', reward: 40, progress: ({ solvedByFamily }) => [CODES.filter((c) => (solvedByFamily[c] ?? []).some((l) => l.tier >= Tier.Blaze)).length, CODES.length] },
   // Rituel
   { id: 'streak7', name: 'Flamme du soir', description: 'Une série de 7 soirs.', reward: 20, progress: ({ s }) => [Math.min(7, s.daily.bestStreak), 7] },
   { id: 'streak30', name: 'Veilleur', description: 'Une série de 30 soirs.', reward: 40, progress: ({ s }) => [Math.min(30, s.daily.bestStreak), 30] },

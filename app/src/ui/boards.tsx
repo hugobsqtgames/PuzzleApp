@@ -17,6 +17,7 @@ import { SequencesPuzzle, SequencesState } from '../core/families/sequences';
 import { ScalesPuzzle, ScalesState } from '../core/families/scales';
 import { FAMILIES } from '../game/catalog';
 import { Session } from '../game/session';
+import { Board2 } from './boards2';
 
 export interface BoardProps {
   s: Session;
@@ -310,6 +311,7 @@ export function Board(props: BoardProps) {
     case 'CA': return <Lock {...props} />;
     case 'SU': return <Sequence {...props} />;
     case 'BA': return <Scales {...props} />;
+    default: return <Board2 {...props} />;
   }
 }
 

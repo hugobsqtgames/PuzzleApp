@@ -93,9 +93,70 @@ export const FR: Record<string, string> = {
   'scales.shape.square': 'du carré',
   'scales.shape.diamond': 'du losange',
   'scales.step': 'Une balance donne un poids.',
+  // Motifs
+  'patterns.error.wrong': 'Pas celle-ci. Regarde bien {0}.',
+  'patterns.hint.whisper': 'Regarde une seule chose à la fois : {0}.',
+  'patterns.hint.lead.row': 'Dans chaque ligne, {0} ne change pas.',
+  'patterns.hint.lead.column': 'Dans chaque colonne, {0} ne change pas.',
+  'patterns.hint.lead.progression': 'Le long de chaque ligne, {0} avance d’un cran.',
+  'patterns.hint.lead.distribution': 'Chaque ligne contient les trois mêmes valeurs de {0}, dans un autre ordre.',
+  'patterns.hint.lead.constant': 'Regarde {0} dans tout le tableau.',
+  'patterns.hint.insight': 'Pour {0}, la case manquante a : {1}. Les pièces qui ne l’ont pas sont écartées.',
+  'patterns.hint.solution': 'Voici la pièce qui complète le tableau.',
+  'patterns.attr.shape': 'la forme', 'patterns.attr.count': 'le nombre', 'patterns.attr.fill': 'le remplissage', 'patterns.attr.size': 'la taille', 'patterns.attr.rotation': 'l’orientation',
+  'patterns.value.shape.0': 'un cercle', 'patterns.value.shape.1': 'un triangle', 'patterns.value.shape.2': 'un carré', 'patterns.value.shape.3': 'un losange',
+  'patterns.value.count.0': 'une forme', 'patterns.value.count.1': 'deux formes', 'patterns.value.count.2': 'trois formes',
+  'patterns.value.fill.0': 'plein', 'patterns.value.fill.1': 'rayé', 'patterns.value.fill.2': 'vide',
+  'patterns.value.size.0': 'petit', 'patterns.value.size.1': 'moyen', 'patterns.value.size.2': 'grand',
+  'patterns.value.rotation.0': 'pointe vers le haut', 'patterns.value.rotation.1': 'pointe vers la droite', 'patterns.value.rotation.2': 'pointe vers le bas', 'patterns.value.rotation.3': 'pointe vers la gauche',
+  // Menteurs
+  'liars.error.honestButFalse': 'Si {0} dit la vérité, sa phrase devrait être vraie. Avec ta réponse, elle est fausse.',
+  'liars.error.liarButTrue': 'Si {0} ment, sa phrase devrait être fausse. Avec ta réponse, elle est vraie.',
+  'liars.hint.whisper': 'Commence par la phrase de {0}.',
+  'liars.hint.checkMark': 'Vérifie ta réponse pour {0}.',
+  'liars.hint.lead': 'Suppose que {0} dit la vérité, puis qu’il ou elle ment : une des deux hypothèses mène à une contradiction.',
+  'liars.hint.insight.honest': '{0} dit la vérité.',
+  'liars.hint.insight.liar': '{0} ment.',
+  'liars.hint.solution': 'Voici qui ment et qui dit vrai.',
+  // Fil
+  'threads.hint.whisper': 'Regarde les cases qui n’ont que deux sorties : le fil y passe forcément par là.',
+  'threads.hint.lead': 'Le fil continue vers la case ligne {0}, colonne {1}.',
+  'threads.hint.insight': 'Le fil avance jusqu’à la case ligne {0}, colonne {1}.',
+  'threads.hint.backtrack': 'D’ici, le fil ne peut plus passer partout. Reviens à la case ligne {0}, colonne {1}.',
+  'threads.hint.solution': 'Voici un fil qui passe partout.',
+  // Miroirs
+  'mirrors.error.tooMany': 'Tu n’as que {0} miroirs.',
+  'mirrors.hint.whisper': 'Le rayon doit passer par la cible ligne {0}, colonne {1}.',
+  'mirrors.hint.lead': 'Un miroir va sur la ligne {0}.',
+  'mirrors.hint.insight': 'Un miroir {2} va ligne {0}, colonne {1}.',
+  'mirrors.hint.wrong': 'Le miroir de la ligne {0}, colonne {1} n’est pas le bon.',
+  'mirrors.hint.solution': 'Voici le chemin du rayon.',
+  // Enquêtes
+  'inquiries.error.sameObject': 'Deux habitants ont le même objet.',
+  'inquiries.error.samePlace': 'Deux habitants sont au même endroit.',
+  'inquiries.error.clue': 'L’indice {0} n’est pas respecté.',
+  'inquiries.hint.whisper': 'Commence par l’indice {0}.',
+  'inquiries.hint.lead': 'Barre ce que chaque indice exclut : quand il ne reste qu’une possibilité, elle est juste.',
+  'inquiries.hint.insight.object': '{0} a {1}.',
+  'inquiries.hint.insight.place': '{0} est {1}.',
+  'inquiries.hint.wrong': 'Revois ta réponse pour {0}.',
+  'inquiries.hint.solution': 'Voici le tableau complet.',
+  // Marqueterie
+  'marquetry.hint.whisper': 'Commence par les coins et les parties les plus étroites de la silhouette.',
+  'marquetry.hint.lead': 'Essaie de placer la pièce {0}.',
+  'marquetry.hint.insight': 'La pièce {0} est posée à sa place.',
+  'marquetry.hint.wrong': 'La pièce {0} empêche de tout remplir.',
+  'marquetry.hint.solution': 'Voici la silhouette remplie.',
   // Paliers
   'tier.spark': 'Étincelle', 'tier.glow': 'Lueur', 'tier.flame': 'Flamme', 'tier.blaze': 'Brasier', 'tier.beacon': 'Fanal', 'tier.star': 'Astre',
 };
+
+import { CHARACTERS } from '../core/families/liars';
+import { OBJECTS, PEOPLE, PLACES } from '../core/families/inquiries';
+CHARACTERS.forEach((n, i) => { FR[`liars.name.${i}`] = n; });
+PEOPLE.forEach((n, i) => { FR[`inquiries.person.${i}`] = n; });
+OBJECTS.forEach((n, i) => { FR[`inquiries.object.${i}`] = n; });
+PLACES.forEach((n, i) => { FR[`inquiries.place.${i}`] = n; });
 
 /** Nested shape names read naturally at the start of a sentence ("Le cercle pèse 4."). */
 const CAPITALISED: Record<string, string> = {
@@ -108,7 +169,10 @@ export function t(tp: LocalizedTemplate | string): string {
   const text = FR[key] ?? key;
   return text.replace(/\{(\d+)\}/g, (_, i) => {
     const a = args[Number(i)] ?? '';
-    if (a in FR) return text.startsWith(`{${i}}`) && CAPITALISED[a] ? CAPITALISED[a] : FR[a];
+    if (a in FR) {
+      if (!text.startsWith(`{${i}}`)) return FR[a];
+      return CAPITALISED[a] ?? FR[a].charAt(0).toUpperCase() + FR[a].slice(1);
+    }
     return a;
   });
 }

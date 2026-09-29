@@ -29,7 +29,7 @@ export default function BuildingScreen() {
   const rects = coupeRects(b.rooms.length, !!b.keystone);
   const cells: RoomCell[] = rows.map((r) => ({
     label: r.key ? 'Lanterne-clé' : r.label, key: r.key, lit: r.lit, total: r.total, state: r.state,
-    sub: r.state === 'locked' ? 'Verrouillée' : r.key ? (r.lit ? 'Allumée' : 'Ouverte · sommet du bâtiment') : r.state === 'done' ? 'Complète · objet trouvé' : `${r.lit} / ${r.total}`,
+    sub: r.state === 'locked' ? 'Verrouillée' : r.key ? (r.lit ? 'Allumée' : 'Ouverte') : r.state === 'done' ? 'Complète' : `${r.lit} / ${r.total}`,
   }));
   const xml = coupeXml(info.hue, cells, rects);
 

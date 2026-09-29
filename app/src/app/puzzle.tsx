@@ -241,6 +241,12 @@ const RULE_DETAILS: Record<string, string> = {
   EN: 'Touche une tuile pour la tourner d’un quart de tour (appui long : dans l’autre sens). La lumière suit les conduits reliés. Aucune ouverture ne doit rester dans le vide.',
   SU: 'Trouve la règle qui relie les nombres : écarts, multiplications, suites mêlées… Une seule réponse suit une règle simple.',
   BA: 'Chaque balance est en équilibre : les deux plateaux pèsent autant. Les objets identiques pèsent pareil. Les poids gris indiquent leur valeur.',
+  MO: 'Chaque case a une forme, un nombre, un remplissage, une taille. Ligne par ligne, chacun suit sa règle : il reste pareil, avance d’un cran, ou reprend les trois mêmes valeurs dans un autre ordre.',
+  ME: 'Touche un personnage pour dire s’il dit vrai ou s’il ment. Un menteur dit toujours faux, jamais à moitié. Quand tout le monde est choisi, Valider.',
+  FI: 'Touche une case voisine pour avancer le fil. Touche une case déjà traversée pour revenir en arrière jusqu’à elle. Les traits bruns sont des murs.',
+  MI: 'Touche une case vide : miroir /, puis miroir \\, puis rien. Le rayon rebondit sur les miroirs. Les cibles s’allument quand il les traverse.',
+  EQ: 'Touche un indice pour le barrer quand tu l’as utilisé. Touche l’objet ou le lieu d’un habitant pour le changer. Chaque objet et chaque lieu ne sert qu’une fois.',
+  MA: 'Choisis une pièce en bas, tourne-la si besoin, puis touche une case de la silhouette pour la poser. Touche une pièce posée pour la reprendre.',
 };
 
 function Row({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
