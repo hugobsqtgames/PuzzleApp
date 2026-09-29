@@ -24,7 +24,8 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-audio"
+      "expo-audio",
+      "expo-asset"
     ],
     "scheme": "lampion",
     "backgroundColor": "#0D0F1E"
