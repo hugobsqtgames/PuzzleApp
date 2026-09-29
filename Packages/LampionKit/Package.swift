@@ -11,6 +11,7 @@ let package = Package(
         .library(name: "PuzzleFamilies", targets: ["FamilySwitches", "FamilyLocks", "FamilyLamps"]),
         .library(name: "GameCore", targets: ["GameCore"]),
         .library(name: "Persistence", targets: ["Persistence"]),
+        .library(name: "GameAudio", targets: ["GameAudio"]),
         .executable(name: "contentforge", targets: ["ContentForge"]),
     ],
     targets: [
@@ -20,6 +21,7 @@ let package = Package(
         .target(name: "FamilyLamps", dependencies: ["PuzzleKit"], path: "Sources/Families/Lamps"),
         .target(name: "GameCore", dependencies: ["PuzzleKit"]),
         .target(name: "Persistence", dependencies: ["GameCore"]),
+        .target(name: "GameAudio"),
         .executableTarget(
             name: "ContentForge",
             dependencies: ["PuzzleKit", "FamilySwitches", "FamilyLocks", "FamilyLamps"]
@@ -28,5 +30,6 @@ let package = Package(
         .testTarget(name: "FamiliesTests", dependencies: ["PuzzleKit", "FamilySwitches", "FamilyLocks", "FamilyLamps"]),
         .testTarget(name: "GameCoreTests", dependencies: ["GameCore", "PuzzleKit"]),
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "GameCore"]),
+        .testTarget(name: "GameAudioTests", dependencies: ["GameAudio"]),
     ]
 )

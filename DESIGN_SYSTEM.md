@@ -492,6 +492,8 @@ Définies dans PRODUCT_DISCOVERY § 11.3. Paramètres d'animation :
 | Nouveau quartier | thème court (4 s) | `impact(.soft)` ×2 espacés |
 | Éclats gagnés | cliquetis cristallin décroissant | aucune |
 
+> **Implémentation.** Esquisse audible dans la maquette (synthèse Web Audio, section « Son ») ; décisions son + haptique dans le module Swift `GameAudio` (testé) ; fichiers définitifs à produire selon `Content/audio/SOUND_BRIEF.md`.
+
 ### 15.2 Règles haptiques
 
 - **Jamais** d'haptique répétée à haute fréquence (pas de vibration par case survolée).

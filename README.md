@@ -21,6 +21,8 @@ Conception validée (phase 6). Développement en cours (phase 8) : le **cœur Sw
 
 Ouvrir `prototype/index.html` dans un navigateur récent (aucune installation). Les polices système Apple sont utilisées sur iPhone, iPad et Mac ; ailleurs, des polices de repli proches sont chargées.
 
+La maquette a un **son synthétisé** (bouton « Son », coupé par défaut ; section « Son » de la charte pour tout écouter). Le cahier des charges du sound designer est dans [`Content/audio/SOUND_BRIEF.md`](Content/audio/SOUND_BRIEF.md).
+
 Les puzzles jouables de la maquette ont été générés puis vérifiés (solution unique) par les scripts de `prototype/verification/` :
 
 ```
@@ -46,4 +48,5 @@ swift run -c release contentforge soak 200  # génère, résout, valide et mesur
 | `FamilyLamps` | Lampes : résolveur exhaustif + résolveur « humain » par techniques (difficulté, indices) |
 | `GameCore` | Monde, déblocages, portefeuille idempotent, récompenses, défi du jour, série et veilleuses |
 | `Persistence` | Sauvegarde versionnée, écriture atomique, secours, migrations, décodage tolérant |
+| `GameAudio` | Directeur son et haptique : ambiances par lieu, fondus, anti-rafale, réglages, arrière-plan |
 | `ContentForge` | Outil en ligne de commande de génération et de validation du contenu |
