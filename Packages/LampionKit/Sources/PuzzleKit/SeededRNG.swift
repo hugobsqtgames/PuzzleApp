@@ -46,17 +46,24 @@ public struct SeededRNG: RandomNumberGenerator, Sendable {
     /// Entier uniforme dans `0..<bound`, par rejet (sans biais, algorithme figé).
     public mutating func below(_ bound: Int) -> Int {
         precondition(bound > 0, "bound must be positive")
-        let b = UInt64(bound)
-        let limit = UInt64.max - (UInt64.max % b)
+        return Int(below64(UInt64(bound)))
+    }
+
+    /// Entier 64 bits non signé uniforme dans `0..<bound`.
+    public mutating func below64(_ bound: UInt64) -> UInt64 {
+        precondition(bound > 0, "bound must be positive")
+        let limit = UInt64.max - (UInt64.max % bound)
         while true {
             let x = next()
-            if x < limit { return Int(x % b) }
+            if x < limit { return x % bound }
         }
     }
 
-    /// Entier uniforme dans l'intervalle fermé.
+    /// Entier uniforme dans l'intervalle fermé (y compris `Int.min...Int.max`).
     public mutating func int(in range: ClosedRange<Int>) -> Int {
-        range.lowerBound + below(range.upperBound - range.lowerBound + 1)
+        let span = UInt64(bitPattern: Int64(range.upperBound &- range.lowerBound)) &+ 1
+        if span == 0 { return Int(truncatingIfNeeded: next()) } // intervalle complet
+        return range.lowerBound &+ Int(truncatingIfNeeded: below64(span))
     }
 
     /// Vrai avec une probabilité `numerator / denominator` (pas de flottant).

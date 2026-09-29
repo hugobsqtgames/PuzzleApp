@@ -22,7 +22,8 @@ public struct DailyPlanner: Sendable {
 
     public init(families: [FamilyID], contentLanguage: String, generatorVersion: Int, epoch: DayKey = DayKey(year: 2026, month: 1, day: 5)) {
         precondition(!families.isEmpty, "at least one family")
-        self.families = families; self.contentLanguage = contentLanguage
+        var seen = Set<FamilyID>()
+        self.families = families.filter { seen.insert($0).inserted }; self.contentLanguage = contentLanguage
         self.generatorVersion = generatorVersion; self.epoch = epoch
     }
 
@@ -73,6 +74,20 @@ public struct DailyState: Codable, Hashable, Sendable {
     /// Plus grande date jamais vue : protège contre une horloge reculée.
     public var maxSeenDay: DayKey?
     public init() {}
+
+    enum CodingKeys: String, CodingKey { case completedDays, catchUpDays, streak, bestStreak, nightlights, lastStreakDay, maxSeenDay }
+
+    /// Décodage tolérant, valeurs ramenées dans des bornes cohérentes.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        completedDays = c.lossySet(Set<DayKey>.self, forKey: .completedDays)
+        catchUpDays = c.lossySet(Set<DayKey>.self, forKey: .catchUpDays)
+        streak = max(0, c.value(Int.self, forKey: .streak, default: 0))
+        bestStreak = max(streak, c.value(Int.self, forKey: .bestStreak, default: 0))
+        nightlights = max(0, c.value(Int.self, forKey: .nightlights, default: 0))
+        lastStreakDay = try? c.decodeIfPresent(DayKey.self, forKey: .lastStreakDay)
+        maxSeenDay = try? c.decodeIfPresent(DayKey.self, forKey: .maxSeenDay)
+    }
 }
 
 public enum DailyCompletion: Hashable, Sendable {

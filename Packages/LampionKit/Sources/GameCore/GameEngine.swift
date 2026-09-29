@@ -39,7 +39,8 @@ public struct GameEngine: Sendable {
 
     /// Une lanterne du monde est résolue.
     public func puzzleSolved(_ id: PuzzleID, record: SolveRecord, state: inout GameState) -> [Celebration] {
-        guard state.solved[id] == nil, let place = progression.locate(id),
+        // Une lanterne verrouillée, inconnue ou déjà allumée ne rapporte rien (lien profond, état restauré, double appel).
+        guard state.solved[id] == nil, progression.isPlayable(id, state), let place = progression.locate(id),
               let lantern = (place.room?.lanterns ?? place.building.keystone.map { [$0] } ?? []).first(where: { $0.puzzle == id })
         else { return [] }
         let unlockedBefore = Set(progression.world.districts.filter { progression.isUnlocked($0, state) }.map(\.id))

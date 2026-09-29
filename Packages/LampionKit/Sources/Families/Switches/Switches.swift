@@ -37,6 +37,23 @@ public struct SwitchesPuzzle: Codable, Sendable, Hashable {
     }
 
     public var cellCount: Int { rows * columns }
+
+    /// Dimensions cohérentes (une donnée de contenu ou de sauvegarde abîmée ne doit jamais faire planter).
+    public static func isWellFormed(rows: Int, columns: Int, cells: Int) -> Bool {
+        rows > 0 && columns > 0 && rows <= 8 && columns <= 8 && rows * columns == cells
+    }
+
+    enum CodingKeys: String, CodingKey { case rows, columns, pattern, initiallyLit }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let rows = try c.decode(Int.self, forKey: .rows), columns = try c.decode(Int.self, forKey: .columns)
+        let lit = try c.decode([Bool].self, forKey: .initiallyLit)
+        guard Self.isWellFormed(rows: rows, columns: columns, cells: lit.count) else {
+            throw DecodingError.dataCorruptedError(forKey: .initiallyLit, in: c, debugDescription: "inconsistent switches grid")
+        }
+        self.init(rows: rows, columns: columns, pattern: try c.decode(SwitchPattern.self, forKey: .pattern), initiallyLit: lit)
+    }
 }
 
 public struct SwitchesState: Codable, Sendable, Hashable {
@@ -93,6 +110,7 @@ public struct SwitchesFamily: PuzzleFamily {
     }
 
     public func press(_ index: Int, state: inout SwitchesState, puzzle: SwitchesPuzzle) {
+        guard (0..<puzzle.cellCount).contains(index), state.lit.count == puzzle.cellCount else { return }
         let m = mask(of: index, in: puzzle)
         for i in 0..<puzzle.cellCount where m & (1 << UInt64(i)) != 0 { state.lit[i].toggle() }
         state.moves += 1
@@ -101,8 +119,9 @@ public struct SwitchesFamily: PuzzleFamily {
     // MARK: Génération
 
     public func generate(_ p: SwitchesParameters, rng: inout SeededRNG) -> SwitchesPuzzle? {
+        guard SwitchesPuzzle.isWellFormed(rows: p.rows, columns: p.columns, cells: p.rows * p.columns),
+              p.presses.lowerBound >= 0 else { return nil }
         let n = p.rows * p.columns
-        guard n > 0, n <= 64 else { return nil }
         let count = min(n, rng.int(in: p.presses))
         let chosen = rng.shuffled(Array(0..<n)).prefix(count)
         var state = SwitchesState(lit: Array(repeating: true, count: n))
@@ -124,6 +143,7 @@ public struct SwitchesFamily: PuzzleFamily {
     /// Résout A·x = b où b = cases éteintes. Renvoie nil si aucune solution.
     func linearSolve(_ puzzle: SwitchesPuzzle, lit: [Bool]) -> LinearSystem? {
         let n = puzzle.cellCount
+        guard lit.count == n else { return nil }
         // Équation i : somme des boutons j qui touchent la case i = (case i éteinte).
         var rows: [UInt64] = Array(repeating: 0, count: n)
         var rhs: [Bool] = lit.map { !$0 }

@@ -39,15 +39,16 @@ public struct GameState: Codable, Hashable, Sendable {
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        // `try?` champ par champ : un champ abîmé ne fait pas perdre les autres.
-        solved = (try? c.decodeIfPresent([PuzzleID: SolveRecord].self, forKey: .solved)) ?? [:]
-        inProgress = (try? c.decodeIfPresent([PuzzleID: Data].self, forKey: .inProgress)) ?? [:]
-        wallet = (try? c.decodeIfPresent(Wallet.self, forKey: .wallet)) ?? Wallet()
-        daily = (try? c.decodeIfPresent(DailyState.self, forKey: .daily)) ?? DailyState()
-        collectibles = (try? c.decodeIfPresent(Set<String>.self, forKey: .collectibles)) ?? []
-        ownedCosmetics = (try? c.decodeIfPresent(Set<String>.self, forKey: .ownedCosmetics)) ?? []
-        equippedCosmetics = (try? c.decodeIfPresent([String: String].self, forKey: .equippedCosmetics)) ?? [:]
-        seenDialogue = (try? c.decodeIfPresent(Set<String>.self, forKey: .seenDialogue)) ?? []
+        // Champ par champ, et élément par élément pour les collections :
+        // une donnée abîmée ne fait perdre qu'elle-même.
+        solved = c.lossyDictionary([PuzzleID: SolveRecord].self, forKey: .solved)
+        inProgress = c.lossyDictionary([PuzzleID: Data].self, forKey: .inProgress)
+        wallet = c.value(Wallet.self, forKey: .wallet, default: Wallet())
+        daily = c.value(DailyState.self, forKey: .daily, default: DailyState())
+        collectibles = c.lossySet(Set<String>.self, forKey: .collectibles)
+        ownedCosmetics = c.lossySet(Set<String>.self, forKey: .ownedCosmetics)
+        equippedCosmetics = c.lossyDictionary([String: String].self, forKey: .equippedCosmetics)
+        seenDialogue = c.lossySet(Set<String>.self, forKey: .seenDialogue)
         lastPuzzle = try? c.decodeIfPresent(PuzzleID.self, forKey: .lastPuzzle)
         onboardingDone = (try? c.decodeIfPresent(Bool.self, forKey: .onboardingDone)) ?? false
     }

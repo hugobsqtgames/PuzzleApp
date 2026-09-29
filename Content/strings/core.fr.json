@@ -3,6 +3,8 @@
   "lamps.error.wallOver": "Ce mur veut {0} lampe(s), il en a {1}.",
   "lamps.hint.checkMistake": "Vérifie cette case.",
   "lamps.hint.reveal": "Une lampe va ici.",
+  "lamps.hint.reveal.lead": "Une lampe se trouve à la croisée de la ligne {0} et de la colonne {1}.",
+  "lamps.hint.reveal.whisper": "Regarde la ligne {0} : une lampe s'y cache.",
   "lamps.hint.solution": "Voici la grille éclairée.",
   "lamps.hint.whisper.chainedContradiction": "Essaie mentalement une lampe ici et suis les conséquences.",
   "lamps.hint.whisper.directContradiction": "Regarde cette case : que se passerait-il avec une lampe ?",

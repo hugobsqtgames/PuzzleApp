@@ -8,6 +8,17 @@ public struct Wallet: Codable, Hashable, Sendable {
 
     public init() {}
 
+    enum CodingKeys: String, CodingKey { case balance, earned, spent, appliedTransactions }
+
+    /// Décodage tolérant : chaque champ indépendamment, jamais de solde négatif.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        balance = max(0, c.value(Int.self, forKey: .balance, default: 0))
+        earned = max(0, c.value(Int.self, forKey: .earned, default: 0))
+        spent = max(0, c.value(Int.self, forKey: .spent, default: 0))
+        appliedTransactions = c.lossySet(Set<String>.self, forKey: .appliedTransactions)
+    }
+
     public enum Failure: Error, Equatable {
         case insufficientBalance(missing: Int)
         case invalidAmount
@@ -18,9 +29,12 @@ public struct Wallet: Codable, Hashable, Sendable {
     public mutating func credit(_ amount: Int, id: String) throws -> Bool {
         guard amount >= 0 else { throw Failure.invalidAmount }
         guard !appliedTransactions.contains(id) else { return false }
+        let (newBalance, o1) = balance.addingReportingOverflow(amount)
+        let (newEarned, o2) = earned.addingReportingOverflow(amount)
+        guard !o1, !o2 else { throw Failure.invalidAmount }
         appliedTransactions.insert(id)
-        balance += amount
-        earned += amount
+        balance = newBalance
+        earned = newEarned
         return true
     }
 
@@ -30,9 +44,11 @@ public struct Wallet: Codable, Hashable, Sendable {
         guard amount >= 0 else { throw Failure.invalidAmount }
         guard !appliedTransactions.contains(id) else { return false }
         guard balance >= amount else { throw Failure.insufficientBalance(missing: amount - balance) }
+        let (newSpent, overflow) = spent.addingReportingOverflow(amount)
+        guard !overflow else { throw Failure.invalidAmount }
         appliedTransactions.insert(id)
         balance -= amount
-        spent += amount
+        spent = newSpent
         return true
     }
 }

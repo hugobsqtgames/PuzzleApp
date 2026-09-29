@@ -106,15 +106,31 @@ public struct Progression: Sendable {
         playableLanterns(state).filter { !isSolved($0, state) }
     }
 
-    /// Lanterne proposée par « Continuer » : la suivante dans la salle en cours, sinon la première jouable.
+    /// Lanterne proposée par « Continuer » : la plus proche de la dernière jouée
+    /// (même salle, puis même bâtiment, puis même quartier, puis la suite du monde), jamais un retour en arrière arbitraire.
     public func recommended(_ state: GameState) -> Lantern? {
         let open = playableUnsolved(state)
-        let openIDs = Set(open.map(\.puzzle))
-        if let last = state.lastPuzzle, let room = roomIndex[last],
-           let next = room.lanterns.first(where: { openIDs.contains($0.puzzle) }) {
-            return next
+        guard let last = state.lastPuzzle, let here = placeIndex[last] else { return open.first }
+        func place(_ l: Lantern) -> (district: Int, building: Int, room: Int?) { placeIndex[l.puzzle]! }
+        if let r = here.room, let same = open.first(where: { place($0).district == here.district && place($0).building == here.building && place($0).room == r }) {
+            return same
         }
-        return open.first
+        if let building = open.first(where: { place($0).district == here.district && place($0).building == here.building }) { return building }
+        if let district = open.first(where: { place($0).district == here.district }) { return district }
+        return open.first(where: { place($0).district > here.district }) ?? open.first
+    }
+
+    /// Vrai si la lanterne est ouverte (jouable) dans cet état.
+    public func isPlayable(_ id: PuzzleID, _ state: GameState) -> Bool {
+        guard let place = placeIndex[id] else { return false }
+        let district = world.districts[place.district]
+        let total = totalLights(state), letterCount = letters(state)
+        guard isUnlocked(district, totalLights: total, letters: letterCount) else { return false }
+        let bi = place.building
+        let open = bi == 0 || lights(district.buildings[bi - 1].allLanterns, state) >= rules.previousBuildingLights
+        let building = district.buildings[bi]
+        if let ri = place.room { return isUnlocked(room: ri, in: building, buildingUnlocked: open, state) }
+        return isKeystoneUnlocked(building, buildingUnlocked: open, state)
     }
 
     /// Localise une lanterne : quartier, bâtiment, salle (nil pour une lanterne-clé).

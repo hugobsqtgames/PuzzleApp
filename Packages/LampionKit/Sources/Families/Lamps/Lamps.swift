@@ -11,11 +11,27 @@ public struct LampsPuzzle: Codable, Sendable, Hashable {
     /// Une chaîne par ligne : « . » case blanche, « X » mur, « 0 »…« 4 » mur numéroté.
     public let layout: [String]
     public init(layout: [String]) {
-        precondition(!layout.isEmpty && Set(layout.map(\.count)).count == 1, "rectangular layout expected")
+        precondition(Self.isWellFormed(layout), "malformed lamps layout")
         self.layout = layout
     }
     public var rows: Int { layout.count }
     public var columns: Int { layout[0].count }
+
+    public static let allowedSymbols: Set<Character> = [".", "X", "0", "1", "2", "3", "4"]
+
+    public static func isWellFormed(_ layout: [String]) -> Bool {
+        guard let width = layout.first?.count, width > 0, width <= 20, layout.count <= 20 else { return false }
+        return layout.allSatisfy { $0.count == width && $0.allSatisfy(allowedSymbols.contains) }
+    }
+
+    enum CodingKeys: String, CodingKey { case layout }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let layout = try c.decode([String].self, forKey: .layout)
+        guard Self.isWellFormed(layout) else { throw DecodingError.dataCorruptedError(forKey: .layout, in: c, debugDescription: "malformed lamps layout") }
+        self.layout = layout
+    }
 }
 
 public struct LampsState: Codable, Sendable, Hashable {
@@ -302,6 +318,15 @@ struct LampsHumanSolver {
 
 // MARK: - Famille
 
+extension LampsBoard {
+    /// Marques utilisables : nil si la taille ne correspond pas ; toute marque posée sur un mur est ignorée
+    /// (une lampe « sur un mur » ne doit jamais satisfaire un nombre).
+    func sanitized(_ marks: [LampMark]) -> [LampMark]? {
+        guard marks.count == count else { return nil }
+        return marks.indices.map { white[$0] ? marks[$0] : .empty }
+    }
+}
+
 public struct LampsFamily: PuzzleFamily {
     public static let id: FamilyID = "lamps"
     public static let formatVersion = 1
@@ -312,10 +337,13 @@ public struct LampsFamily: PuzzleFamily {
 
     public func illumination(_ puzzle: LampsPuzzle, state: LampsState) -> LampsIllumination {
         let b = LampsBoard(puzzle)
+        guard let marks = b.sanitized(state.marks) else {
+            return LampsIllumination(lit: Array(repeating: false, count: b.count), conflicts: [], overfullWalls: [])
+        }
         let solver = LampsHumanSolver(b: b)
-        let lit = solver.litCounts(state.marks)
-        let conflicts = (0..<b.count).filter { state.marks[$0] == .lamp && lit[$0] > 1 }
-        let overfull = b.numbered.filter { w in b.neighbors[w].filter { state.marks[$0] == .lamp }.count > b.clue[w]! }
+        let lit = solver.litCounts(marks)
+        let conflicts = (0..<b.count).filter { marks[$0] == .lamp && lit[$0] > 1 }
+        let overfull = b.numbered.filter { w in b.neighbors[w].filter { marks[$0] == .lamp }.count > b.clue[w]! }
         return LampsIllumination(lit: lit.map { $0 > 0 }, conflicts: conflicts, overfullWalls: overfull)
     }
 
@@ -377,18 +405,18 @@ public struct LampsFamily: PuzzleFamily {
 
     public func validate(_ puzzle: LampsPuzzle, state: LampsState) -> ValidationResult {
         let board = LampsBoard(puzzle)
-        guard state.marks.count == board.count else { return .incomplete }
+        guard let marks = board.sanitized(state.marks) else { return .incomplete }
         let info = illumination(puzzle, state: state)
         var issues: [Issue] = []
         if !info.conflicts.isEmpty {
             issues.append(Issue(cells: info.conflicts.map(board.ref), message: LocalizedTemplate("lamps.error.seeEachOther")))
         }
         for w in info.overfullWalls {
-            let have = board.neighbors[w].filter { state.marks[$0] == .lamp }.count
+            let have = board.neighbors[w].filter { marks[$0] == .lamp }.count
             issues.append(Issue(cells: [board.ref(w)], message: LocalizedTemplate("lamps.error.wallOver", [String(board.clue[w]!), String(have)])))
         }
         if !issues.isEmpty { return .invalid(issues) }
-        return LampsHumanSolver(b: board).isSolved(state.marks) ? .correct : .incomplete
+        return LampsHumanSolver(b: board).isSolved(marks) ? .correct : .incomplete
     }
 
     // MARK: Difficulté
@@ -403,8 +431,10 @@ public struct LampsFamily: PuzzleFamily {
 
     // MARK: Indices
 
-    public func hint(_ puzzle: LampsPuzzle, state: LampsState, level: HintLevel) -> Hint<LampsState>? {
+    public func hint(_ puzzle: LampsPuzzle, state rawState: LampsState, level: HintLevel) -> Hint<LampsState>? {
         let board = LampsBoard(puzzle)
+        guard let cleanMarks = board.sanitized(rawState.marks) else { return nil }
+        let state = LampsState(marks: cleanMarks)
         let exact = LampsExactSolver(board: board, limit: 2).run()
         guard exact.count == 1, let solutionLamps = exact.solutions.first.map(Set.init),
               validate(puzzle, state: state) != .correct else { return nil }
@@ -440,11 +470,27 @@ public struct LampsFamily: PuzzleFamily {
             default: return Hint(level: level, text: deduction.step.explanation, focus: deduction.step.focus, resultingState: next)
             }
         }
-        // 3. Aucune déduction simple : on révèle une lampe de la solution.
+        // 3. Aucune déduction disponible : révélation progressive.
+        return revealHint(board: board, state: state, solutionLamps: solutionLamps, level: level)
+    }
+
+    /// Révèle une lampe de la solution progressivement (ligne, puis ligne et colonne, puis la case),
+    /// pour ne jamais donner la réponse dès le Murmure.
+    func revealHint(board: LampsBoard, state: LampsState, solutionLamps: Set<Int>, level: HintLevel) -> Hint<LampsState>? {
         guard let reveal = solutionLamps.sorted().first(where: { state.marks[$0] != .lamp }) else { return nil }
-        var next = state
-        next.marks[reveal] = .lamp
-        return Hint(level: level, text: LocalizedTemplate("lamps.hint.reveal"), focus: [board.ref(reveal)], resultingState: level == .insight ? next : nil)
+        let row = reveal / board.columns, column = reveal % board.columns
+        switch level {
+        case .whisper:
+            return Hint(level: level, text: LocalizedTemplate("lamps.hint.reveal.whisper", [String(row + 1)]),
+                        focus: (0..<board.columns).map { CellRef(row, $0) })
+        case .lead:
+            return Hint(level: level, text: LocalizedTemplate("lamps.hint.reveal.lead", [String(row + 1), String(column + 1)]),
+                        focus: (0..<board.columns).map { CellRef(row, $0) } + (0..<board.rows).filter { $0 != row }.map { CellRef($0, column) })
+        default:
+            var next = state
+            next.marks[reveal] = .lamp
+            return Hint(level: level, text: LocalizedTemplate("lamps.hint.reveal"), focus: [board.ref(reveal)], resultingState: next)
+        }
     }
 
     public func fingerprint(_ puzzle: LampsPuzzle) -> String {

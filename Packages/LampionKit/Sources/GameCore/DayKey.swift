@@ -9,8 +9,20 @@ public struct DayKey: Hashable, Comparable, Sendable, CustomStringConvertible, C
     public let day: Int
 
     public init(year: Int, month: Int, day: Int) {
-        precondition((1...12).contains(month) && (1...31).contains(day), "invalid date")
+        precondition(Self.isValid(year: year, month: month, day: day), "invalid date")
         self.year = year; self.month = month; self.day = day
+    }
+
+    public static func daysInMonth(year: Int, month: Int) -> Int {
+        switch month {
+        case 2: (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 29 : 28
+        case 4, 6, 9, 11: 30
+        default: 31
+        }
+    }
+
+    public static func isValid(year: Int, month: Int, day: Int) -> Bool {
+        (1...12).contains(month) && day >= 1 && day <= daysInMonth(year: year, month: month) && (-100_000...100_000).contains(year)
     }
 
     /// Jour local de `date` dans le fuseau donné (celui de l'appareil par défaut).
@@ -63,7 +75,7 @@ public struct DayKey: Hashable, Comparable, Sendable, CustomStringConvertible, C
     public init(from decoder: Decoder) throws {
         let text = try decoder.singleValueContainer().decode(String.self)
         let parts = text.split(separator: "-").compactMap { Int($0) }
-        guard parts.count == 3, (1...12).contains(parts[1]), (1...31).contains(parts[2]) else {
+        guard parts.count == 3, Self.isValid(year: parts[0], month: parts[1], day: parts[2]) else {
             throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "invalid day \(text)"))
         }
         self.init(year: parts[0], month: parts[1], day: parts[2])

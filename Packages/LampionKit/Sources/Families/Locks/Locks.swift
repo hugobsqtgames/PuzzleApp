@@ -22,6 +22,39 @@ public struct LocksPuzzle: Codable, Sendable, Hashable {
     public init(length: Int, alphabet: Int = 10, allowsRepeats: Bool = false, clues: [LockClue]) {
         self.length = length; self.alphabet = alphabet; self.allowsRepeats = allowsRepeats; self.clues = clues
     }
+
+    /// Nombre maximal de codes possibles : au-delà, la résolution exhaustive deviendrait trop lente.
+    public static let maxSearchSpace = 1_000_000
+
+    public static func searchSpace(length: Int, alphabet: Int, allowsRepeats: Bool) -> Int? {
+        guard length >= 1, alphabet >= 1, length <= 8, alphabet <= 36 else { return nil }
+        var total = 1
+        for i in 0..<length {
+            let factor = allowsRepeats ? alphabet : alphabet - i
+            guard factor > 0 else { return 0 }
+            let (product, overflow) = total.multipliedReportingOverflow(by: factor)
+            if overflow || product > maxSearchSpace { return nil }
+            total = product
+        }
+        return total
+    }
+
+    public var isWellFormed: Bool {
+        guard let space = Self.searchSpace(length: length, alphabet: alphabet, allowsRepeats: allowsRepeats), space > 0 else { return false }
+        return clues.allSatisfy { clue in
+            clue.guess.count == length && clue.guess.allSatisfy { (0..<alphabet).contains($0) }
+                && clue.wellPlaced >= 0 && clue.misplaced >= 0 && clue.wellPlaced + clue.misplaced <= length
+        }
+    }
+
+    enum CodingKeys: String, CodingKey { case length, alphabet, allowsRepeats, clues }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(length: try c.decode(Int.self, forKey: .length), alphabet: try c.decode(Int.self, forKey: .alphabet),
+                  allowsRepeats: try c.decode(Bool.self, forKey: .allowsRepeats), clues: try c.decode([LockClue].self, forKey: .clues))
+        guard isWellFormed else { throw DecodingError.dataCorruptedError(forKey: .clues, in: c, debugDescription: "malformed lock") }
+    }
 }
 
 public struct LocksState: Codable, Sendable, Hashable {
@@ -95,7 +128,9 @@ public struct LocksFamily: PuzzleFamily {
     // MARK: Génération
 
     public func generate(_ p: LocksParameters, rng: inout SeededRNG) -> LocksPuzzle? {
-        guard p.length >= 2, p.alphabet >= p.length || p.allowsRepeats else { return nil }
+        guard p.length >= 2, p.alphabet >= p.length || p.allowsRepeats,
+              let space = LocksPuzzle.searchSpace(length: p.length, alphabet: p.alphabet, allowsRepeats: p.allowsRepeats),
+              space > 1, p.maxNothingClues >= 0 else { return nil }
         let codes = Self.allCodes(length: p.length, alphabet: p.alphabet, allowsRepeats: p.allowsRepeats)
         let code = rng.pick(codes)
         var candidates = codes
@@ -149,6 +184,7 @@ public struct LocksFamily: PuzzleFamily {
     }
 
     public func solve(_ puzzle: LocksPuzzle, limit: Int) -> SolveReport<[Int]> {
+        guard puzzle.isWellFormed else { return SolveReport(solutionCount: 0, solutions: [], humanSolvable: false) }
         let codes = Self.allCodes(length: puzzle.length, alphabet: puzzle.alphabet, allowsRepeats: puzzle.allowsRepeats)
         var solutions: [[Int]] = []
         var count = 0
@@ -214,7 +250,8 @@ public struct LocksFamily: PuzzleFamily {
 
     public func hint(_ puzzle: LocksPuzzle, state: LocksState, level: HintLevel) -> Hint<LocksState>? {
         let report = solve(puzzle, limit: 2)
-        guard report.solutionCount == 1, let solution = report.solutions.first,
+        guard state.symbols.count == puzzle.length, !puzzle.clues.isEmpty,
+              report.solutionCount == 1, let solution = report.solutions.first,
               state.symbols.compactMap({ $0 }) != solution else { return nil }
         // Indice le plus simple à exploiter : un « rien de juste » non encore barré, sinon un « aucun bien placé ».
         let crossed = Set(state.crossedOut)

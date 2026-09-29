@@ -3,6 +3,8 @@
   "lamps.error.wallOver": "This wall wants {0} lamp(s), it has {1}.",
   "lamps.hint.checkMistake": "Check this cell.",
   "lamps.hint.reveal": "A lamp goes here.",
+  "lamps.hint.reveal.lead": "A lamp sits where row {0} meets column {1}.",
+  "lamps.hint.reveal.whisper": "Look at row {0}: a lamp hides there.",
   "lamps.hint.solution": "Here is the lit grid.",
   "lamps.hint.whisper.chainedContradiction": "Try a lamp here in your head and follow the consequences.",
   "lamps.hint.whisper.directContradiction": "Look at this cell: what would a lamp do here?",

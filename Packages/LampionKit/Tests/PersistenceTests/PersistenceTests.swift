@@ -15,6 +15,7 @@ struct PersistenceTests {
         try s.wallet.credit(42, id: "puzzle:phare.b1.r1.1")
         s.daily.completedDays = [DayKey(year: 2026, month: 9, day: 29)]
         s.daily.streak = 3
+        s.daily.bestStreak = 3
         s.equippedCosmetics["hat"] = "bonnet"
         s.onboardingDone = true
         return s
@@ -24,6 +25,7 @@ struct PersistenceTests {
     func roundTrip() async throws {
         let dir = tempDirectory()
         let store = SaveStore(directory: dir, appVersion: "1.0.0")
+        _ = await store.load()
         let state = try sampleState()
         try await store.save(state)
         try await store.save(state)
@@ -38,6 +40,7 @@ struct PersistenceTests {
     func backupRecovery() async throws {
         let dir = tempDirectory()
         let store = SaveStore(directory: dir, appVersion: "1.0.0")
+        _ = await store.load()
         var state = try sampleState()
         try await store.save(state)
         state.onboardingDone = false
@@ -105,6 +108,7 @@ struct PersistenceTests {
     func missingMigration() async throws {
         let dir = tempDirectory()
         let store = SaveStore(directory: dir, appVersion: "1.0.0")
+        _ = await store.load()
         try await store.save(try sampleState())
         try await store.save(try sampleState())
         try Data(#"{"schemaVersion":0,"state":{}}"#.utf8).write(to: await store.mainURL)
@@ -120,5 +124,61 @@ struct PersistenceTests {
         try Data(#"{"schemaVersion":7,"appVersion":"3.0","savedAt":"2030-01-01T00:00:00Z","state":{"onboardingDone":true}}"#.utf8).write(to: await store.mainURL)
         let loaded = await store.load()
         #expect(loaded.source == .main && loaded.state.onboardingDone)
+    }
+
+    @Test("Écrire avant d'avoir chargé est refusé")
+    func saveBeforeLoad() async throws {
+        let store = SaveStore(directory: tempDirectory(), appVersion: "1.0.0")
+        await #expect(throws: SaveError.notLoaded) { try await store.save(GameState()) }
+    }
+
+    @Test("Fichier illisible (≠ abîmé) : rien n'est déplacé et l'écriture reste bloquée")
+    func unreadableFile() async throws {
+        let dir = tempDirectory()
+        let store = SaveStore(directory: dir, appVersion: "1.0.0")
+        // Un dossier à la place du fichier : la lecture échoue comme sur un appareil verrouillé.
+        try FileManager.default.createDirectory(at: await store.mainURL, withIntermediateDirectories: true)
+        let loaded = await store.load()
+        #expect(loaded.source == .unavailable)
+        #expect(loaded.quarantined.isEmpty)
+        var isDirectory: ObjCBool = false
+        #expect(FileManager.default.fileExists(atPath: await store.mainURL.path, isDirectory: &isDirectory) && isDirectory.boolValue)
+        await #expect(throws: SaveError.notLoaded) { try await store.save(GameState()) }
+    }
+
+    @Test("Fichiers temporaires orphelins supprimés au chargement")
+    func staleTemporaryFiles() async throws {
+        let dir = tempDirectory()
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        try Data("x".utf8).write(to: dir.appendingPathComponent("save.ABC.tmp"))
+        let store = SaveStore(directory: dir, appVersion: "1.0.0")
+        _ = await store.load()
+        #expect(try FileManager.default.contentsOfDirectory(atPath: dir.path).isEmpty)
+    }
+
+    @Test("Sauvegarde d'une version plus récente : copie conservée avant réécriture")
+    func newerSchemaPreserved() async throws {
+        let dir = tempDirectory()
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let store = SaveStore(directory: dir, appVersion: "1.0.0")
+        try Data(#"{"schemaVersion":3,"appVersion":"2.0","savedAt":"2030-01-01T00:00:00Z","state":{"onboardingDone":true,"future":1}}"#.utf8).write(to: await store.mainURL)
+        let loaded = await store.load()
+        try await store.save(loaded.state)
+        let copy = dir.appendingPathComponent("save.schema3.preserved.json")
+        #expect(String(decoding: try Data(contentsOf: copy), as: UTF8.self).contains("future"))
+    }
+
+    @Test("Stress : 300 sauvegardes successives, état toujours relisible et identique")
+    func repeatedSaves() async throws {
+        let dir = tempDirectory()
+        let store = SaveStore(directory: dir, appVersion: "1.0.0")
+        _ = await store.load()
+        var state = try sampleState()
+        for i in 0..<300 {
+            state.seenDialogue.insert("d\(i)")
+            try await store.save(state)
+        }
+        let reloaded = await SaveStore(directory: dir, appVersion: "1.0.0").load()
+        #expect(reloaded.source == .main && reloaded.state == state)
     }
 }

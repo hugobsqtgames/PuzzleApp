@@ -23,6 +23,14 @@ public struct SaveMigration: Sendable {
 
 public enum LoadSource: Equatable, Sendable {
     case main, backup, fresh
+    /// Fichiers présents mais impossibles à LIRE (appareil verrouillé, protection des données, erreur disque).
+    /// Rien n'est mis de côté et l'écriture est bloquée : écrire maintenant écraserait une progression intacte.
+    case unavailable
+}
+
+public enum SaveError: Error, Equatable {
+    /// `save` appelé sans chargement réussi préalable : refusé pour ne jamais écraser une sauvegarde non lue.
+    case notLoaded
 }
 
 public struct LoadResult: Sendable {
@@ -44,6 +52,8 @@ public actor SaveStore {
     private let migrations: [Int: SaveMigration]
     private let fileManager = FileManager.default
     private let clock: @Sendable () -> Date
+    /// Vrai une fois qu'un chargement a abouti (y compris « neuf » quand aucun fichier n'existe).
+    private var writable = false
 
     public var mainURL: URL { directory.appendingPathComponent("save.json") }
     public var backupURL: URL { directory.appendingPathComponent("save.backup.json") }
@@ -70,6 +80,7 @@ public actor SaveStore {
 
     /// Écrit l'état : fichier temporaire → la sauvegarde courante devient la copie de secours → remplacement.
     public func save(_ state: GameState) throws {
+        guard writable else { throw SaveError.notLoaded }
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         let envelope = SaveEnvelope(schemaVersion: Self.currentSchemaVersion, appVersion: appVersion, savedAt: clock(), state: state)
         let data = try Self.encoder().encode(envelope)
@@ -89,26 +100,57 @@ public actor SaveStore {
 
     /// Charge l'état : principal → secours → état neuf. Ne lève jamais d'erreur.
     public func load() -> LoadResult {
+        removeStaleTemporaryFiles()
         var quarantined: [URL] = []
+        var unreadable = false
         for (url, source) in [(mainURL, LoadSource.main), (backupURL, .backup)] {
             guard fileManager.fileExists(atPath: url.path) else { continue }
-            if let (state, migrated) = try? decode(url) {
+            let data: Data
+            do { data = try Data(contentsOf: url) } catch {
+                // Illisible ≠ abîmé : on ne touche à rien.
+                unreadable = true
+                continue
+            }
+            if let (state, migrated, schema) = try? decode(data) {
+                if schema > Self.currentSchemaVersion { preserveNewerSave(url, schema: schema) }
+                writable = true
                 return LoadResult(state: state, source: source, quarantined: quarantined, migrated: migrated)
             }
             if let moved = quarantine(url) { quarantined.append(moved) }
         }
+        if unreadable {
+            writable = false
+            return LoadResult(state: GameState(), source: .unavailable, quarantined: quarantined, migrated: false)
+        }
+        writable = true
         return LoadResult(state: GameState(), source: .fresh, quarantined: quarantined, migrated: false)
     }
 
-    private func decode(_ url: URL) throws -> (GameState, Bool) {
-        let data = try Data(contentsOf: url)
+    /// Fichiers temporaires laissés par une écriture interrompue (arrêt brutal entre l'écriture et le renommage).
+    private func removeStaleTemporaryFiles() {
+        guard let names = try? fileManager.contentsOfDirectory(atPath: directory.path) else { return }
+        for name in names where name.hasPrefix("save.") && name.hasSuffix(".tmp") {
+            try? fileManager.removeItem(at: directory.appendingPathComponent(name))
+        }
+    }
+
+    /// Une sauvegarde écrite par une version plus récente de l'app est copiée à l'identique avant d'être
+    /// réécrite dans l'ancien format (retour à une version antérieure) : ses champs inconnus ne sont pas perdus.
+    private func preserveNewerSave(_ url: URL, schema: Int) {
+        let copy = directory.appendingPathComponent("save.schema\(schema).preserved.json")
+        guard !fileManager.fileExists(atPath: copy.path) else { return }
+        try? fileManager.copyItem(at: url, to: copy)
+    }
+
+    private func decode(_ data: Data) throws -> (GameState, Bool, Int) {
         guard var json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw CocoaError(.fileReadCorruptFile)
         }
-        var version = json["schemaVersion"] as? Int ?? 0
+        let original = json["schemaVersion"] as? Int ?? 0
+        var version = original
         guard version <= Self.currentSchemaVersion else {
             // Sauvegarde d'une version plus récente de l'app : on lit ce qu'on comprend, sans migrer.
-            return (try Self.decodeState(json), false)
+            return (try Self.decodeState(json), false, original)
         }
         var migrated = false
         while version < Self.currentSchemaVersion {
@@ -118,7 +160,7 @@ public actor SaveStore {
             json["schemaVersion"] = version
             migrated = true
         }
-        return (try Self.decodeState(json), migrated)
+        return (try Self.decodeState(json), migrated, original)
     }
 
     private static func decodeState(_ json: [String: Any]) throws -> GameState {
