@@ -426,7 +426,10 @@ public struct LampsFamily: PuzzleFamily {
         let base = [0: 5, 1: 8, 2: 22, 3: 40, 4: 58][report.maxTechniqueRank] ?? 58
         let advanced = report.trace.filter { $0.techniqueRank >= 3 }.count
         let whites = puzzle.layout.joined().filter { $0 == "." }.count
-        return DifficultyScore(base + min(20, advanced * 3) + whites / 6)
+        // Sur une petite grille, un raisonnement par l'absurde n'a que quelques pistes à essayer :
+        // décote proportionnelle au manque de cases (audit : des 4×4 étaient classées Fanal).
+        let smallGridRelief = max(0, 30 - whites) / 2
+        return DifficultyScore(base + min(20, advanced * 3) + whites / 6 - smallGridRelief)
     }
 
     // MARK: Indices

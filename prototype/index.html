@@ -1,8 +1,5 @@
 <meta charset="utf-8">
 <title>Lampion — Maquette</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=Nunito:wght@600;700;800&display=swap">
 <style>
 /* Mise en page : document sombre « Encre & Lueur » — la DA d'abord (planches), puis un appareil navigable, puis la planche de tous les écrans.
    Thème unique volontaire : l'identité Lampion est nocturne. */
@@ -12,9 +9,9 @@
   --tx:#EFE8D8; --tx2:#9CA2C6; --tx3:#7A80A8;
   --amber:#F4B45E; --amberP:#D9953F; --moon:#8FD3E0; --gold:#FFD98E; --coral:#E88A8A;
   --d-lighthouse:#F4B45E; --d-library:#E7A98B; --d-clock:#D8B56A; --d-glass:#7FC8A9; --d-market:#EE8A6B; --d-theatre:#C39BD3; --d-obs:#8FB8F0;
-  --serif: ui-serif, "New York", "Source Serif 4", Georgia, serif;
+  --serif: ui-serif, "New York", Georgia, "Times New Roman", serif;
   --sans: system-ui, -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  --round: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+  --round: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --r-xs:6px; --r-s:10px; --r-m:16px; --r-l:24px; --r-xl:32px;
   --glow-soft: 0 0 0 1px rgba(244,180,94,.35), 0 0 18px rgba(244,180,94,.35);
@@ -685,7 +682,7 @@ function mapSVG(ipad){
       ${st==='current'?`<circle class="pulse-ring" cx="${cx}" cy="${cy-40*sc}" r="${70*sc}" fill="none" stroke="#F4B45E" stroke-width="1.5"/>`:''}
       <g transform="translate(${cx},${cy+26})">
         <rect x="-86" y="-15" width="172" height="44" rx="14" fill="${st==='locked'?'#11142a':'#171A2E'}" stroke="${st==='current'?'#F4B45E':'#2E3360'}" opacity=".94"/>
-        <text x="0" y="1" text-anchor="middle" fill="${st==='locked'?'#9CA2C6':'#EFE8D8'}" font-family="ui-serif,'New York','Source Serif 4',Georgia,serif" font-size="14.5" font-weight="600">${esc(d.s||d.n)}</text>
+        <text x="0" y="1" text-anchor="middle" fill="${st==='locked'?'#9CA2C6':'#EFE8D8'}" font-family="ui-serif,'New York',Georgia,serif" font-size="14.5" font-weight="600">${esc(d.s||d.n)}</text>
         <text x="0" y="19" text-anchor="middle" fill="${st==='locked'?'#7A80A8':d.hue}" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="600">${st==='locked'?'◌ ':''}${label}</text>
       </g></g>`;}
   const [nx,ny]=pos.horlo;
@@ -730,7 +727,7 @@ function coupeSVG(id){
       <rect x="${r.x+4}" y="${r.y+4}" width="${r.w-8}" height="${r.h-8}" rx="6" fill="${fill}" stroke="${st==='current'?'#F4B45E':'#2E3360'}" stroke-width="${st==='current'?2:1}"/>
       ${frac>0?`<ellipse cx="${r.x+r.w/2}" cy="${r.y+r.h/2}" rx="${r.w*.4}" ry="${r.h*.35}" fill="${hue}" opacity="${(.06+frac*.14).toFixed(2)}"/>`:''}`;
     if(!isKey&&st!=='locked'){const TT=room.T||10;for(let k=0;k<TT;k++){const on=k<L,cx=r.x+18+k*((r.w-36)/(TT-1)),cy=r.y+r.h-22;s+=`<circle cx="${cx}" cy="${cy}" r="${on?4:3}" fill="${on?'#F4B45E':'none'}" stroke="${on?'none':'#4a5190'}" stroke-width="1.3"/>${on?`<circle cx="${cx}" cy="${cy}" r="8" fill="#F4B45E" opacity=".18"/>`:''}`;}}
-    s+=`<text x="${r.x+16}" y="${r.y+28}" fill="${st==='locked'?'#7A80A8':'#EFE8D8'}" font-family="ui-serif,'New York','Source Serif 4',Georgia,serif" font-size="16" font-weight="600">${esc(label)}</text>
+    s+=`<text x="${r.x+16}" y="${r.y+28}" fill="${st==='locked'?'#7A80A8':'#EFE8D8'}" font-family="ui-serif,'New York',Georgia,serif" font-size="16" font-weight="600">${esc(label)}</text>
       <text x="${r.x+16}" y="${r.y+47}" fill="${st==='locked'?'#7A80A8':'#9CA2C6'}" font-family="system-ui,sans-serif" font-size="12.5" font-weight="600">${st==='locked'?'Verrouillée':isKey?'Ouverte · Énigme':st==='done'?'Complète · objet trouvé':L+' / '+(room.T||10)}</text>`;
     if(st==='locked')s+=`<g transform="translate(${r.x+r.w-40},${r.y+18})" stroke="#7A80A8" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M7 10V8a4 4 0 0 1 8 0v2"/><rect x="4.5" y="10" width="13" height="10" rx="3"/></g>`;
     if(isKey&&st==='open')s+=`<g transform="translate(${r.x+r.w-44},${r.y+50})"><circle cx="12" cy="12" r="16" fill="#F4B45E" opacity=".15"/><path d="M8.5 8.5a3.5 3.5 0 1 1 5.2 3.1c-1 .6-1.7 1.3-1.7 2.6v.8M12 19h.01" stroke="#F4B45E" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>`;
@@ -1108,11 +1105,11 @@ function scrPause(ctx){return puzzleView(pzFor(ctx,()=>makePuzzle('EN',{slot:slo
 function sampleLast(){const i=G.room.findIndex(l=>!l.lit);const slot=i<0?6:i;const l=G.room[slot];return{fam:l.f,tier:l.t,reward:REWARD[l.t],bonus:Math.round(REWARD[l.t]/2),slot,sample:true,moves:0};}
 function scrSuccess(ctx){
   const L=(!ctx.thumb&&S.last)||sampleLast(),n=L.sample?Math.min(10,litCount()+1):litCount();
-  const title=L.daily?'Défi du soir réussi':L.tuto?'Ta première lumière':'Lanterne allumée';
+  const title=L.replay?(L.daily?'Défi déjà réussi':'Lanterne déjà allumée'):L.daily?'Défi du soir réussi':L.tuto?'Ta première lumière':'Lanterne allumée';
   const lantern=`<div style="position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center">
     ${ctx.thumb?'':`<span style="position:absolute;width:60px;height:60px;border-radius:50%;border:2px solid ${T.gold};animation:wave 1.4s ease-out .2s both"></span><span style="position:absolute;width:60px;height:60px;border-radius:50%;border:2px solid ${T.amber};animation:wave 1.4s ease-out .5s both"></span>`}
     <svg class="${ctx.thumb?'':'lit-in'}" viewBox="0 0 100 120" width="120" style="animation-delay:.35s" aria-hidden="true"><circle cx="50" cy="62" r="48" fill="${T.amber}" opacity=".18"/><path d="M50 6v10" stroke="#c9a563" stroke-width="3"/><path d="M40 16h20" stroke="#c9a563" stroke-width="4" stroke-linecap="round"/><rect x="28" y="20" width="44" height="66" rx="18" fill="${T.amber}" stroke="#FFE6B0" stroke-width="3"/><circle cx="50" cy="52" r="12" fill="#FFF3D6"/><path d="M36 92h28" stroke="#c9a563" stroke-width="5" stroke-linecap="round"/></svg></div>`;
-  const gains=`<div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center">${lightPill('+1')}<span class="pill">${ic('shard',16,T.moon)}+${L.reward}</span>${L.bonus?`<span class="pill" style="color:${T.gold};border-color:#6b5a3c">${ic('star',16,T.gold)}Clairvoyance +${L.bonus}</span>`:''}</div>`;
+  const gains=L.replay?`<p class="t-sub" style="text-align:center">Bien joué. Les récompenses ne se gagnent qu\u2019une fois.</p>`:`<div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center">${lightPill('+1')}<span class="pill">${ic('shard',16,T.moon)}+${L.reward}</span>${L.bonus?`<span class="pill" style="color:${T.gold};border-color:#6b5a3c">${ic('star',16,T.gold)}Clairvoyance +${L.bonus}</span>`:''}</div>`;
   const extra=L.fam==='IN'&&L.moves?`<p class="t-foot">Résolu en ${L.moves} coups · minimum possible : ${minMovesIN()}</p>`:L.solved4?`<p class="t-foot">Solution consultée : la lumière est gagnée, sans bonus.</p>`:'';
   const roomDone=!L.daily&&!L.tuto&&n===10;
   const primary=L.daily||L.tuto?`<button class="btn btn-p" data-a="go" data-to="home">Continuer</button>`:roomDone?`<button class="btn btn-p" data-a="roomreward">Continuer</button>`:`<button class="btn btn-p" data-a="nextpz">Suivant</button>`;
@@ -1313,14 +1310,20 @@ function open(id,v=0,fromIndex=false){
   G.justLit=-1;render();}
 let toastTimer;
 function toast(text,icon){S.toast={text,icon};render();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{S.toast=null;render();},2600);}
+let finishTimer=null;
 function finish(p,usedSolution){
-  p.solved=true;const bonus=(!usedSolution&&p.hl<=1&&p.errors===0)?Math.round(REWARD[p.tier]/2):0,reward=REWARD[p.tier];
+  if(p.solved)return; // double validation, rafale de taps : une seule fin
+  p.solved=true;
+  const alreadyLit=p.slot!=null&&G.room[p.slot].lit, dailyAlready=p.daily&&G.dailyDone;
+  const rewarded=!alreadyLit&&!dailyAlready&&!p.tuto;
+  const bonus=rewarded&&(!usedSolution&&p.hl<=1&&p.errors===0)?Math.round(REWARD[p.tier]/2):0,reward=rewarded?REWARD[p.tier]:0;
   G.shards+=reward+bonus;
-  if(p.slot!=null&&!G.room[p.slot].lit){G.room[p.slot].lit=1;G.lights++;G.justLit=p.slot;}
-  if(p.daily){G.dailyDone=true;G.streak++;G.shards+=Math.min(10,G.streak);}
-  S.last={fam:p.fam,tier:p.tier,reward,bonus,slot:p.slot,daily:p.daily,tuto:p.tuto,moves:p.moves,solved4:usedSolution};
+  if(p.slot!=null&&!alreadyLit){G.room[p.slot].lit=1;G.lights++;G.justLit=p.slot;}
+  if(p.daily&&!dailyAlready){G.dailyDone=true;G.streak++;G.shards+=15+Math.min(10,G.streak);}
+  S.last={fam:p.fam,tier:p.tier,reward,bonus,slot:p.slot,daily:p.daily,tuto:p.tuto,moves:p.moves,solved4:usedSolution,replay:!rewarded&&!p.tuto};
   S.pz=null;S.sheet=null;
-  setTimeout(()=>{S.screen='success';S.v=0;render();},S.reduced?60:420);}
+  clearTimeout(finishTimer);
+  finishTimer=setTimeout(()=>{S.screen='success';S.v=0;render();},S.reduced?60:420);}
 function afterMove(p){if(checkAuto(p)){render();finish(p,false);}else render();}
 const A={
   go:d=>open(d.to),
@@ -1368,8 +1371,10 @@ const A={
   carnet:d=>open({objets:'inventory',succes:'achievements',stats:'profile',vesper:'progress'}[d.t])
 };
 function openPz(i){const l=G.room[i];S.pz=makePuzzle(l.f,{slot:i,tier:l.t});S.pz.tier=l.t;S.sheet=null;S.screen='puzzle';S.v=PUZ_VARIANTS.indexOf(l.f);render();}
-scr.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t||!scr.contains(t)||t.disabled)return;const f=A[t.dataset.a];if(f)f(t.dataset);});
-scr.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target.closest('[data-a][role="button"]');if(!t)return;e.preventDefault();const f=A[t.dataset.a];if(f)f(t.dataset);});
+const NEEDS_PZ=new Set(['rot','sw','la','wheel','opt','key','validate','undo','redo','buyhint','restart','resume','hints','pause']);
+function dispatch(t){const a=t.dataset.a;if(NEEDS_PZ.has(a)&&(!S.pz||S.pz.solved))return;const f=A[a];if(f)f(t.dataset);}
+scr.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t||!scr.contains(t)||t.disabled)return;dispatch(t);});
+scr.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target.closest('[data-a][role="button"]');if(!t)return;e.preventDefault();dispatch(t);});
 
 /* index, appareil, mise à l'échelle */
 function buildIndex(){
@@ -1382,7 +1387,7 @@ $('variants').addEventListener('click',e=>{const b=e.target.closest('button[data
 function setDevice(ipad){S.ipad=ipad;$('bPhone').setAttribute('aria-pressed',!ipad);$('bPad').setAttribute('aria-pressed',ipad);dev.classList.toggle('ipad',ipad);S.sheet=null;render();fit();buildBoard();}
 $('bPhone').onclick=()=>setDevice(false);$('bPad').onclick=()=>setDevice(true);
 $('bReduce').onclick=()=>{S.reduced=!S.reduced;document.body.classList.toggle('reduced',S.reduced);$('bReduce').setAttribute('aria-pressed',S.reduced);$('bReduce').textContent='Réduire les animations : '+(S.reduced?'oui':'non');};
-$('bReset').onclick=()=>{G=freshGame();S.pz=null;S.last=null;S.roomRewarded=false;open('home');buildBoard();};
+$('bReset').onclick=()=>{clearTimeout(finishTimer);G=freshGame();S.pz=null;S.last=null;S.roomRewarded=false;open('home');buildBoard();};
 function fit(){const W=S.ipad?1216:414,H=S.ipad?856:868;const avail=$('stagebox').clientWidth;const s=Math.min(1,avail/W);$('scaler').style.width=W*s+'px';$('scaler').style.height=H*s+'px';dev.style.transform=`scale(${s})`;}
 new ResizeObserver(fit).observe($('stagebox'));
 function buildBoard(){
