@@ -57,10 +57,14 @@ public struct Progression: Sendable {
     }
 
     public func isUnlocked(_ district: District, _ state: GameState) -> Bool {
+        isUnlocked(district, totalLights: totalLights(state), letters: letters(state))
+    }
+
+    func isUnlocked(_ district: District, totalLights: Int, letters: Int) -> Bool {
         switch district.unlock {
         case .always: true
-        case .totalLights(let n): totalLights(state) >= n
-        case .totalLightsAndLetters(let n, let l): totalLights(state) >= n && letters(state) >= l
+        case .totalLights(let n): totalLights >= n
+        case .totalLightsAndLetters(let n, let l): totalLights >= n && letters >= l
         }
     }
 
@@ -84,9 +88,10 @@ public struct Progression: Sendable {
     /// Lanternes jouables (ouvertes), dans l'ordre du monde.
     public func playableLanterns(_ state: GameState) -> [Lantern] {
         var result: [Lantern] = []
-        for district in world.districts {
+        let total = totalLights(state), letterCount = letters(state)
+        for district in world.districts where isUnlocked(district, totalLights: total, letters: letterCount) {
             for (bi, building) in district.buildings.enumerated() {
-                let open = isUnlocked(building: bi, in: district, state)
+                let open = bi == 0 || lights(district.buildings[bi - 1].allLanterns, state) >= rules.previousBuildingLights
                 guard open else { continue }
                 for (ri, room) in building.rooms.enumerated() where isUnlocked(room: ri, in: building, buildingUnlocked: open, state) {
                     result.append(contentsOf: room.lanterns)

@@ -1,0 +1,22 @@
+name: Core tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lampionkit:
+    name: LampionKit (Linux, Swift 6.2)
+    runs-on: ubuntu-latest
+    container: swift:6.2
+    defaults:
+      run:
+        working-directory: Packages/LampionKit
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build --build-tests
+      - name: Tests
+        run: swift test --skip-build
+      - name: Content soak
+        run: swift run -c release contentforge soak 200
