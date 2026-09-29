@@ -16,6 +16,8 @@ npm run typecheck
 npx expo start      # puis scanner le QR code avec Expo Go sur le téléphone
 ```
 
+Contenu jouable aujourd'hui (repris de la maquette) : accueil, carte de Vesper, Horlogerie, Atelier des Ressorts, Salle 2 « L'Établi » et ses 10 lanternes, les 6 familles de puzzles avec indices, annulation et pause, écran de réussite, objet trouvé, défi du soir. La progression est sauvegardée sur l'appareil. Pas encore dans l'app : son, carnet, réglages, personnalisation de Nilo, écrans d'introduction.
+
 | Document | Contenu |
 |---|---|
 | [PRODUCT_DISCOVERY.md](PRODUCT_DISCOVERY.md) | Vision, marché, concept, différenciation, naming, risques, roadmap |
