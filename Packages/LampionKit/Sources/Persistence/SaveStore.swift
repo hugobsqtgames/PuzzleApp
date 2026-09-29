@@ -40,6 +40,8 @@ public struct LoadResult: Sendable {
     public let quarantined: [URL]
     /// Vrai si une migration a été appliquée.
     public let migrated: Bool
+    /// Vrai si le fichier principal n'a été relu que partiellement et a été complété par la copie de secours.
+    public var mergedWithBackup: Bool = false
 }
 
 /// Sauvegarde locale robuste (TECHNICAL_ARCHITECTURE § 10) :
@@ -111,10 +113,18 @@ public actor SaveStore {
                 unreadable = true
                 continue
             }
-            if let (state, migrated, schema) = try? decode(data) {
-                if schema > Self.currentSchemaVersion { preserveNewerSave(url, schema: schema) }
+            if let decoded = try? decode(data) {
+                if decoded.schema > Self.currentSchemaVersion { preserveNewerSave(url, schema: decoded.schema) }
                 writable = true
-                return LoadResult(state: state, source: source, quarantined: quarantined, migrated: migrated)
+                // Relecture partielle du fichier principal : on complète avec la copie de secours intacte,
+                // sinon la prochaine écriture effacerait définitivement ce qui a été écarté.
+                if source == .main, decoded.losses > 0,
+                   let backupData = try? Data(contentsOf: backupURL), let backup = try? decode(backupData) {
+                    var result = LoadResult(state: decoded.state.merged(withBackup: backup.state), source: source, quarantined: quarantined, migrated: decoded.migrated)
+                    result.mergedWithBackup = true
+                    return result
+                }
+                return LoadResult(state: decoded.state, source: source, quarantined: quarantined, migrated: decoded.migrated)
             }
             if let moved = quarantine(url) { quarantined.append(moved) }
         }
@@ -142,7 +152,7 @@ public actor SaveStore {
         try? fileManager.copyItem(at: url, to: copy)
     }
 
-    private func decode(_ data: Data) throws -> (GameState, Bool, Int) {
+    private func decode(_ data: Data) throws -> (state: GameState, migrated: Bool, schema: Int, losses: Int) {
         guard var json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw CocoaError(.fileReadCorruptFile)
         }
@@ -150,7 +160,8 @@ public actor SaveStore {
         var version = original
         guard version <= Self.currentSchemaVersion else {
             // Sauvegarde d'une version plus récente de l'app : on lit ce qu'on comprend, sans migrer.
-            return (try Self.decodeState(json), false, original)
+            let (state, losses) = try Self.decodeState(json)
+            return (state, false, original, losses)
         }
         var migrated = false
         while version < Self.currentSchemaVersion {
@@ -160,13 +171,17 @@ public actor SaveStore {
             json["schemaVersion"] = version
             migrated = true
         }
-        return (try Self.decodeState(json), migrated, original)
+        let (state, losses) = try Self.decodeState(json)
+        return (state, migrated, original, losses)
     }
 
-    private static func decodeState(_ json: [String: Any]) throws -> GameState {
+    private static func decodeState(_ json: [String: Any]) throws -> (GameState, Int) {
         guard let stateJSON = json["state"] else { throw CocoaError(.fileReadCorruptFile) }
         let data = try JSONSerialization.data(withJSONObject: stateJSON)
-        return try decoder().decode(GameState.self, from: data)
+        let losses = DecodingLosses()
+        let d = decoder()
+        d.userInfo[DecodingLosses.key] = losses
+        return (try d.decode(GameState.self, from: data), losses.count)
     }
 
     private func quarantine(_ url: URL) -> URL? {

@@ -20,3 +20,5 @@ jobs:
         run: swift test --skip-build
       - name: Content soak
         run: swift run -c release contentforge soak 200
+      - name: Generator audit (invariants on thousands of seeds)
+        run: swift run -c release contentforge audit 120

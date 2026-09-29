@@ -19,6 +19,14 @@ public struct Wallet: Codable, Hashable, Sendable {
         appliedTransactions = c.lossySet(Set<String>.self, forKey: .appliedTransactions)
     }
 
+    /// Fusion avec une copie de secours : le portefeuille le plus avancé (le plus de transactions) l'emporte,
+    /// complété des identifiants de l'autre pour qu'aucune récompense ne soit versée deux fois.
+    public func merged(with other: Wallet) -> Wallet {
+        var best = appliedTransactions.count >= other.appliedTransactions.count ? self : other
+        best.appliedTransactions.formUnion(appliedTransactions.union(other.appliedTransactions))
+        return best
+    }
+
     public enum Failure: Error, Equatable {
         case insufficientBalance(missing: Int)
         case invalidAmount

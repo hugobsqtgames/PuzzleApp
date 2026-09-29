@@ -75,6 +75,13 @@ public struct DailyState: Codable, Hashable, Sendable {
     public var maxSeenDay: DayKey?
     public init() {}
 
+    func withStreak(from other: DailyState) -> DailyState {
+        var s = self
+        s.streak = other.streak; s.nightlights = other.nightlights; s.lastStreakDay = other.lastStreakDay
+        s.bestStreak = max(s.bestStreak, other.bestStreak, s.streak)
+        return s
+    }
+
     enum CodingKeys: String, CodingKey { case completedDays, catchUpDays, streak, bestStreak, nightlights, lastStreakDay, maxSeenDay }
 
     /// Décodage tolérant, valeurs ramenées dans des bornes cohérentes.

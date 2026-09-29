@@ -48,6 +48,11 @@ struct LocalizationTests {
         var wrong = LampsFamily().initialState(for: grid)
         wrong.marks[1] = .dot
         for level in HintLevel.allCases { if let h = LampsFamily().hint(grid, state: wrong, level: level) { out.append(h.text) } }
+        // Branche de révélation (rarement atteinte en jeu, mais ses textes doivent exister).
+        let proto = LampsPuzzle(layout: [".X..XX", "..3...", "XXXX..", "..XX2X", "...X..", "X2..X."])
+        for level in HintLevel.allCases {
+            if let h = LampsFamily().revealHint(board: LampsBoard(proto), state: LampsFamily().initialState(for: proto), solutionLamps: [0, 2], level: level) { out.append(h.text) }
+        }
         return out
     }
 

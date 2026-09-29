@@ -331,6 +331,12 @@ Toutes les actions passent par des **événements de domaine** (`PuzzleSolved`, 
 
 - **Migrations :** `Migration_1_to_2`, `Migration_2_to_3`… appliquées en chaîne, chacune testée avec des **fixtures** (vraies sauvegardes de chaque version publiée, conservées à vie dans `Tests/PersistenceTests/Fixtures`).
 - **Robustesse :** fichier illisible → backup → sinon décodage « tolérant » champ par champ (chaque champ a une valeur par défaut) → sinon nouvel état + fichier corrompu conservé à part (jamais écrasé) pour diagnostic. Jamais de crash au démarrage.
+- **Règles issues de l'audit (implémentées et testées dans `Persistence`) :**
+  - décodage **élément par élément** : une entrée abîmée ne fait perdre qu'elle-même ;
+  - fichier **illisible** (appareil verrouillé, protection des données) ≠ fichier **abîmé** : rien n'est déplacé et l'écriture est bloquée (`LoadSource.unavailable`) ;
+  - aucune écriture avant un chargement réussi (`SaveError.notLoaded`) ;
+  - principal relu partiellement → complété par la copie de secours (la progression ne fait que croître) ;
+  - fichiers temporaires orphelins supprimés ; sauvegarde d'un schéma plus récent copiée avant réécriture.
 - **Contenu retiré ou renommé :** les `PuzzleID` sont stables pour toujours ; un puzzle retiré conserve sa lumière (table d'alias dans le contenu).
 - **iCloud (post-V1) :** synchronisation du même document via CloudKit (base privée) avec fusion par champ (union des ensembles, max des compteurs, journal de transactions fusionné par id). Le modèle d'état est **déjà conçu pour être fusionnable** (ensembles et journaux plutôt que compteurs bruts).
 

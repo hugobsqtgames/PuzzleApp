@@ -7,6 +7,7 @@ import PuzzleKit
 // ContentForge — génération et validation de contenu, hors de l'appareil.
 //   contentforge soak [n]    génère n puzzles par famille et affiche les statistiques
 //   contentforge audit [n]   attaque massive : n graines par configuration, invariants vérifiés un par un
+//   contentforge perf        temps de résolution et d'indice sur de grandes grilles
 
 func report<F: PuzzleFamily>(_ family: F, parameters: F.Parameters, count: Int) {
     let start = Date()
@@ -87,6 +88,7 @@ case "soak":
     report(SwitchesFamily(), parameters: SwitchesParameters(rows: 4, columns: 4, presses: 3...8, minimumMoves: 2), count: count)
     report(LocksFamily(), parameters: LocksParameters(length: 3, clueCount: 4...6), count: count)
     report(LampsFamily(), parameters: LampsParameters(rows: 6, columns: 6), count: count)
+case "perf": perfLamps()
 case "audit":
     let n = arguments.dropFirst().first.flatMap(Int.init) ?? 300
     var failed = 0
@@ -105,5 +107,5 @@ case "audit":
     print(failed == 0 ? "AUDIT OK" : "AUDIT: \(failed) échecs")
     exit(failed == 0 ? 0 : 1)
 default:
-    print("usage: contentforge soak [n] | audit [n]")
+    print("usage: contentforge soak [n] | audit [n] | perf")
 }

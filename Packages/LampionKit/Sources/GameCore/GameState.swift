@@ -50,6 +50,29 @@ public struct GameState: Codable, Hashable, Sendable {
         equippedCosmetics = c.lossyDictionary([String: String].self, forKey: .equippedCosmetics)
         seenDialogue = c.lossySet(Set<String>.self, forKey: .seenDialogue)
         lastPuzzle = try? c.decodeIfPresent(PuzzleID.self, forKey: .lastPuzzle)
-        onboardingDone = (try? c.decodeIfPresent(Bool.self, forKey: .onboardingDone)) ?? false
+        onboardingDone = c.value(Bool.self, forKey: .onboardingDone, default: false)
+    }
+}
+
+extension GameState {
+    /// Complète cet état (relu partiellement) avec une copie de secours.
+    /// La progression est monotone : on réunit, on ne retire jamais.
+    public func merged(withBackup backup: GameState) -> GameState {
+        var s = self
+        for (id, record) in backup.solved where s.solved[id] == nil { s.solved[id] = record }
+        for (id, data) in backup.inProgress where s.inProgress[id] == nil && s.solved[id] == nil { s.inProgress[id] = data }
+        s.collectibles.formUnion(backup.collectibles)
+        s.ownedCosmetics.formUnion(backup.ownedCosmetics)
+        s.seenDialogue.formUnion(backup.seenDialogue)
+        for (k, v) in backup.equippedCosmetics where s.equippedCosmetics[k] == nil { s.equippedCosmetics[k] = v }
+        s.wallet = s.wallet.merged(with: backup.wallet)
+        s.daily.completedDays.formUnion(backup.daily.completedDays)
+        s.daily.catchUpDays.formUnion(backup.daily.catchUpDays)
+        s.daily.catchUpDays.subtract(s.daily.completedDays)
+        s.daily.bestStreak = max(s.daily.bestStreak, backup.daily.bestStreak)
+        if s.daily.lastStreakDay == nil { s.daily = s.daily.withStreak(from: backup.daily) }
+        s.lastPuzzle = s.lastPuzzle ?? backup.lastPuzzle
+        s.onboardingDone = s.onboardingDone || backup.onboardingDone
+        return s
     }
 }
