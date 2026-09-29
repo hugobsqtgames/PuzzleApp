@@ -22,6 +22,7 @@
 | V10 | UX iPad | Accueil iPad : la fenêtre sur Vesper en colonne verticale laissait 60 % de ciel vide. Plateau de puzzle trop large pour la colonne centrale. | Moyenne | Accueil iPad recomposé (bandeau panoramique + 3 colonnes). Tailles de cases iPad recalculées pour la grille 250 / centre / 300. |
 | V11 | Juridique | Les noms de genres « Akari » et « Lights Out » apparaissent dans les documents. « Lights Out » est une marque déposée (jeu électronique des années 1990). | Faible | Ces noms restent **uniquement** dans la documentation interne comme référence de genre. Dans l'app : « Lampes », « Interrupteurs ». Règle ajoutée : aucun nom de jeu tiers dans les textes du produit ni dans les métadonnées App Store. |
 | V12 | Accessibilité | Engrenages : la rotation anti-horaire était un appui long, non découvrable, et absent de VoiceOver. | Faible | Deux actions VoiceOver explicites (« tourner à droite », « tourner à gauche ») ; l'appui long reste un raccourci, jamais nécessaire (4 taps horaires suffisent toujours). |
+| V13 | Progression | Trouvé par le test automatique « jamais bloqué » (parties simulées complètes) : le Grenier exigeait **les 6** lettres, donc 6 lanternes-clés précises. Bloqué sur une seule, le joueur ne pouvait plus finir le jeu. | Haute | Grenier : **4 lettres sur 6**. Le test simule désormais des parties complètes à chaque exécution. |
 
 ---
 

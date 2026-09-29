@@ -97,9 +97,9 @@ Règle d'or : **on débloque par quantité de lumière, jamais par un puzzle pr�
 | Marché | 302 | 504 | 60 % |
 | Théâtre | 398 | 664 | 60 % |
 | Observatoire | 494 | 824 | 60 % |
-| Grenier | 590 **+ 6 lettres de l'Allumeur** | 984 | 60 % |
+| Grenier | 590 **+ 4 lettres de l'Allumeur sur 6** | 984 | 60 % |
 
-Les lettres sont obtenues en allumant la lanterne-clé du 4ᵉ bâtiment de chaque quartier → la finale demande d'avoir *visité* chaque quartier en profondeur, sans exiger la perfection.
+Les lettres sont obtenues en allumant la lanterne-clé du 4ᵉ bâtiment de chaque quartier → la finale demande d'avoir *visité* la plupart des quartiers en profondeur, sans exiger la perfection. **4 lettres sur 6 suffisent** : exiger les 6 aurait rendu la fin dépendante de 6 énigmes précises (Fanal), contraire à la règle d'or. Ce défaut a été trouvé par le test automatique « jamais bloqué » (VALIDATION V13).
 
 **Garantie testée automatiquement :** pour tout état de sauvegarde atteignable, le nombre de lanternes jouables non résolues est ≥ 3 (sauf fin de jeu).
 
