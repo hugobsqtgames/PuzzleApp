@@ -492,7 +492,7 @@ difficulté
 |---|---|---|
 | **Progression** | La ville qui s'allume ; jauges salle / bâtiment / quartier | Toujours visible, jamais punitive |
 | **Récompenses** | Lumière (immédiate), Éclats, décor restauré, objets, cosmétiques | Pas de hasard, pas de coffre aléatoire |
-| **Collection** | *Objets trouvés* (1 par salle, ~170), *Lettres de l'Allumeur* (1 par quartier) | Consultables dans un carnet illustré |
+| **Collection** | *Objets trouvés* (1 par salle, ~100), *Lettres de l'Allumeur* (1 par quartier) | Consultables dans un carnet illustré |
 | **Succès** | « Le Carnet de Nilo » : ~50 succès, dont des succès *malicieux* (« Résoudre un puzzle Phare sans indice ») | Aucun succès n'exige de jouer à heure fixe ou longtemps d'affilée |
 | **Série** | Flamme de série sur le défi quotidien | **Veilleuses** : 1 jour de grâce gagné automatiquement par semaine de série (max 2 en réserve). Rater un jour ne détruit pas la série si une veilleuse est dispo. |
 | **Défi quotidien** | 1 puzzle/jour, déterministe, historique local, calendrier | Rattrapage des 7 derniers jours possible (sans bonus de série) |
