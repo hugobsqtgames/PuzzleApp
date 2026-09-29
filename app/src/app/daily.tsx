@@ -1,59 +1,117 @@
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
 
-import { useGame } from '../state/GameContext';
+import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
-import { BackButton, Button, Card, GlyphCircle, Icon, Pill, TierBars } from '../ui/components';
+import { BackButton, Button, Card, GlyphCircle, Icon, IconButton, Pill, TierBars, tap } from '../ui/components';
 import { T, type } from '../ui/theme';
-import { dailyLabel } from '../ui/dates';
+import { FAMILIES, TIER_NAMES, dailyPuzzle } from '../game/catalog';
+import { addDays, daysBetween, dayKey } from '../core/game/dayKey';
+import { dailyLabel, dateOfDay, MONTHS_FR } from '../ui/dates';
+import { STANDARD_STREAK } from '../core/game/daily';
+import { STANDARD_ECONOMY } from '../core/game/engine';
 
 export default function Daily() {
-  const { game, openDaily } = useGame();
-  const done = game.dailyDone;
+  const { state, today, openDaily, showToast } = useStore();
+  const now = dateOfDay(today);
+  const [month, setMonth] = useState({ y: now.getFullYear(), m: now.getMonth() + 1 });
+  const p = dailyPuzzle(today);
+  const done = state.daily.completedDays.has(today);
+  const tomorrow = dailyPuzzle(addDays(today, 1));
+  const bonus = Math.min(STANDARD_ECONOMY.dailyStreakBonusCap, state.daily.streak + 1);
+  const missed = Array.from({ length: STANDARD_STREAK.catchUpWindowDays }, (_, i) => addDays(today, -(i + 1)))
+    .filter((d) => !state.daily.completedDays.has(d) && !state.daily.catchUpDays.has(d) && dailyPuzzle(d));
+
+  const play = (day: string) => { if (openDaily(day)) router.push('/puzzle'); else showToast('Ce défi n’a pas pu être préparé.', 'info'); };
+
+  // Calendar: Monday first.
+  const first = new Date(month.y, month.m - 1, 1);
+  const offset = (first.getDay() + 6) % 7;
+  const days = new Date(month.y, month.m, 0).getDate();
+  const cells: (number | null)[] = [...Array(offset).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
+  const isCurrentMonth = month.y === now.getFullYear() && month.m === now.getMonth() + 1;
+
   return (
-    <Screen scroll>
-      <BackButton label="Accueil" onPress={() => router.back()} />
+    <Screen scroll place="market">
+      <BackButton label="Accueil" onPress={() => goBack()} />
       <Text style={type.title1}>Défi du soir</Text>
 
       <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <View style={{ width: 64, alignItems: 'center' }}><Icon name="light" size={34} color={T.amber} /></View>
         <View style={{ flex: 1 }}>
-          <Text style={type.title2}>{game.streak} soirs</Text>
-          <Text style={type.foot}>Flamme du soir · record {game.best}</Text>
+          <Text style={type.title2}>{state.daily.streak} soir{state.daily.streak > 1 ? 's' : ''}</Text>
+          <Text style={type.foot}>Flamme du soir · record {state.daily.bestStreak}</Text>
         </View>
         <View style={{ alignItems: 'center', gap: 2 }}>
           <View style={{ flexDirection: 'row', gap: 2 }}>
-            <Icon name="moonI" size={18} color={T.moon} sw={1.8} />
-            <Icon name="moonI" size={18} color={T.line} sw={1.8} />
+            {Array.from({ length: STANDARD_STREAK.maxNightlights }, (_, i) => <Icon key={i} name="moonI" size={18} color={i < state.daily.nightlights ? T.moon : T.line} sw={1.8} />)}
           </View>
-          <Text style={type.foot}>{game.nightlights} veilleuse</Text>
+          <Text style={type.foot}>{state.daily.nightlights} veilleuse{state.daily.nightlights > 1 ? 's' : ''}</Text>
         </View>
       </Card>
 
-      <Card style={{ gap: 12 }}>
-        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-          <GlyphCircle icon="BA" size={48} color={done ? T.tx2 : T.amber} />
-          <View style={{ flex: 1 }}>
-            <Text style={type.cap}>{dailyLabel()}</Text>
-            <Text style={type.title3}>Balances</Text>
-            <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-              <TierBars tier={2} />
-              <Text style={type.foot}>Flamme</Text>
+      {p ? (
+        <Card style={{ gap: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <GlyphCircle icon={p.code} size={48} color={done ? T.tx2 : T.amber} />
+            <View style={{ flex: 1 }}>
+              <Text style={type.cap}>{dailyLabel(now)}</Text>
+              <Text style={type.title3}>{FAMILIES[p.code].name}</Text>
+              <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><TierBars tier={p.tier} /><Text style={type.foot}>{TIER_NAMES[p.tier]}</Text></View>
             </View>
+            <Pill icon="shard" iconColor={T.moon}>+{STANDARD_ECONOMY.dailyReward} · +{bonus}</Pill>
           </View>
-          <Pill icon="shard" iconColor={T.moon}>+15 · +{Math.min(10, game.streak)}</Pill>
+          {done ? (
+            <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+              <Icon name="check" size={22} color={T.gold} sw={2} />
+              <Text style={[type.callout, { flex: 1 }]}>Réussi.{tomorrow ? ` Demain : ${FAMILIES[tomorrow.code].name}, palier ${TIER_NAMES[tomorrow.tier]}.` : ''}</Text>
+            </View>
+          ) : <Button title="Jouer le défi" onPress={() => play(today)} />}
+          <Text style={type.foot}>Même énigme pour tous les joueurs en français ce soir. Préparée à l’avance, jouable sans connexion.</Text>
+        </Card>
+      ) : null}
+
+      <Card>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <IconButton name="back" label="Mois précédent" size={36} onPress={() => setMonth(({ y, m }) => (m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 }))} />
+          <Text style={type.headline}>{MONTHS_FR[month.m - 1]} {month.y}</Text>
+          <IconButton name="chev" label="Mois suivant" size={36} disabled={isCurrentMonth} onPress={() => setMonth(({ y, m }) => (m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 }))} />
         </View>
-        {done ? (
-          <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-            <Icon name="check" size={22} color={T.gold} sw={2} />
-            <Text style={[type.callout, { flex: 1 }]}>Réussi. Demain : Cadenas, palier Brasier.</Text>
-          </View>
-        ) : (
-          <Button title="Jouer le défi" onPress={() => { openDaily(); router.push('/puzzle'); }} />
-        )}
-        <Text style={type.foot}>Même énigme pour tous les joueurs en français ce soir. Générée sur ton appareil, sans connexion.</Text>
+        <View style={{ flexDirection: 'row' }}>
+          {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => <Text key={i} style={[type.foot, { flex: 1, textAlign: 'center' }]}>{d}</Text>)}
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {cells.map((d, i) => {
+            if (d === null) return <View key={i} style={{ width: `${100 / 7}%`, height: 38 }} />;
+            const key = dayKey(month.y, month.m, d);
+            const solved = state.daily.completedDays.has(key), caught = state.daily.catchUpDays.has(key);
+            const isToday = key === today, future = daysBetween(key, today) > 0;
+            return (
+              <View key={i} accessible accessibilityLabel={`${d} ${MONTHS_FR[month.m - 1]}${solved ? ', réussi' : caught ? ', rattrapé' : ''}`}
+                style={{ width: `${100 / 7}%`, height: 38, alignItems: 'center', justifyContent: 'center', borderRadius: 12, borderWidth: isToday ? 1.5 : 0, borderColor: T.amber, opacity: future ? 0.35 : 1 }}>
+                <Text style={{ fontSize: 13, color: T.tx, fontVariant: ['tabular-nums'] }}>{d}</Text>
+                {solved ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: T.amber, marginTop: 2 }} /> : caught ? <View style={{ width: 6, height: 6, borderRadius: 3, borderWidth: 1, borderColor: T.amber, marginTop: 2 }} /> : null}
+              </View>
+            );
+          })}
+        </View>
       </Card>
+
+      {missed.length ? (
+        <View>
+          <Text style={[type.cap, { marginBottom: 6 }]}>Rattrapage</Text>
+          {missed.map((d) => (
+            <Pressable key={d} accessibilityRole="button" onPress={() => { tap(); play(d); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.line }}>
+              <Icon name="cal" size={20} color={T.tx2} />
+              <Text style={[type.body, { flex: 1 }]}>Rattraper le {dailyLabel(dateOfDay(d)).toLowerCase()}</Text>
+              <Icon name="chev" size={18} color={T.tx3} />
+            </Pressable>
+          ))}
+          <Text style={[type.foot, { marginTop: 6 }]}>Récompense de base. Un rattrapage ne compte pas pour la série.</Text>
+        </View>
+      ) : null}
     </Screen>
   );
 }

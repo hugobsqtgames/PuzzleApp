@@ -4,7 +4,7 @@
  * the loop never has a gap; effects use one player each, reused.
  * Nothing here can crash the game: every native call is guarded.
  */
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
 import { AmbiencePlace, AudioCommand, AudioDirector, AudioSettings, DEFAULT_AUDIO_SETTINGS, SOUND_EVENTS, STANDARD_MANIFEST, SoundEvent, SoundManifest } from '../core/audio/director';
@@ -128,10 +128,21 @@ export class SoundEngine {
   private sfx = new Map<string, AudioPlayer>();
   private place: AmbiencePlace = 'lighthouse';
   private appState: AppStateStatus = AppState.currentState;
+  /** Browsers block audio until the first interaction; phones do not. */
+  private unlocked = Platform.OS !== 'web';
 
   constructor(private haptic: Haptic, settings: AudioSettings = DEFAULT_AUDIO_SETTINGS) {
     this.director = new AudioDirector({ ...settings }, MANIFEST);
     safe(() => { void setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers', shouldPlayInBackground: false }).catch(() => {}); });
+    if (!this.unlocked && typeof document !== 'undefined') {
+      const unlock = () => {
+        this.unlocked = true;
+        document.removeEventListener('pointerdown', unlock);
+        const playing = this.director.playing;
+        if (playing) safe(() => { this.ambience = new AmbienceLoop(PLACE_AMBIENCE[playing], 1); this.ambience.start(1500); });
+      };
+      document.addEventListener('pointerdown', unlock);
+    }
     AppState.addEventListener('change', (next) => {
       const was = this.appState;
       this.appState = next;
@@ -159,6 +170,7 @@ export class SoundEngine {
 
   private run(commands: AudioCommand[]) {
     for (const c of commands) {
+      if (!this.unlocked && c.kind !== 'haptic') continue;
       switch (c.kind) {
         case 'startAmbience':
         case 'crossfade': {

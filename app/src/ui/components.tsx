@@ -1,15 +1,20 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import {
-  Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle,
+  Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle,
 } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 
 import { T, R, type } from './theme';
-import { iconXml, niloXml, Mood } from './art';
-import { TIERS } from '../content/vesperDemo';
+import { iconXml, niloXml, Mood, Look } from './art';
+import { TIER_NAMES as TIERS } from '../game/catalog';
+
+let hapticsOn = true;
+/** Follows the "Vibrations" setting. */
+export function setHapticsEnabled(on: boolean) { hapticsOn = on; }
 
 export function tap(kind: 'light' | 'success' | 'error' = 'light') {
+  if (!hapticsOn) return;
   // Haptics can be unavailable (web, some Android devices): never fail a tap.
   try {
     if (kind === 'success') void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -23,25 +28,39 @@ export function Icon({ name, size = 22, color = T.tx, sw = 1.6 }: { name: string
   return <SvgXml xml={xml} width={size} height={size} />;
 }
 
-export function Nilo({ size = 120, mood = 'neutral', flame, hat }: { size?: number; mood?: Mood; flame?: string; hat?: string }) {
-  const xml = useMemo(() => niloXml({ mood, flame, hat }), [mood, flame, hat]);
+export function Nilo({ size = 120, mood = 'neutral', look = {}, onPress }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void }) {
+  const xml = useMemo(() => niloXml(mood, look), [mood, look.flame, look.hat, look.scarf, look.comp]); // eslint-disable-line react-hooks/exhaustive-deps
   const bob = useRef(new Animated.Value(0)).current;
+  const flick = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    // Gentle breathing (joy hops a little more). One loop, stopped on unmount.
+    // Gentle breathing (joy hops a little more) and the flame's flicker. Stopped on unmount.
     const amp = mood === 'joy' ? 1 : 0.35;
+    const d = mood === 'joy' ? 450 : 1500;
     const loop = Animated.loop(Animated.sequence([
-      Animated.timing(bob, { toValue: amp, duration: mood === 'joy' ? 450 : 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      Animated.timing(bob, { toValue: 0, duration: mood === 'joy' ? 450 : 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      Animated.timing(bob, { toValue: amp, duration: d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      Animated.timing(bob, { toValue: 0, duration: d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
     ]));
     loop.start();
     return () => loop.stop();
   }, [bob, mood]);
+  useEffect(() => {
+    const d = mood === 'oops' ? 220 : 1500;
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(flick, { toValue: 1.04, duration: d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      Animated.timing(flick, { toValue: 0.98, duration: d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [flick, mood]);
   const translateY = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -size * 0.06] });
-  return (
-    <Animated.View style={{ width: size, height: size * (120 / 132), transform: [{ translateY }] }} accessibilityLabel="Nilo">
-      <SvgXml xml={xml} width={size} height={size * (120 / 132)} />
+  const h = size * (120 / 132);
+  const body = (
+    <Animated.View style={{ width: size, height: h, transform: [{ translateY }, { scale: flick }] }}>
+      <SvgXml xml={xml} width={size} height={h} />
     </Animated.View>
   );
+  if (!onPress) return <View accessible accessibilityLabel="Nilo">{body}</View>;
+  return <Pressable accessibilityRole="button" accessibilityLabel="Nilo" onPress={onPress}>{body}</Pressable>;
 }
 
 export function Pill({ icon, iconColor, children, color, borderColor }: { icon?: string; iconColor?: string; children: React.ReactNode; color?: string; borderColor?: string }) {
@@ -167,6 +186,20 @@ export function Toast({ text, icon = 'moonI' }: { text: string | null; icon?: st
     </View>
   );
 }
+
+export function ToggleRow({ icon, label, value, onChange, sub }: { icon: string; label: string; value: boolean; onChange: (v: boolean) => void; sub?: string }) {
+  return (
+    <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.line, minHeight: 52 }}>
+      <Icon name={icon} size={20} color={T.tx2} />
+      <View style={{ flex: 1 }}>
+        <Text style={type.body}>{label}</Text>
+        {sub ? <Text style={type.foot}>{sub}</Text> : null}
+      </View>
+      <Switch accessibilityLabel={label} value={value} onValueChange={onChange} trackColor={{ false: T.line, true: T.amber }} thumbColor={T.tx} />
+    </View>
+  );
+}
+
 
 export const s = StyleSheet.create({
   pill: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 999, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, alignSelf: 'flex-start' },
