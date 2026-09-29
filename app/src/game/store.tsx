@@ -1,0 +1,411 @@
+/**
+ * The game's single source of truth, shared by every screen. Rules come from
+ * the core (GameEngine, Progression, wallet, streak); the save is the core's
+ * SaveStore (atomic, backed up, checksummed). The state is always changed
+ * before any animation, so leaving the app mid-celebration loses nothing.
+ */
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import * as Haptics from 'expo-haptics';
+
+import { GameEngine, Celebration } from '../core/game/engine';
+import { GameState, cloneState, credit, debit, decodeState, encodeState, newGameState } from '../core/game/state';
+import { SaveStore } from '../core/persistence/saveStore';
+import { localDayKey, DayKey } from '../core/game/dayKey';
+import { HintLevel } from '../core/puzzlekit/types';
+import { AudioSettings, SoundEvent } from '../core/audio/director';
+import { SoundEngine } from '../audio/engine';
+import { WORLD, dailyPuzzle, puzzleFor, FAMILIES, CONTENT_VERSION } from './catalog';
+import { Session, giveHint, progressOf, record, startSession, HINT_COSTS } from './session';
+import { ACHIEVEMENTS, COSMETICS, Profile, Slot, achievementContext, achievementStatus, newProfile, owns } from './rewards';
+import { SAVE_DIRECTORY, deviceFS } from './files';
+import { scheduleReminders } from './reminders';
+
+export interface Settings {
+  music: boolean;
+  effects: boolean;
+  haptics: boolean;
+  /** Open puzzles straight from the room, without the lantern preview. */
+  direct: boolean;
+  reminder: boolean;
+  reminderHour: number;
+  reminderMinute: number;
+  /** The reminder was offered once (after the first daily puzzle). */
+  reminderOffered: boolean;
+  highContrast: boolean;
+}
+export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, highContrast: false };
+
+export interface Result {
+  session: Session;
+  celebrations: Celebration[];
+  replay: boolean;
+  minimalMoves?: number;
+  newAchievements: string[];
+}
+
+interface Store {
+  ready: boolean;
+  /** The save exists but could not be read: progress is not written until the next launch. */
+  readOnly: boolean;
+  state: GameState;
+  engine: GameEngine;
+  settings: Settings;
+  profile: Profile;
+  session: Session | null;
+  result: Result | null;
+  toast: { text: string; icon?: string } | null;
+  today: DayKey;
+  showToast(text: string, icon?: string): void;
+  openLantern(id: string): boolean;
+  openDaily(day: DayKey): boolean;
+  updateSession(s: Session): void;
+  leaveSession(): void;
+  finishSession(s: Session): Result | null;
+  /** Buys (or takes, for the free Murmure) the next hint level. */
+  buyHint(s: Session, level: HintLevel): { session: Session } | { missing: number } | null;
+  buyCosmetic(id: string): boolean;
+  equip(slot: Slot, id: string): void;
+  setSettings(patch: Partial<Settings>): void;
+  completeOnboarding(): void;
+  markSeen(key: string): void;
+  noteProfile(patch: (p: Profile) => Profile): void;
+  play(event: SoundEvent): void;
+  enterPlace(place: Parameters<SoundEngine['enter']>[0]): void;
+  haptic(kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium'): void;
+  resetProgress(): Promise<void>;
+  exportProgress(): string;
+  importProgress(text: string): boolean;
+}
+
+const Ctx = createContext<Store | null>(null);
+const engine = new GameEngine(WORLD);
+const saveStore = new SaveStore(deviceFS, SAVE_DIRECTORY, `content-${CONTENT_VERSION}`);
+const SIDE_FILE = `${SAVE_DIRECTORY}/profile.json`;
+
+function decodeSide(text: string): { settings: Settings; profile: Profile } {
+  const out = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };
+  try {
+    const o = JSON.parse(text) as { settings?: Record<string, unknown>; profile?: Record<string, unknown> };
+    for (const k of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
+      const v = o.settings?.[k];
+      if (typeof v === typeof DEFAULT_SETTINGS[k]) (out.settings as unknown as Record<string, unknown>)[k] = v;
+    }
+    const p = o.profile ?? {};
+    const n = (v: unknown) => (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 ? v : 0);
+    const strings = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').slice(0, 50) : []);
+    out.profile = {
+      murmures: n(p.murmures), oops: n(p.oops), thrifty: n(p.thrifty), catchUps: n(p.catchUps), hatDrops: n(p.hatDrops),
+      themes: strings(p.themes), visited: strings(p.visited),
+      durations: Array.isArray(p.durations) && p.durations.length === 6 ? p.durations.map((d) => (Array.isArray(d) ? d.filter((x) => typeof x === 'number' && x > 0 && x < 86400).slice(-100) : [])) : newProfile().durations,
+      history: Array.isArray(p.history) ? p.history.filter((h): h is Profile['history'][number] => !!h && typeof h.label === 'string' && typeof h.amount === 'number' && typeof h.at === 'string').slice(-30) : [],
+    };
+  } catch { /* defaults */ }
+  out.settings.reminderHour = Math.min(23, Math.max(0, Math.trunc(out.settings.reminderHour)));
+  out.settings.reminderMinute = Math.min(59, Math.max(0, Math.trunc(out.settings.reminderMinute)));
+  return out;
+}
+
+export function GameProvider({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
+  const [state, setState] = useState<GameState>(newGameState);
+  const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
+  const [profile, setProfile] = useState<Profile>(newProfile);
+  const [session, setSession] = useState<Session | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
+  const [toast, setToast] = useState<Store['toast']>(null);
+  const [today, setToday] = useState<DayKey>(() => localDayKey(new Date()));
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stateRef = useRef(state); stateRef.current = state;
+  const settingsRef = useRef(settings); settingsRef.current = settings;
+  const profileRef = useRef(profile); profileRef.current = profile;
+  const sessionRef = useRef(session); sessionRef.current = session;
+
+  const haptic = useCallback((kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium') => {
+    if (!settingsRef.current.haptics) return;
+    try {
+      if (kind === 'success') void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      else if (kind === 'error') void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      else if (kind === 'selection') void Haptics.selectionAsync();
+      else void Haptics.impactAsync(kind === 'impactMedium' ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light);
+    } catch { /* no haptics here */ }
+  }, []);
+  const sound = useMemo(() => new SoundEngine((k) => haptic(k)), [haptic]);
+
+  // ---------------------------------------------------------------- persistence
+  const writeSide = useCallback(async (s: Settings, p: Profile) => {
+    try {
+      await deviceFS.ensureDirectory(SAVE_DIRECTORY);
+      const tmp = `${SIDE_FILE}.tmp`;
+      await deviceFS.write(tmp, JSON.stringify({ v: 1, settings: s, profile: p }));
+      await deviceFS.move(tmp, SIDE_FILE);
+    } catch { /* retried at the next change */ }
+  }, []);
+
+  const saving = useRef<Promise<void>>(Promise.resolve());
+  const save = useCallback((s: GameState) => {
+    saving.current = saving.current.then(() => saveStore.save(s)).catch(() => { /* not loaded or storage error: next save retries */ });
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const loaded = await saveStore.load().catch(() => null);
+      let side = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };
+      try { if (await deviceFS.exists(SIDE_FILE)) side = decodeSide(await deviceFS.read(SIDE_FILE)); } catch { /* defaults */ }
+      if (!alive) return;
+      if (loaded) { setState(loaded.state); setReadOnly(loaded.source === 'unavailable'); } else setReadOnly(true);
+      setSettingsState(side.settings);
+      setProfile(side.profile);
+      sound.setSettings({ music: side.settings.music, effects: side.settings.effects, haptics: side.settings.haptics, interfaceTaps: false });
+      setReady(true);
+    })();
+    return () => { alive = false; };
+  }, [sound]);
+
+  // Day change while the app is open (midnight): the daily puzzle and reminders follow.
+  useEffect(() => {
+    const id = setInterval(() => { const d = localDayKey(new Date()); setToday((old) => (old === d ? old : d)); }, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Reminders are (re)planned at each launch, day change and daily success.
+  useEffect(() => {
+    if (!ready) return;
+    void scheduleReminders({ enabled: settings.reminder, hour: settings.reminderHour, minute: settings.reminderMinute, doneToday: state.daily.completedDays.has(today), streak: state.daily.streak });
+  }, [ready, settings.reminder, settings.reminderHour, settings.reminderMinute, state.daily.completedDays, state.daily.streak, today]);
+
+  const commit = useCallback((next: GameState) => {
+    stateRef.current = next;
+    setState(next);
+    save(next);
+  }, [save]);
+
+  const commitProfile = useCallback((next: Profile) => {
+    profileRef.current = next;
+    setProfile(next);
+    void writeSide(settingsRef.current, next);
+  }, [writeSide]);
+
+  const showToast = useCallback((text: string, icon?: string) => {
+    setToast({ text, icon });
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2800);
+  }, []);
+
+  /** Credits newly completed achievements (once each). Returns their names. */
+  const creditAchievements = useCallback((s: GameState, p: Profile): string[] => {
+    const ctx = achievementContext(s, engine.progression, p);
+    const names: string[] = [];
+    for (const { a, done } of achievementStatus(ctx)) {
+      if (!done) continue;
+      try { if (credit(s.wallet, a.reward, `achievement:${a.id}`)) names.push(a.name); } catch { /* never block */ }
+    }
+    return names;
+  }, []);
+
+  const addHistory = (p: Profile, label: string, amount: number): Profile =>
+    amount === 0 ? p : { ...p, history: [...p.history, { label, amount, at: new Date().toISOString() }].slice(-30) };
+
+  // ---------------------------------------------------------------- sessions
+  const openLantern = useCallback((id: string) => {
+    const s = stateRef.current;
+    const p = puzzleFor(id);
+    if (!p || !engine.progression.isPlayable(id, s)) return false;
+    const place = engine.progression.locate(id);
+    if (place && !profileRef.current.visited.includes(place.district.id)) commitProfile({ ...profileRef.current, visited: [...profileRef.current.visited, place.district.id] });
+    setSession(startSession(p, 'lantern', new Date(), s.inProgress.get(id)));
+    setResult(null);
+    return true;
+  }, [commitProfile]);
+
+  const openDaily = useCallback((day: DayKey) => {
+    const p = dailyPuzzle(day);
+    if (!p) return false;
+    setSession({ ...startSession(p, 'daily', new Date()), id: `daily.${day}` });
+    setResult(null);
+    return true;
+  }, []);
+
+  const updateSession = useCallback((s: Session) => { setSession(s); }, []);
+
+  /** Keeps the board of an unfinished lantern (GameState.inProgress). */
+  const leaveSession = useCallback(() => {
+    const s = sessionRef.current;
+    if (s && !s.solved && s.kind === 'lantern' && (s.moves > 0 || s.history.length > 0)) {
+      const next = cloneState(stateRef.current);
+      next.inProgress.set(s.id, progressOf(s));
+      commit(next);
+    }
+  }, [commit]);
+
+  const finishSession = useCallback((s: Session): Result | null => {
+    if (s.solved) return null;
+    const now = new Date();
+    const next = cloneState(stateRef.current);
+    let p = profileRef.current;
+    let celebrations: Celebration[] = [];
+    let replay = false;
+    let minimalMoves: number | undefined;
+    if (s.kind === 'lantern') {
+      replay = next.solved.has(s.id);
+      celebrations = engine.puzzleSolved(s.id, record(s, now), next);
+      next.inProgress.delete(s.id);
+      if (!replay) {
+        const secs = Math.round((now.getTime() - Date.parse(s.startedAt)) / 1000);
+        if (secs > 0 && secs < 86400) p = { ...p, durations: p.durations.map((d, t) => (t === s.tier ? [...d, secs].slice(-100) : d)) };
+        for (const c of celebrations) {
+          if (c.kind === 'lanternLit') p = addHistory(p, `Lanterne · ${FAMILIES[s.code].name}`, c.shards + c.clairvoyanceBonus);
+          if (c.kind === 'roomCompleted') p = addHistory(p, 'Salle entièrement éclairée', c.shards);
+          if (c.kind === 'buildingCompleted') p = addHistory(p, 'Bâtiment entièrement éclairé', c.shards);
+          if (c.kind === 'districtCompleted') p = addHistory(p, 'Quartier entièrement éclairé', c.shards);
+        }
+      }
+    } else {
+      const day = s.id.slice('daily.'.length) as DayKey;
+      celebrations = engine.dailySolved(day, new Date(s.startedAt), now, next);
+      const c = celebrations[0];
+      if (c && c.kind === 'dailyCompleted') {
+        replay = c.result.kind === 'alreadyDone';
+        if (c.result.kind === 'caughtUp') p = { ...p, catchUps: p.catchUps + 1 };
+        p = addHistory(p, `Défi du soir · ${FAMILIES[s.code].name}`, c.shards);
+      }
+    }
+    if (s.code === 'IN') {
+      const e = FAMILIES.IN.engine as import('../core/families/switches').SwitchesFamily;
+      const min = e.minimalSolution(s.data, s.data.initiallyLit);
+      if (min) {
+        minimalMoves = min.presses.filter(Boolean).length;
+        if (!s.usedSolution && s.state.moves === minimalMoves && !replay) p = { ...p, thrifty: p.thrifty + 1 };
+      }
+    }
+    if (s.wrongAnswers === 1 && !s.usedSolution) p = { ...p, oops: p.oops + 1 };
+    const newAchievements = creditAchievements(next, p);
+    for (const name of newAchievements) p = addHistory(p, `Succès · ${name}`, ACHIEVEMENTS.find((a) => a.name === name)?.reward ?? 0);
+    commit(next);
+    commitProfile(p);
+    const done = { ...s, solved: true };
+    setSession(done);
+    const r: Result = { session: done, celebrations, replay, minimalMoves, newAchievements };
+    setResult(r);
+    return r;
+  }, [commit, commitProfile, creditAchievements]);
+
+  const buyHint = useCallback((s: Session, level: HintLevel) => {
+    const cost = HINT_COSTS[level - 1];
+    const now = Date.now();
+    if (cost === 0) {
+      const next = giveHint(s, level, now);
+      if (!next) return null;
+      commitProfile({ ...profileRef.current, murmures: profileRef.current.murmures + 1 });
+      setSession(next);
+      return { session: next };
+    }
+    const st = cloneState(stateRef.current);
+    const purchase = engine.buyHint(level, s.id, s.hint.stale ? s.hint.step + 1 : s.hint.step, st);
+    if (purchase.kind === 'insufficientBalance') return { missing: purchase.missing };
+    const next = giveHint(s, level, now);
+    if (!next) return null;
+    if (purchase.kind === 'granted') {
+      commit(st);
+      commitProfile(addHistory(profileRef.current, `${['Murmure', 'Piste', 'Éclairage', 'Solution'][level - 1]} · ${FAMILIES[s.code].name}`, -purchase.cost));
+    }
+    setSession(next);
+    return { session: next };
+  }, [commit, commitProfile]);
+
+  const buyCosmetic = useCallback((id: string) => {
+    const c = COSMETICS.find((x) => x.id === id);
+    if (!c || !c.price) return false;
+    const next = cloneState(stateRef.current);
+    try {
+      if (!debit(next.wallet, c.price, `cosmetic:${id}`)) return false;
+    } catch { return false; }
+    next.ownedCosmetics.add(id);
+    next.equippedCosmetics.set(c.slot, id);
+    commit(next);
+    commitProfile(addHistory(profileRef.current, c.name, -c.price));
+    return true;
+  }, [commit, commitProfile]);
+
+  const equip = useCallback((slot: Slot, id: string) => {
+    const c = COSMETICS.find((x) => x.id === id);
+    const next = cloneState(stateRef.current);
+    if (!c || !owns(c, next, achievementContext(next, engine.progression, profileRef.current))) return;
+    next.equippedCosmetics.set(slot, id);
+    commit(next);
+  }, [commit]);
+
+  const setSettings = useCallback((patch: Partial<Settings>) => {
+    const next = { ...settingsRef.current, ...patch };
+    settingsRef.current = next;
+    setSettingsState(next);
+    sound.setSettings({ music: next.music, effects: next.effects, haptics: next.haptics, interfaceTaps: false } as AudioSettings);
+    void writeSide(next, profileRef.current);
+  }, [sound, writeSide]);
+
+  const completeOnboarding = useCallback(() => {
+    if (stateRef.current.onboardingDone) return;
+    const next = cloneState(stateRef.current);
+    next.onboardingDone = true;
+    commit(next);
+  }, [commit]);
+
+  const markSeen = useCallback((key: string) => {
+    if (stateRef.current.seenDialogue.has(key)) return;
+    const next = cloneState(stateRef.current);
+    next.seenDialogue.add(key);
+    commit(next);
+  }, [commit]);
+
+  const noteProfile = useCallback((patch: (p: Profile) => Profile) => {
+    const p = patch(profileRef.current);
+    const st = cloneState(stateRef.current);
+    const names = creditAchievements(st, p);
+    commitProfile(p);
+    if (names.length) { commit(st); names.forEach((n) => showToast(`Succès : ${n}`, 'star')); }
+  }, [commit, commitProfile, creditAchievements, showToast]);
+
+  const enterPlace = useCallback((place: Parameters<SoundEngine['enter']>[0]) => {
+    sound.enter(place);
+    if (settingsRef.current.music && !profileRef.current.themes.includes(place)) {
+      noteProfile((p) => ({ ...p, themes: [...p.themes, place] }));
+    }
+  }, [sound, noteProfile]);
+
+  const resetProgress = useCallback(async () => {
+    const fresh = newGameState();
+    fresh.onboardingDone = true;
+    commit(fresh);
+    commitProfile(newProfile());
+    setSession(null);
+    setResult(null);
+  }, [commit, commitProfile]);
+
+  const exportProgress = useCallback(() => JSON.stringify({ app: 'lampion', v: 1, exportedAt: new Date().toISOString(), state: encodeState(stateRef.current) }), []);
+
+  const importProgress = useCallback((text: string) => {
+    try {
+      const o = JSON.parse(text) as { app?: unknown; state?: unknown };
+      if (o.app !== 'lampion' || !o.state) return false;
+      const s = decodeState(o.state);
+      commit(s);
+      return true;
+    } catch { return false; }
+  }, [commit]);
+
+  const value = useMemo<Store>(() => ({
+    ready, readOnly, state, engine, settings, profile, session, result, toast, today,
+    showToast, openLantern, openDaily, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
+    completeOnboarding, markSeen, noteProfile, play: (e) => sound.play(e), enterPlace, haptic, resetProgress, exportProgress, importProgress,
+  }), [ready, readOnly, state, settings, profile, session, result, toast, today, showToast, openLantern, openDaily, updateSession, leaveSession, finishSession,
+    buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+}
+
+export function useStore(): Store {
+  const v = useContext(Ctx);
+  if (!v) throw new Error('useStore outside GameProvider');
+  return v;
+}

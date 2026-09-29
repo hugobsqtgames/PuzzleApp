@@ -1,0 +1,46 @@
+// Generated from assets/audio/manifest.json (tools/audio/render.js). Do not edit.
+/* eslint-disable */
+export const SFX_FILES: Record<string, number> = {
+  "error": require("../../assets/audio/sfx_error.m4a"),
+  "shards": require("../../assets/audio/sfx_shards.m4a"),
+  "locked": require("../../assets/audio/sfx_locked.m4a"),
+  "manipulate_nuit": require("../../assets/audio/sfx_manipulate_nuit.m4a"),
+  "manipulate_phare": require("../../assets/audio/sfx_manipulate_phare.m4a"),
+  "manipulate_horlo": require("../../assets/audio/sfx_manipulate_horlo.m4a"),
+  "manipulate_marche": require("../../assets/audio/sfx_manipulate_marche.m4a"),
+  "manipulate_serre": require("../../assets/audio/sfx_manipulate_serre.m4a"),
+  "lanternLit_nuit": require("../../assets/audio/sfx_lanternLit_nuit.m4a"),
+  "lanternLit_phare": require("../../assets/audio/sfx_lanternLit_phare.m4a"),
+  "lanternLit_horlo": require("../../assets/audio/sfx_lanternLit_horlo.m4a"),
+  "lanternLit_marche": require("../../assets/audio/sfx_lanternLit_marche.m4a"),
+  "lanternLit_serre": require("../../assets/audio/sfx_lanternLit_serre.m4a"),
+  "roomComplete_nuit": require("../../assets/audio/sfx_roomComplete_nuit.m4a"),
+  "roomComplete_phare": require("../../assets/audio/sfx_roomComplete_phare.m4a"),
+  "roomComplete_horlo": require("../../assets/audio/sfx_roomComplete_horlo.m4a"),
+  "roomComplete_marche": require("../../assets/audio/sfx_roomComplete_marche.m4a"),
+  "roomComplete_serre": require("../../assets/audio/sfx_roomComplete_serre.m4a"),
+  "unlock_nuit": require("../../assets/audio/sfx_unlock_nuit.m4a"),
+  "unlock_phare": require("../../assets/audio/sfx_unlock_phare.m4a"),
+  "unlock_horlo": require("../../assets/audio/sfx_unlock_horlo.m4a"),
+  "unlock_marche": require("../../assets/audio/sfx_unlock_marche.m4a"),
+  "unlock_serre": require("../../assets/audio/sfx_unlock_serre.m4a"),
+  "newDistrict_nuit": require("../../assets/audio/sfx_newDistrict_nuit.m4a"),
+  "newDistrict_phare": require("../../assets/audio/sfx_newDistrict_phare.m4a"),
+  "newDistrict_horlo": require("../../assets/audio/sfx_newDistrict_horlo.m4a"),
+  "newDistrict_marche": require("../../assets/audio/sfx_newDistrict_marche.m4a"),
+  "newDistrict_serre": require("../../assets/audio/sfx_newDistrict_serre.m4a"),
+  "hint_nuit": require("../../assets/audio/sfx_hint_nuit.m4a"),
+  "hint_phare": require("../../assets/audio/sfx_hint_phare.m4a"),
+  "hint_horlo": require("../../assets/audio/sfx_hint_horlo.m4a"),
+  "hint_marche": require("../../assets/audio/sfx_hint_marche.m4a"),
+  "hint_serre": require("../../assets/audio/sfx_hint_serre.m4a"),
+};
+export const AMBIENCE_FILES: Record<string, number> = {
+  "nuit": require("../../assets/audio/amb_nuit.m4a"),
+  "phare": require("../../assets/audio/amb_phare.m4a"),
+  "horlo": require("../../assets/audio/amb_horlo.m4a"),
+  "marche": require("../../assets/audio/amb_marche.m4a"),
+  "serre": require("../../assets/audio/amb_serre.m4a"),
+};
+export const AMBIENCE_LOOP_SECONDS = 48;
+export const AMBIENCE_OVERLAP_SECONDS = 4;

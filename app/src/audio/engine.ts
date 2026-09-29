@@ -1,0 +1,202 @@
+/**
+ * Sound engine: executes the decisions of the core AudioDirector with
+ * expo-audio. Ambiences are chained with two players and a crossfade, so
+ * the loop never has a gap; effects use one player each, reused.
+ * Nothing here can crash the game: every native call is guarded.
+ */
+import { AppState, AppStateStatus } from 'react-native';
+import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
+
+import { AmbiencePlace, AudioCommand, AudioDirector, AudioSettings, DEFAULT_AUDIO_SETTINGS, SOUND_EVENTS, STANDARD_MANIFEST, SoundEvent, SoundManifest } from '../core/audio/director';
+import { AMBIENCE_FILES, AMBIENCE_LOOP_SECONDS, AMBIENCE_OVERLAP_SECONDS, SFX_FILES } from './files';
+
+/** Rendered ambiences (tools/audio/render.js) for each place of the director. */
+export const PLACE_AMBIENCE: Record<AmbiencePlace, string> = {
+  night: 'nuit', lighthouse: 'phare', library: 'nuit', clockworks: 'horlo',
+  glasshouse: 'serre', market: 'marche', theatre: 'nuit', observatory: 'nuit',
+};
+/** Effects whose notes follow the scale of the current place. */
+const PER_PLACE: Partial<Record<SoundEvent, string>> = {
+  manipulate: 'manipulate', lanternLit: 'lanternLit', roomCompleted: 'roomComplete', buildingCompleted: 'roomComplete',
+  unlock: 'unlock', newDistrict: 'newDistrict', hint: 'hint',
+};
+const SHARED: Partial<Record<SoundEvent, string>> = { error: 'error', shards: 'shards', locked: 'locked' };
+
+const MANIFEST: SoundManifest = {
+  ...STANDARD_MANIFEST,
+  // Mix is baked into the files (the prototype's buses): play at full volume.
+  effects: Object.fromEntries(SOUND_EVENTS.map((e) => [e, { ...STANDARD_MANIFEST.effects[e], volume: 1 }])) as SoundManifest['effects'],
+  ambiences: Object.fromEntries(Object.entries(STANDARD_MANIFEST.ambiences).map(([k, v]) => [k, { ...v, volume: 1 }])) as SoundManifest['ambiences'],
+};
+
+type Haptic = (kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium') => void;
+
+const safe = (f: () => void) => { try { f(); } catch { /* audio is never worth a crash */ } };
+
+class AmbienceLoop {
+  private players: AudioPlayer[] = [];
+  private active = 0;
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  private fades = new Set<ReturnType<typeof setInterval>>();
+  private paused = false;
+
+  constructor(readonly key: string, private target: number) {
+    const src = AMBIENCE_FILES[key];
+    for (let i = 0; i < 2; i++) {
+      const p = createAudioPlayer(src);
+      safe(() => { p.volume = 0; p.loop = false; });
+      this.players.push(p);
+    }
+  }
+
+  start(fadeMs: number) {
+    const p = this.players[this.active];
+    safe(() => { p.seekTo(0); p.play(); });
+    this.fade(p, 0, this.target, fadeMs);
+    this.schedule(AMBIENCE_LOOP_SECONDS * 1000);
+  }
+
+  /** Starts the other player before the end of this one and crossfades. */
+  private schedule(ms: number) {
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      if (this.paused) return;
+      const from = this.players[this.active];
+      this.active = 1 - this.active;
+      const to = this.players[this.active];
+      safe(() => { to.seekTo(0); to.volume = 0; to.play(); });
+      const overlap = AMBIENCE_OVERLAP_SECONDS * 1000;
+      this.fade(to, 0, this.target, overlap);
+      this.fade(from, this.target, 0, overlap, () => safe(() => from.pause()));
+      this.schedule(AMBIENCE_LOOP_SECONDS * 1000);
+    }, ms);
+  }
+
+  private fade(p: AudioPlayer, a: number, b: number, ms: number, done?: () => void) {
+    if (ms <= 0) { safe(() => { p.volume = b; }); done?.(); return; }
+    const steps = Math.max(1, Math.round(ms / 50));
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      // Equal-power curve: no dip in the middle of a crossfade.
+      const t = i / steps;
+      const v = a < b ? b * Math.sin((t * Math.PI) / 2) : a * Math.cos((t * Math.PI) / 2);
+      safe(() => { p.volume = Math.max(0, Math.min(1, v)); });
+      if (i >= steps) { clearInterval(id); this.fades.delete(id); done?.(); }
+    }, 50);
+    this.fades.add(id);
+  }
+
+  stop(fadeMs: number) {
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = null;
+    for (const p of this.players) {
+      let from = 0;
+      safe(() => { from = p.volume; });
+      if (from > 0) this.fade(p, from, 0, fadeMs);
+    }
+    setTimeout(() => this.release(), fadeMs + 200);
+  }
+
+  pause() {
+    this.paused = true;
+    if (this.timer) clearTimeout(this.timer);
+    for (const p of this.players) safe(() => p.pause());
+  }
+
+  resume() {
+    this.paused = false;
+    const p = this.players[this.active];
+    safe(() => { p.volume = this.target; p.play(); });
+    // Remaining time of the current copy is unknown after a pause: restart the schedule from its position.
+    let left = AMBIENCE_LOOP_SECONDS * 1000;
+    safe(() => { left = Math.max(1000, (AMBIENCE_LOOP_SECONDS - p.currentTime) * 1000); });
+    this.schedule(left);
+  }
+
+  release() {
+    this.fades.forEach(clearInterval);
+    this.fades.clear();
+    for (const p of this.players) safe(() => { p.pause(); p.release(); });
+    this.players = [];
+  }
+}
+
+export class SoundEngine {
+  readonly director: AudioDirector;
+  private ambience: AmbienceLoop | null = null;
+  private sfx = new Map<string, AudioPlayer>();
+  private place: AmbiencePlace = 'lighthouse';
+  private appState: AppStateStatus = AppState.currentState;
+
+  constructor(private haptic: Haptic, settings: AudioSettings = DEFAULT_AUDIO_SETTINGS) {
+    this.director = new AudioDirector({ ...settings }, MANIFEST);
+    safe(() => { void setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers', shouldPlayInBackground: false }).catch(() => {}); });
+    AppState.addEventListener('change', (next) => {
+      const was = this.appState;
+      this.appState = next;
+      if (was === 'active' && next !== 'active') this.run(this.director.didEnterBackground());
+      else if (was !== 'active' && next === 'active') this.run(this.director.willEnterForeground());
+    });
+  }
+
+  setSettings(s: AudioSettings) { this.run(this.director.update(s)); }
+
+  enter(place: AmbiencePlace) {
+    this.place = place;
+    this.run(this.director.enter(place));
+  }
+
+  play(event: SoundEvent) {
+    this.run(this.director.trigger(event, Date.now()));
+  }
+
+  private effectKey(event: SoundEvent): string | null {
+    const per = PER_PLACE[event];
+    if (per) return `${per}_${PLACE_AMBIENCE[this.place]}`;
+    return SHARED[event] ?? null;
+  }
+
+  private run(commands: AudioCommand[]) {
+    for (const c of commands) {
+      switch (c.kind) {
+        case 'startAmbience':
+        case 'crossfade': {
+          const key = PLACE_AMBIENCE[c.kind === 'startAmbience' ? c.place : c.to];
+          const ms = c.kind === 'startAmbience' ? c.fadeInMs : c.durationMs;
+          if (this.ambience?.key === key) break; // two places share the same file: keep playing
+          this.ambience?.stop(ms);
+          safe(() => { this.ambience = new AmbienceLoop(key, 1); this.ambience.start(ms); });
+          break;
+        }
+        case 'stopAmbience':
+          this.ambience?.stop(c.fadeOutMs);
+          this.ambience = null;
+          break;
+        case 'playEffect': {
+          const key = this.effectKey(c.event);
+          const src = key ? SFX_FILES[key] : undefined;
+          if (src === undefined) break;
+          safe(() => {
+            let p = this.sfx.get(key!);
+            if (!p) { p = createAudioPlayer(src); this.sfx.set(key!, p); }
+            p.volume = c.volume;
+            p.seekTo(0);
+            p.play();
+          });
+          break;
+        }
+        case 'haptic':
+          this.haptic(c.haptic);
+          break;
+        case 'suspend':
+          this.ambience?.pause();
+          this.sfx.forEach((p) => safe(() => p.pause()));
+          break;
+        case 'resume':
+          this.ambience?.resume();
+          break;
+      }
+    }
+  }
+}
