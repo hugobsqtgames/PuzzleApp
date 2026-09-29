@@ -3,6 +3,27 @@
 > Phase 7 (anticipée pour valider la faisabilité avant la maquette finale).
 > Les extraits de code sont des **esquisses d'interfaces** destinées à fixer les contrats ; ils ne sont pas encore implémentés.
 
+## 0. Changement de stack (phase 8) : Expo / React Native
+
+Décision : l'app est construite avec **Expo (React Native, TypeScript)** au lieu de SwiftUI, pour tester sur iPhone sans Xcode et publier aussi sur le Play Store. Les principes du § 1 restent valables ; seule la technologie change.
+
+| Élément | Avant (Swift) | Maintenant (Expo) |
+|---|---|---|
+| Langage | Swift 6 | TypeScript strict (`app/`) |
+| UI | SwiftUI | React Native + Expo Router (écrans dans `app/src/app/`) |
+| Dessin | SwiftUI Canvas | `react-native-svg` |
+| Animations | SwiftUI | Reanimated |
+| Son / haptique | AVAudioEngine / Core Haptics | `expo-audio` / `expo-haptics`, pilotés par le même directeur son (`src/core/audio/director.ts`) |
+| Sauvegarde | `FileManager` | `expo-file-system`, derrière l'interface `FileSystem` de `SaveStore` |
+| Tests du cœur | Swift Testing | Jest (`npm test` dans `app/`) |
+| Cibles | iOS / iPadOS | iOS, iPadOS, Android |
+
+**Le cœur est un portage exact.** `app/src/core/` reprend PuzzleKit, les familles, GameCore, Persistence et GameAudio. Les générateurs donnent **les mêmes puzzles au bit près** que la version Swift, et des tests le vérifient avec les mêmes empreintes de référence (`fidelity.test.ts`). Les entiers 64 bits utilisent `BigInt`.
+
+**Ajout propre à la version TypeScript :** une somme de contrôle par entrée de sauvegarde et une par fichier. Le test aléatoire de corruption a montré qu'un octet abîmé dans une clé pouvait produire une entrée valide inventée ; ces entrées sont maintenant rejetées, et on complète depuis la copie de secours.
+
+**`Packages/LampionKit` (Swift) est archivé** comme implémentation de référence. Il n'est plus mis à jour. Les sections suivantes décrivent l'architecture d'origine ; les contrats (famille, pipeline, sauvegarde, directeur son) sont identiques en TypeScript.
+
 ---
 
 ## Sommaire

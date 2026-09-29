@@ -1,10 +1,20 @@
 # Lampion (nom de travail)
 
-Jeu iOS de casse-têtes premium : le joueur rallume, énigme après énigme, les lanternes de Vesper, une ville nocturne endormie. Hors ligne, sans compte, sans collecte de données, sans IA dans le produit.
+Jeu de casse-têtes premium pour iPhone, iPad et Android : le joueur rallume, énigme après énigme, les lanternes de Vesper, une ville nocturne endormie. Hors ligne, sans compte, sans collecte de données, sans IA dans le produit.
 
 ## État du projet
 
-Conception validée (phase 6). Développement en cours (phase 8) : le **cœur Swift** est écrit et testé ; l'app SwiftUI viendra ensuite (elle demande macOS et Xcode).
+Conception validée (phase 6). Développement en cours (phase 8), avec **Expo (React Native, TypeScript)** dans [`app/`](app). Le cœur du jeu est porté en TypeScript et testé ; il produit les mêmes puzzles, au bit près, que la version Swift d'origine. Les écrans sont en cours.
+
+## App Expo
+
+```
+cd app
+npm install
+npm test            # tests du cœur (puzzles, progression, sauvegarde, son)
+npm run typecheck
+npx expo start      # puis scanner le QR code avec Expo Go sur le téléphone
+```
 
 | Document | Contenu |
 |---|---|
@@ -14,7 +24,8 @@ Conception validée (phase 6). Développement en cours (phase 8) : le **cœur Sw
 | [TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md) | Modules Swift, moteur de puzzles, pipeline de contenu, sauvegarde, tests, confidentialité |
 | [WIREFRAMES.md](WIREFRAMES.md) | Les 24 écrans, leurs états et la navigation |
 | [VALIDATION.md](VALIDATION.md) | Revue critique de la conception et corrections appliquées |
-| [Packages/LampionKit](Packages/LampionKit) | Cœur en Swift pur : moteur de puzzles, familles, progression, économie, défi du jour, sauvegarde |
+| [app/](app) | App Expo : cœur TypeScript (`src/core/`) et écrans |
+| [Packages/LampionKit](Packages/LampionKit) | Archivé : cœur d'origine en Swift pur : moteur de puzzles, familles, progression, économie, défi du jour, sauvegarde |
 | [prototype/index.html](prototype/index.html) | Maquette navigable : direction artistique puis 24 écrans iPhone et iPad, puzzles jouables |
 
 ## Ouvrir la maquette
@@ -30,9 +41,9 @@ python3 prototype/verification/generate_lanterns_and_lock.py
 python3 prototype/verification/generate_gears.py
 ```
 
-## Cœur Swift (LampionKit)
+## Cœur Swift (LampionKit) — archivé
 
-Swift pur, sans SwiftUI ni dépendance tierce : compile sur macOS comme sur Linux.
+Implémentation de référence, gardée pour comparaison et plus mise à jour : l'app utilise le portage TypeScript de `app/src/core/`. Swift pur, compile sur macOS comme sur Linux.
 
 ```
 cd Packages/LampionKit
