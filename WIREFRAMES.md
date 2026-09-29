@@ -107,7 +107,7 @@
 - **But :** en 3 s, savoir *où j'en suis* et *quoi faire*.
 - **Action principale :** ◉ Continuer (lanterne recommandée).
 - **iPad paysage :** fenêtre sur Vesper à gauche (60 %), colonne droite : carte « Continuer », défi, objectif, Nilo.
-- **États :** *premier retour* (aucun défi débloqué) → le bloc défi montre « Disponible après 6 lanternes » ; *défi fait* → carte défi atténuée avec ✓ et « Demain : Lanterne » ; *tout le contenu fini* → Continuer devient « Défi du jour » et l'objectif « Rejouer vos salles préférées ».
+- **États :** *premier retour* (aucun défi débloqué) → le bloc défi montre « Disponible après 6 lanternes » ; *défi fait* → carte défi atténuée avec ✓ et « Demain : Brasier » ; *tout le contenu fini* → Continuer devient « Défi du jour » et l'objectif « Rejouer vos salles préférées ».
 
 ### 4 · Carte du monde (Vesper)
 
@@ -170,7 +170,7 @@
 ```
 ┌─────────────────────────┐
 │ ‹ Salle 2   ◈ 236   ⏸   │
-│ Lanternes · Flamme ▲▲▲  │
+│ Lampes · Flamme ▲▲▲     │
 │ Éclaire toutes les cases│
 │ blanches.            ⓘ  │
 │ ┌─────────────────────┐ │
@@ -193,7 +193,7 @@
 
 ### 11 · Puzzle échoué → **état d'erreur inline**
 
-- Pas d'écran dédié (décision validée). Sur validation fausse : secousse, élément fautif entouré (corail + ✕), message précis (« Ce mur veut 2 lanternes, il en a 3. ») ou, pour un QCM, « Pas celle-ci. » + option barrée ; Nilo : oreilles en arrière.
+- Pas d'écran dédié (décision validée). Sur validation fausse : secousse, élément fautif entouré (corail + ✕), message précis (« Ce mur veut 2 lampes, il en a 3. ») ou, pour un QCM, « Pas celle-ci. » + option barrée ; Nilo : oreilles en arrière.
 - Après 2 erreurs : Nilo propose un Murmure (une fois).
 - Aucune perte, aucun compteur d'essais affiché.
 
@@ -240,7 +240,7 @@
 ### 18 · Défi du jour
 
 - Calendrier du mois (jours faits = flamme, veilleuses = petite lune) ; défi du jour : famille, palier, récompense ; série actuelle + record ; ◉ **Jouer le défi** ; rattrapage des 7 derniers jours.
-- **États :** *fait* (« Revenez demain — Lanterne »), *série sauvée par une veilleuse* (toast), *indisponible* (avant 6 lanternes).
+- **États :** *fait* (« Revenez demain — Brasier »), *série sauvée par une veilleuse* (toast), *indisponible* (avant 6 lanternes).
 
 ### 19 · Profil local → **Carnet › Statistiques**
 

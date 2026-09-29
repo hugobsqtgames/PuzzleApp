@@ -285,7 +285,7 @@ footer.foot{margin-top:56px;padding-block:28px 48px;border-top:1px solid var(--l
       <div class="eyebrow">Maquette v0.1 · 29 septembre 2026 · document de conception</div>
       <h1>Lampion</h1>
       <p class="slogan">Chaque énigme rallume une lumière.</p>
-      <p class="meta">Direction artistique « Encre &amp; Lueur », puis maquettes navigables des 24 écrans sur iPhone et iPad. Les puzzles jouables de cette maquette (Engrenages, Interrupteurs, Cadenas, Lanternes, Suites, Balances) ont été générés puis vérifiés par un solveur : une seule solution chacun.</p>
+      <p class="meta">Direction artistique « Encre &amp; Lueur », puis maquettes navigables des 24 écrans sur iPhone et iPad. Les puzzles jouables de cette maquette (Engrenages, Interrupteurs, Cadenas, Lampes, Suites, Balances) ont été générés puis vérifiés par un solveur : une seule solution chacun.</p>
       <nav class="toc" aria-label="Sommaire">
         <a href="#da">Direction artistique</a>
         <a href="#maquettes">Maquettes navigables</a>
@@ -463,7 +463,7 @@ const SCARVES={none:'Aucune',knit:'Écharpe tricotée',spice:"Foulard d'épices"
 const COMPS={none:'Aucun',firefly:'Luciole',leaf:'Feuille flottante'};
 const FAM={
   SU:{n:'Suites',rule:'Trouve le nombre suivant.'},
-  LA:{n:'Lanternes',rule:'Éclaire toutes les cases. Deux lanternes ne se voient jamais.'},
+  LA:{n:'Lampes',rule:'Éclaire toutes les cases. Deux lampes ne se voient jamais.'},
   CA:{n:'Cadenas',rule:'Trouve le code : trois chiffres, tous différents.'},
   EN:{n:'Engrenages',rule:'Tourne les tuiles pour conduire la lumière à toutes les lanternes.'},
   MA:{n:'Marqueterie',rule:'Remplis la silhouette avec toutes les pièces.'},
@@ -476,7 +476,7 @@ const FAM={
   MI:{n:'Miroirs',rule:'Place les miroirs pour guider le rayon.'},
   EG:{n:'Énigmes',rule:'Énigmes écrites à la main.'}
 };
-const TIERS=['Étincelle','Lueur','Flamme','Lanterne','Phare','Astre'];
+const TIERS=['Étincelle','Lueur','Flamme','Brasier','Fanal','Astre'];
 const DISTRICTS=[
   {id:'phare',n:'Le Phare',hue:'#F4B45E',need:0,total:24},
   {id:'biblio',n:'La Bibliothèque Murmurante',s:'Bibliothèque',hue:'#E7A98B',need:14,total:160},
@@ -715,7 +715,7 @@ function districtSVG(w,h,sel){
 /* bâtiment en coupe */
 function buildingData(id){
   if(id==='carillon')return{n:'Tour du Carillon',L:12,rooms:[{n:'Salle 1',L:8,st:'open'},{n:'Salle 2',L:4,st:'open'},{n:'Salle 3',L:0,st:'locked',need:'6 lanternes en Salle 2'},{n:'Salle 4',L:0,st:'locked',need:'6 lanternes en Salle 3'}],key:{st:'locked',need:'30 lanternes dans la tour'}};
-  const r2=litCount();return{n:'Atelier des Ressorts',L:24+r2,rooms:[{n:'Salle 1 · La Forge',L:10,st:'done'},{n:'Salle 2 · L’Établi',L:r2,st:r2>=10?'done':'current'},{n:'Salle 3 · Le Magasin',L:8,st:'open'},{n:'Salle 4 · La Mansarde',L:6,st:'open'}],key:{st:(24+r2)>=30?'open':'locked',need:'30 lanternes dans l’atelier'}};}
+  const r2=litCount();return{n:'Atelier des Ressorts',L:24+r2,rooms:[{n:'Salle 1 · La Forge',L:10,st:'done'},{n:'Salle 2 · L’Établi',L:r2,st:r2>=10?'done':'current'},{n:'Salle 3 · Le Magasin',L:8,st:'open'},{n:'Salle 4 · La Mansarde',L:6,T:9,st:'open'}],key:{st:(24+r2)>=30?'open':'locked',need:'30 lanternes dans l’atelier'}};}
 function coupeSVG(id){
   const B=buildingData(id);const hue='#D8B56A';
   const R=[{x:30,y:330,w:300,h:90,i:0},{x:30,y:230,w:150,h:100,i:1},{x:180,y:230,w:150,h:100,i:2},{x:30,y:130,w:150,h:100,i:3},{x:180,y:130,w:150,h:100,i:'key'}];
@@ -729,9 +729,9 @@ function coupeSVG(id){
     s+=`<g data-a="${st==='locked'?'lockedroom':'room'}" data-id="${isKey?'key':r.i}" data-need="${esc(isKey?B.key.need:room.need||'')}" role="button" tabindex="0" aria-label="${esc(isKey?'Lanterne-clé':room.n)}, ${st==='locked'?'verrouillée':isKey?'ouverte':L+' sur 10'}" style="cursor:pointer">
       <rect x="${r.x+4}" y="${r.y+4}" width="${r.w-8}" height="${r.h-8}" rx="6" fill="${fill}" stroke="${st==='current'?'#F4B45E':'#2E3360'}" stroke-width="${st==='current'?2:1}"/>
       ${frac>0?`<ellipse cx="${r.x+r.w/2}" cy="${r.y+r.h/2}" rx="${r.w*.4}" ry="${r.h*.35}" fill="${hue}" opacity="${(.06+frac*.14).toFixed(2)}"/>`:''}`;
-    if(!isKey&&st!=='locked'){for(let k=0;k<10;k++){const on=k<L,cx=r.x+18+k*((r.w-36)/9),cy=r.y+r.h-22;s+=`<circle cx="${cx}" cy="${cy}" r="${on?4:3}" fill="${on?'#F4B45E':'none'}" stroke="${on?'none':'#4a5190'}" stroke-width="1.3"/>${on?`<circle cx="${cx}" cy="${cy}" r="8" fill="#F4B45E" opacity=".18"/>`:''}`;}}
+    if(!isKey&&st!=='locked'){const TT=room.T||10;for(let k=0;k<TT;k++){const on=k<L,cx=r.x+18+k*((r.w-36)/(TT-1)),cy=r.y+r.h-22;s+=`<circle cx="${cx}" cy="${cy}" r="${on?4:3}" fill="${on?'#F4B45E':'none'}" stroke="${on?'none':'#4a5190'}" stroke-width="1.3"/>${on?`<circle cx="${cx}" cy="${cy}" r="8" fill="#F4B45E" opacity=".18"/>`:''}`;}}
     s+=`<text x="${r.x+16}" y="${r.y+28}" fill="${st==='locked'?'#7A80A8':'#EFE8D8'}" font-family="ui-serif,'New York','Source Serif 4',Georgia,serif" font-size="16" font-weight="600">${esc(label)}</text>
-      <text x="${r.x+16}" y="${r.y+47}" fill="${st==='locked'?'#7A80A8':'#9CA2C6'}" font-family="system-ui,sans-serif" font-size="12.5" font-weight="600">${st==='locked'?'Verrouillée':isKey?'Ouverte · Énigme':st==='done'?'Complète · objet trouvé':L+' / 10'}</text>`;
+      <text x="${r.x+16}" y="${r.y+47}" fill="${st==='locked'?'#7A80A8':'#9CA2C6'}" font-family="system-ui,sans-serif" font-size="12.5" font-weight="600">${st==='locked'?'Verrouillée':isKey?'Ouverte · Énigme':st==='done'?'Complète · objet trouvé':L+' / '+(room.T||10)}</text>`;
     if(st==='locked')s+=`<g transform="translate(${r.x+r.w-40},${r.y+18})" stroke="#7A80A8" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M7 10V8a4 4 0 0 1 8 0v2"/><rect x="4.5" y="10" width="13" height="10" rx="3"/></g>`;
     if(isKey&&st==='open')s+=`<g transform="translate(${r.x+r.w-44},${r.y+50})"><circle cx="12" cy="12" r="16" fill="#F4B45E" opacity=".15"/><path d="M8.5 8.5a3.5 3.5 0 1 1 5.2 3.1c-1 .6-1.7 1.3-1.7 2.6v.8M12 19h.01" stroke="#F4B45E" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>`;
     if(st==='current')s+=`<g transform="translate(${r.x+r.w-58},${r.y+8}) scale(.36)">${nilo({mood:'neutral',label:false,flame:G.cos.flame}).replace(/^<svg/,'<svg width="132" height="120"')}</g>`;
@@ -796,7 +796,7 @@ const PZ={
   CA:{code:'492',clues:[['261',0,1],['349',0,2],['976',0,1],['347',0,1],['185',0,0]],
       hints:['Compare les lignes 3 4 9 et 3 4 7.','Si 3 et 4 étaient tous les deux dans le code, la ligne 3 4 7 aurait deux chiffres justes.','Donc le 9 est dans le code. Avec 9 7 6, le 7 et le 6 sont exclus, et le 9 n’est ni au début ni à la fin : il est au milieu.']},
   LA:{grid:['.X..XX','..3...','XXXX..','..XX2X','...X..','X2..X.'],sol:[[0,0],[0,2],[1,1],[1,3],[2,4],[3,0],[4,1],[4,4],[5,2],[5,5]],
-      hints:['Regarde le mur marqué 3.','Le mur 3 n’a que trois cases libres autour de lui : elles portent toutes une lanterne.','Place une lanterne au-dessus, à gauche et à droite du 3. Fais de même avec le 2 de droite : ses deux seules cases libres sont au-dessus et en dessous.']},
+      hints:['Regarde le mur marqué 3.','Le mur 3 n’a que trois cases libres autour de lui : elles portent toutes une lampe.','Place une lampe au-dessus, à gauche et à droite du 3. Fais de même avec le 2 de droite : ses deux seules cases libres sont au-dessus et en dessous.']},
   SU:{seq:[3,5,9,17,33],opts:[49,65,66,50],ans:65,hints:['Regarde l’écart entre deux nombres voisins.','Les écarts sont 2, 4, 8, 16.','Chaque écart double : le prochain écart est 32.']},
   BA:{ans:16,hints:['Commence par la balance 2 : elle contient un poids connu.','Dans la balance 2, remplace le triangle par deux cercles (balance 1).','Trois cercles pèsent 12 : un cercle pèse 4, un triangle 8.']},
   TUTO:{n:2}
@@ -915,7 +915,7 @@ function dailyCard(d){
   if(d.daily==='locked')return `<div class="card row dim" style="gap:14px">${glyphCircle('cal',44,T.tx2)}<div style="flex:1"><div class="t-headline">Défi du soir</div><div class="t-sub">Disponible après 6 lanternes</div></div>${ic('lock',20,T.tx2)}</div>`;
   const done=d.daily==='done';
   return `<button class="card row" data-a="go" data-to="daily" style="gap:14px;text-align:left;cursor:pointer;width:100%;color:inherit">${glyphCircle('BA',44,done?T.tx2:T.amber)}
-   <div style="flex:1;min-width:0"><div class="t-headline">${done?'Défi du soir réussi':'Défi du soir'}</div><div class="t-sub">${done?'Demain : Cadenas · Lanterne':'Mardi 29 septembre · Balances · Flamme'}</div></div>
+   <div style="flex:1;min-width:0"><div class="t-headline">${done?'Défi du soir réussi':'Défi du soir'}</div><div class="t-sub">${done?'Demain : Cadenas · Brasier':'Mardi 29 septembre · Balances · Flamme'}</div></div>
    <div class="center" style="gap:0">${ic('light',22,T.amber)}<b class="num" style="font-size:15px">${G.streak}</b></div>${done?ic('check',20,T.gold,2):''}</button>`;}
 function scrHome(ctx){
   const d=homeData(ctx);
@@ -1020,9 +1020,9 @@ function boardHTML(p,ctx){
   if(p.kind==='LA'){const g=PZ.LA.grid,st=akariState(p),sz=big?70:51;let s=`<div class="board" style="display:grid;grid-template-columns:repeat(6,${sz}px);gap:4px;justify-content:center;padding:12px">`;
     for(let r=0;r<6;r++)for(let c=0;c<6;c++){const ch=g[r][c],k=r*6+c;
       if(ch!=='.'){const w=st.walls[k];const col=!w?T.tx3:(w.have>w.need?T.coral:(w.have===w.need?T.amber:T.tx));
-        s+=`<div class="cell" role="img" aria-label="Mur${w?' '+w.need+', touche '+w.have+' lanterne'+(w.have>1?'s':''):''}" style="width:${sz}px;height:${sz}px;background:#080914;cursor:default;font-family:var(--round);font-weight:800;font-size:${sz*.44}px;color:${col};${w&&w.have>w.need?'box-shadow:inset 0 0 0 2px '+T.coral:''}">${w?w.need:''}</div>`;continue;}
+        s+=`<div class="cell" role="img" aria-label="Mur${w?' '+w.need+', touche '+w.have+' lampe'+(w.have>1?'s':''):''}" style="width:${sz}px;height:${sz}px;background:#080914;cursor:default;font-family:var(--round);font-weight:800;font-size:${sz*.44}px;color:${col};${w&&w.have>w.need?'box-shadow:inset 0 0 0 2px '+T.coral:''}">${w?w.need:''}</div>`;continue;}
       const v=p.c[r][c],lit=st.lit.has(k),conf=st.conf.has(k);
-      s+=`<button class="cell" data-a="la" data-r="${r}" data-c="${c}" aria-label="Ligne ${r+1}, colonne ${c+1} : ${v===1?'lanterne'+(conf?', en conflit':''):v===2?'marquée vide':(lit?'éclairée':'sombre')}" style="width:${sz}px;height:${sz}px;background:${lit?'#3a3040':'#1B1F3A'};${conf?'box-shadow:inset 0 0 0 2px '+T.coral:''}">
+      s+=`<button class="cell" data-a="la" data-r="${r}" data-c="${c}" aria-label="Ligne ${r+1}, colonne ${c+1} : ${v===1?'lampe'+(conf?', en conflit':''):v===2?'marquée vide':(lit?'éclairée':'sombre')}" style="width:${sz}px;height:${sz}px;background:${lit?'#3a3040':'#1B1F3A'};${conf?'box-shadow:inset 0 0 0 2px '+T.coral:''}">
         ${v===1?`<svg viewBox="0 0 24 24" width="${sz*.62}" height="${sz*.62}"><circle cx="12" cy="12" r="11" fill="${conf?T.coral:T.amber}" opacity=".25"/><rect x="7.5" y="5" width="9" height="13" rx="3.5" fill="${conf?T.coral:T.amber}"/><circle cx="12" cy="11" r="2.4" fill="#FFF3D6"/>${conf?`<path d="M3 3l18 18" stroke="${T.coral}" stroke-width="2"/>`:''}</svg>`:v===2?`<span style="width:7px;height:7px;border-radius:50%;background:${T.tx2}"></span>`:''}</button>`;}
     return s+'</div>';}
   if(p.kind==='CA'){const rows=PZ.CA.clues.map(([g,a,b],i)=>`<div class="clue ${p.bad===i?'bad':''}"><div class="digits">${g.split('').map(d=>`<span>${d}</span>`).join('')}</div><div class="pegs" role="img" aria-label="${fmtPegs(a,b)}">${'<i class="peg full"></i>'.repeat(a)}${'<i class="peg hollow"></i>'.repeat(b)}${!a&&!b?'<i class="peg none"></i>':''}</div><small>${fmtPegs(a,b)}</small></div>`).join('');
@@ -1043,8 +1043,8 @@ function boardHTML(p,ctx){
 const ANSWER_KINDS=['CA','SU','BA'];
 function feedbackHTML(p){
   if(p.err)return `<div class="err-msg ${S.shake?'shake':''}" role="alert">${ic('x',20,T.coral,2)}<span>${esc(p.err)}</span></div>`;
-  if(p.kind==='LA'){const st=akariState(p);if(st.conf.size)return `<div class="err-msg" role="alert">${ic('x',20,T.coral,2)}<span>Ces deux lanternes se voient : une seule peut rester.</span></div>`;
-    if(st.over)return `<div class="err-msg" role="alert">${ic('x',20,T.coral,2)}<span>Ce mur veut ${st.over.need} lanterne${st.over.need>1?'s':''}, il en a ${st.over.have}.</span></div>`;}
+  if(p.kind==='LA'){const st=akariState(p);if(st.conf.size)return `<div class="err-msg" role="alert">${ic('x',20,T.coral,2)}<span>Ces deux lampes se voient : une seule peut rester.</span></div>`;
+    if(st.over)return `<div class="err-msg" role="alert">${ic('x',20,T.coral,2)}<span>Ce mur veut ${st.over.need} lampe${st.over.need>1?'s':''}, il en a ${st.over.have}.</span></div>`;}
   if(p.hl>0&&p.hl<4){const h=PZ[p.kind==='TUTO'?'IN':p.kind].hints[p.hl-1];return `<div class="hint-bubble" role="status">${ic(['whisper','hint','light'][p.hl-1],20,T.moon)}<span><b style="font-weight:600">${['Murmure','Piste','Éclairage'][p.hl-1]} · </b>${esc(h)}</span></div>`;}
   if(p.kind==='TUTO')return `<div class="hint-bubble">${ic('whisper',20,T.moon)}<span>Touche la lanterne éteinte en haut à gauche.</span></div>`;
   if(p.kind==='IN')return `<p class="t-foot" style="text-align:center">${p.moves} coup${p.moves>1?'s':''}</p>`;
@@ -1159,7 +1159,7 @@ function scrDaily(ctx){
   const streak=`<div class="card row" style="gap:14px"><div class="center" style="width:64px">${ic('light',34,T.amber,1.6)}</div><div style="flex:1"><div class="t-title2 num">${G.streak+(v===1&&!G.dailyDone?1:0)} soirs</div><div class="t-foot">Flamme du soir · record ${G.best}</div></div><div class="center" style="gap:2px"><div class="row" style="gap:2px">${ic('moonI',18,T.moon,1.8)}${ic('moonI',18,T.line,1.8)}</div><span class="t-foot">${G.nightlights} veilleuse</span></div></div>`;
   const today=loading?`<div class="card center" style="gap:12px;padding:26px"><span style="width:18px;height:18px;border-radius:50%;background:${T.amber};box-shadow:0 0 16px ${T.amber};animation:breathe 1.4s ease-in-out infinite"></span><p class="t-sub">Préparation du défi du soir…</p><button class="btn btn-p loading" disabled><span class="lbl">Jouer le défi</span></button></div>`
     :`<div class="card" style="display:flex;flex-direction:column;gap:12px"><div class="row" style="gap:12px">${glyphCircle('BA',48,done?T.tx2:T.amber)}<div style="flex:1"><div class="t-cap">Mardi 29 septembre</div><div class="t-title3">Balances</div><div class="row" style="gap:6px">${tierBars(2)}<span class="t-foot">Flamme</span></div></div><span class="pill">${ic('shard',16,T.moon)}+15 · +${Math.min(10,G.streak)}</span></div>
-      ${done?`<div class="row" style="gap:10px">${ic('check',22,T.gold,2)}<p class="t-callout">Réussi. Demain : Cadenas, palier Lanterne.</p></div>`:`<button class="btn btn-p" data-a="playdaily">Jouer le défi</button>`}
+      ${done?`<div class="row" style="gap:10px">${ic('check',22,T.gold,2)}<p class="t-callout">Réussi. Demain : Cadenas, palier Brasier.</p></div>`:`<button class="btn btn-p" data-a="playdaily">Jouer le défi</button>`}
       <p class="t-foot">Même énigme pour tous les joueurs en français ce soir. Générée sur ton appareil, sans connexion.</p></div>`;
   const catch_=`<button class="list-row" data-a="toast" data-text="Rattrapage : récompense de base, ne compte pas pour la série." style="width:100%;background:none;border:0;color:inherit;cursor:pointer;text-align:left;gap:10px">${ic('cal',20,T.tx2)}<span style="flex:1">Rattraper le 16 septembre</span>${ic('chev',18,T.tx3)}</button>`;
   const body=`${streak}${today}<div class="card">${calendarHTML(ctx.ipad)}</div>${catch_}`;
@@ -1214,12 +1214,12 @@ function carnetStats(ctx){
   const fams=[['IN',22],['SU',26],['LA',21],['CA',19],['MO',18],['EN',14],['EG',2]];const mx=26;
   const bars=fams.map(([f,n])=>`<div class="row" style="gap:10px">${ic(f,18,T.tx2)}<span style="width:92px;font-size:14px">${FAM[f].n}</span><div style="flex:1;height:10px;background:#1d2140;border-radius:6px;overflow:hidden"><div style="width:${100*n/mx}%;height:100%;background:${T.amber};border-radius:6px"></div></div><span class="num t-foot" style="width:24px;text-align:right">${n}</span></div>`).join('');
   const tiles=[['Lanternes',G.lights],['Clairvoyance','41 %'],['Série record',G.best+' soirs'],['Murmures','31']].map(([l,v])=>`<div class="card" style="padding:14px"><div class="t-foot">${l}</div><div class="t-title2 num" style="margin-top:2px">${v}</div></div>`).join('');
-  const times=[['Étincelle','0:48'],['Lueur','1:35'],['Flamme','3:10'],['Lanterne','5:02']].map(([t,v])=>`<div class="row-b" style="padding:6px 0"><span class="t-sub">${t}</span><span class="num">${v}</span></div>`).join('');
+  const times=[['Étincelle','0:48'],['Lueur','1:35'],['Flamme','3:10'],['Brasier','5:02']].map(([t,v])=>`<div class="row-b" style="padding:6px 0"><span class="t-sub">${t}</span><span class="num">${v}</span></div>`).join('');
   return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${tiles}</div><div class="card" style="display:flex;flex-direction:column;gap:10px"><div class="t-cap">Lanternes par famille</div>${bars}</div><div class="card"><div class="t-cap" style="margin-bottom:4px">Temps médian par palier</div>${times}</div>
    <div class="row" style="gap:10px">${ic('shield',20,T.moon)}<p class="t-foot">Ces statistiques restent sur ton appareil. Rien n’est envoyé.</p></div>`;}
 function carnetVesper(){
   const rows=DISTRICTS.map(d=>{const st=distState(d),L=distLights(d);return `<div class="list-row" style="gap:12px"><span style="width:12px;height:12px;border-radius:50%;background:${st==='locked'?'transparent':d.hue};border:1.5px solid ${d.hue};flex:none"></span><div style="flex:1;min-width:0"><div class="t-headline ${st==='locked'?'muted':''}">${esc(d.s||d.n)}</div>${st==='locked'?`<div class="t-foot">S’ouvre à ${d.need} lumières</div>`:`<div class="gauge" style="height:5px;margin-top:8px"><i style="width:${Math.round(100*L/d.total)}%"></i></div>`}</div><span class="t-foot num">${st==='locked'?ic('lock',16,T.tx3):L+' / '+d.total}</span></div>`;}).join('');
-  const dist=[['Étincelle',44],['Lueur',71],['Flamme',52],['Lanterne',15],['Phare',2],['Astre',0]];
+  const dist=[['Étincelle',44],['Lueur',71],['Flamme',52],['Brasier',15],['Fanal',2],['Astre',0]];
   return `<div class="card center" style="gap:4px;padding:20px"><div class="t-cap">Vesper</div><div class="t-display num">${G.lights}<span class="t-title2 muted"> / 1 000</span></div><p class="t-foot">Grenier de l’Allumeur : 590 lumières et 6 lettres</p></div><div class="card" style="padding:4px 16px">${rows}</div>
    <div class="card"><div class="t-cap" style="margin-bottom:10px">Par palier</div><div style="display:flex;align-items:flex-end;gap:10px;height:90px">${dist.map(([t,n])=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span class="t-foot num">${n}</span><div style="width:100%;height:${Math.max(3,n)}px;background:${T.amber};border-radius:4px 4px 0 0;opacity:${n?1:.3}"></div><span style="font-size:10.5px;color:${T.tx2}">${t}</span></div>`).join('')}</div></div>`;}
 function scrCarnet(ctx,tab,empty){
@@ -1262,9 +1262,9 @@ const SCREENS=[
   {id:'building',n:6,t:'Bâtiment',g:'Exploration',vars:['Atelier des Ressorts','Tour du Carillon'],note:'Le bâtiment en coupe montre toutes ses salles d’un coup : pas d’écran « liste ». Les fenêtres s’éclairent en proportion.',r:scrBuilding},
   {id:'room',n:7,t:'Salle',g:'Exploration',vars:['En cours','Salle complète'],note:'Dix lanternes posées sur les objets. Chaque lumière réchauffe le décor autour d’elle. La lanterne recommandée pulse.',r:scrRoom},
   {id:'select',n:8,t:'Sélection de puzzle',g:'Exploration',vars:['Lanterne éteinte','Lanterne allumée'],note:'Aperçu court : famille, palier, récompense, règle. Désactivable dans les réglages pour ouvrir directement le puzzle.',r:scrSelect},
-  {id:'puzzle',n:9,t:'Puzzle en cours',g:'Puzzle',vars:['Engrenages','Interrupteurs','Cadenas','Lanternes','Suites'],note:'Cinq puzzles jouables, vérifiés par solveur. Consigne en une phrase, plateau central, actions dans la zone du pouce. Aucun chronomètre.',r:scrPuzzle},
+  {id:'puzzle',n:9,t:'Puzzle en cours',g:'Puzzle',vars:['Engrenages','Interrupteurs','Cadenas','Lampes','Suites'],note:'Cinq puzzles jouables, vérifiés par solveur. Consigne en une phrase, plateau central, actions dans la zone du pouce. Aucun chronomètre.',r:scrPuzzle},
   {id:'success',n:10,t:'Puzzle réussi',g:'Puzzle',vars:[],note:'La lanterne s’allume, les gains s’affichent, la jauge de salle avance. <b>Suivant</b> enchaîne en un tap.',r:scrSuccess},
-  {id:'error',n:11,t:'Erreur (inline)',g:'Puzzle',vars:['Cadenas','Lanternes','Suites'],note:'Pas d’écran d’échec : l’erreur est localisée et expliquée (« la ligne 3 4 9 donnerait… »). Rien n’est perdu.',r:scrError},
+  {id:'error',n:11,t:'Erreur (inline)',g:'Puzzle',vars:['Cadenas','Lampes','Suites'],note:'Pas d’écran d’échec : l’erreur est localisée et expliquée (« la ligne 3 4 9 donnerait… »). Rien n’est perdu.',r:scrError},
   {id:'hints',n:12,t:'Indices',g:'Puzzle',vars:['Murmure','Piste achetée','Solde insuffisant'],note:'Quatre niveaux : Murmure (gratuit), Piste, Éclairage, Solution. Sur iPad, le panneau est toujours visible.',r:scrHints},
   {id:'pause',n:24,t:'Pause',g:'Puzzle',vars:[],note:'Reprendre, revoir la règle, recommencer, couper le son, revenir à la salle. L’état du puzzle est gardé.',r:scrPause},
   {id:'daily',n:18,t:'Défi du jour',g:'Progression',vars:['À faire','Fait','Génération','Série sauvée'],note:'Un puzzle par soir, identique pour tous dans la même langue, généré hors ligne à partir de la date. Les veilleuses protègent la série.',r:scrDaily},
@@ -1338,7 +1338,7 @@ const A={
   closesheet:()=>{S.sheet=null;if(S.screen==='hints'||S.screen==='pause'){S.screen='puzzle';S.v=Math.max(0,PUZ_VARIANTS.indexOf(S.pz&&S.pz.kind));}if(S.screen==='select'){S.screen='room';S.v=0;}render();},
   rot:d=>{const p=S.pz;pushHist(p);p.err=null;p.rot[+d.r][+d.c]=rotm(p.rot[+d.r][+d.c],1);p.moves++;afterMove(p);},
   sw:d=>{const p=S.pz;pushHist(p);p.err=null;toggleCross(p.b,+d.r,+d.c);p.moves++;afterMove(p);},
-  la:d=>{const p=S.pz;pushHist(p);p.err=null;const r=+d.r,c=+d.c;p.c[r][c]=(p.c[r][c]+1)%3;const st=akariState(p);if(st.conf.size||st.over)p.errors++;afterMove(p);},
+  la:d=>{const p=S.pz;pushHist(p);p.err=null;const r=+d.r,c=+d.c;p.c[r][c]=(p.c[r][c]+1)%3;afterMove(p);},
   wheel:d=>{const p=S.pz;p.err=null;p.bad=-1;p.w[+d.i]=(p.w[+d.i]+ +d.d+10)%10;render();},
   opt:d=>{const p=S.pz;p.err=null;p.sel=+d.v;render();},
   key:d=>{const p=S.pz;p.err=null;if(d.k==='⌫')p.val=p.val.slice(0,-1);else if(d.k==='C')p.val='';else if(p.val.length<3)p.val+=d.k;render();},
@@ -1429,7 +1429,7 @@ function buildDA(){
   $('buttons').innerHTML=`
    <div class="panel"><h4>Principal · LanternButton</h4><div style="display:grid;gap:10px"><button class="btn btn-p">${ic('light',20,'#0D0F1E',1.8)}Continuer</button><button class="btn btn-p" style="background:var(--amberP);transform:scale(.97)">Pressé</button><button class="btn btn-p" disabled>Désactivé</button><button class="btn btn-p loading" disabled style="opacity:1"><span class="lbl">Chargement</span></button></div></div>
    <div class="panel"><h4>Secondaire · fantôme · icône</h4><div style="display:grid;gap:10px"><button class="btn btn-s">Retour à la salle</button><button class="btn btn-g" style="justify-self:start">Plus tard</button><div class="row" style="gap:10px"><button class="btn btn-i" aria-label="Pause">${ic('pause',20)}</button><button class="btn btn-i" aria-label="Annuler">${ic('undo',20)}</button><button class="btn btn-i" style="width:52px;height:52px;border-color:#3d4f7a" aria-label="Indices">${ic('hint',24,T.moon)}</button><span class="pill">${ic('shard',16,T.moon)}236</span></div></div></div>
-   <div class="panel"><h4>Retours : erreur · indice · succès</h4><div style="display:grid;gap:10px"><div class="err-msg">${ic('x',20,T.coral,2)}<span>Ce mur veut 2 lanternes, il en a 3.</span></div><div class="hint-bubble">${ic('whisper',20,T.moon)}<span><b style="font-weight:600">Murmure · </b>Regarde le mur marqué 3.</span></div><div class="row" style="gap:10px;padding:10px 12px;border-radius:16px;border:1px solid #6b5a3c;background:rgba(255,217,142,.06)">${ic('check',20,T.gold,2)}<span>Lanterne allumée · +12 Éclats</span></div></div></div>`;
+   <div class="panel"><h4>Retours : erreur · indice · succès</h4><div style="display:grid;gap:10px"><div class="err-msg">${ic('x',20,T.coral,2)}<span>Ce mur veut 2 lampes, il en a 3.</span></div><div class="hint-bubble">${ic('whisper',20,T.moon)}<span><b style="font-weight:600">Murmure · </b>Regarde le mur marqué 3.</span></div><div class="row" style="gap:10px;padding:10px 12px;border-radius:16px;border:1px solid #6b5a3c;background:rgba(255,217,142,.06)">${ic('check',20,T.gold,2)}<span>Lanterne allumée · +12 Éclats</span></div></div></div>`;
   $('components').innerHTML=`
    <div class="panel" style="display:flex;flex-direction:column;gap:10px"><h4>ContinueCard</h4><div class="card" style="display:flex;flex-direction:column;gap:10px;background:var(--bg)"><div class="crumb">Horlogerie › <b>Atelier des Ressorts</b></div><div class="t-title2">Salle 2 · L’Établi</div>${gauge(6,10)}<button class="btn btn-p">Continuer</button></div></div>
    <div class="panel"><h4>LanternNode — états</h4><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">${[['dark','Éteinte'],['rec','Recommandée'],['progress','Commencée'],['lit','Allumée'],['key','Lanterne-clé'],['locked','Verrouillée']].map(([s,l])=>`<div class="center" style="gap:2px;min-height:96px;justify-content:flex-end">${lanternNode(s)}<span class="cap">${l}</span></div>`).join('')}</div></div>

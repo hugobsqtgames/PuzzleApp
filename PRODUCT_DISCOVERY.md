@@ -301,7 +301,7 @@ Le « monde » (Vesper) est la saison 1. D'autres villes = futures saisons. L'«
 
 | # | Quartier | Ambiance | Familles principales | Habitant·e·s (créatures) |
 |---|---|---|---|---|
-| 0 | **Le Phare** | Hub côtier, tutoriel, maison de Nilo | Introduction de toutes les familles, Interrupteurs, Lanternes | — (la maison de l'Allumeur, vide) |
+| 0 | **Le Phare** | Hub côtier, tutoriel, maison de Nilo | Introduction de toutes les familles, Interrupteurs, Lampes | — (la maison de l'Allumeur, vide) |
 | 1 | **La Bibliothèque Murmurante** | Rayonnages infinis, papier, poussière dorée | Suites, Motifs, Énigmes | L'Archiviste (un héron à lunettes) |
 | 2 | **L'Horlogerie** | Engrenages, laiton, tic-tac | Engrenages (rotation), Cadenas (codes) | L'Horlogère (une taupe) |
 | 3 | **La Serre de Verre** | Verrières, plantes lumineuses, vapeur | Fil (chemins), Marqueterie (placement) | Le Jardinier (un escargot très lent) |
@@ -350,7 +350,7 @@ Les noms sont des noms de travail « in-universe » ; la catégorie du brief est
 | # | Famille | Catégorie du brief | Principe (1 phrase) | Génération | Validation | Solution unique ? |
 |---|---|---|---|---|---|---|
 | 1 | **Suites** | Suites logiques | Trouve l'élément suivant d'une suite (nombres, formes, positions). | Grammaire de règles composables | Banque de règles + QCM : une seule option cohérente | Oui (via QCM) |
-| 2 | **Lanternes** | Grilles | Place des lanternes pour éclairer toutes les cases ; deux lanternes ne se voient jamais ; les murs numérotés imposent leur nombre de voisines. *(règles du genre « Akari », genre public)* | Placement aléatoire + ajout d'indices jusqu'à unicité | Solveur par propagation + backtracking | Oui |
+| 2 | **Lampes** | Grilles | Place des lampes pour éclairer toutes les cases ; deux lampes ne se voient jamais ; les murs numérotés imposent leur nombre de voisines. *(règles du genre « Akari », genre public)* | Placement aléatoire + ajout d'indices jusqu'à unicité | Solveur par propagation + backtracking | Oui |
 | 3 | **Cadenas** | Codes / combinaisons | Trouve le code à partir d'indices du type « 6 8 2 : un chiffre juste et bien placé ». | Code aléatoire + indices générés puis minimisés | Énumération exhaustive (10ⁿ) | Oui |
 | 4 | **Engrenages** | Rotation | Tourne les tuiles pour conduire la lumière de la source à toutes les lanternes, sans fuite. | Arbre couvrant aléatoire, puis rotations mélangées | Solveur de contraintes | Oui (on rejette les ambigus) |
 | 5 | **Marqueterie** | Placement / Tetris-like | Remplis la silhouette avec toutes les pièces (polyominos), rotation autorisée. | Découpage aléatoire d'une forme | Couverture exacte (Algorithm X) — compte les solutions | Non requis : toute solution valide est acceptée |
@@ -368,7 +368,7 @@ Les noms sont des noms de travail « in-universe » ; la catégorie du brief est
 | Famille | Nb | Famille | Nb |
 |---|---|---|---|
 | Suites | 90 | Menteurs | 70 |
-| Lanternes | 95 | Enquêtes | 70 |
+| Lampes | 95 | Enquêtes | 70 |
 | Cadenas | 90 | Balances | 85 |
 | Engrenages | 90 | Motifs | 90 |
 | Marqueterie | 85 | Fil | 85 |
@@ -393,7 +393,7 @@ Aucune famille ne dépasse ~10 % du total. Le défi quotidien, lui, est génér�
 
 Chaque famille a des **variantes** introduites progressivement, pour qu'un joueur voie une nouveauté environ toutes les 20–30 minutes de jeu. Exemples :
 
-- *Lanternes* : grille 5×5 → 7×7 → murs sans nombre → lanternes colorées (deux couleurs qui ne doivent pas se croiser).
+- *Lampes* : grille 5×5 → 7×7 → murs sans nombre → lampes colorées (deux couleurs qui ne doivent pas se croiser).
 - *Engrenages* : tuiles droites/coudes → croisements → tuiles bloquées → deux sources de couleurs.
 - *Balances* : 2 balances → 3–4 balances → balances déséquilibrées (« plus lourd que ») → poids fractionnaires (niveau Astre uniquement).
 - *Cadenas* : 3 chiffres → 4 chiffres → symboles → indices « aucun chiffre juste ».
@@ -434,8 +434,8 @@ Les seuils sont calibrés pour qu'environ **65–70 %** des puzzles d'un quartie
 | 1 | **Étincelle** | Spark | « Ah OK, je vois comment ça marche. » Une seule déduction. | < 1 min |
 | 2 | **Lueur** | Glow | Application directe des règles. | 1–2 min |
 | 3 | **Flamme** | Flame | « Là il faut réfléchir. » Enchaînement de déductions. | 2–4 min |
-| 4 | **Lanterne** | Lantern | Une technique non évidente est nécessaire. | 3–6 min |
-| 5 | **Phare** | Beacon | « Celui-là est vraiment intéressant. » Plusieurs techniques combinées. | 5–10 min |
+| 4 | **Brasier** | Blaze | Une technique non évidente est nécessaire. | 3–6 min |
+| 5 | **Fanal** | Beacon | « Celui-là est vraiment intéressant. » Plusieurs techniques combinées. | 5–10 min |
 | 6 | **Astre** | Star | Maîtrise. Facultatif, jamais sur le chemin critique. | 10 min + |
 
 Le palier est affiché par une petite icône de flamme de taille croissante (et son nom, pour l'accessibilité), jamais par un chiffre anxiogène.

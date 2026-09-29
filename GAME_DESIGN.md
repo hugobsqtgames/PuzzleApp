@@ -44,6 +44,7 @@ Vesper (saison 1)
  ├─ Le Phare (hub + tutoriel)          1 bâtiment · 4 salles · 24 lanternes
  ├─ 6 quartiers                         × 4 bâtiments · × 4 salles · 10 lanternes/salle
  │                                        = 160 lanternes par quartier (dont 4 lanternes-clés)
+ │                                        Salles 1–3 : 10 lanternes · Salle 4 : 9 lanternes + la lanterne-clé du bâtiment
  └─ Le Grenier de l'Allumeur (finale)   1 salle · 16 lanternes
 ```
 
@@ -51,7 +52,7 @@ Vesper (saison 1)
 
 ### 2.2 Quartiers, bâtiments, familles
 
-Familles : SU Suites · LA Lanternes · CA Cadenas · EN Engrenages · MA Marqueterie · ME Menteurs · EQ Enquêtes · BA Balances · MO Motifs · FI Fil · IN Interrupteurs · MI Miroirs · ÉN Énigmes (écrites).
+Familles : SU Suites · LA Lampes · CA Cadenas · EN Engrenages · MA Marqueterie · ME Menteurs · EQ Enquêtes · BA Balances · MO Motifs · FI Fil · IN Interrupteurs · MI Miroirs · ÉN Énigmes (écrites).
 
 | Quartier | Bâtiments | Familles introduites | Familles principales (≈ 60 %) | Invitées (≈ 40 %) |
 |---|---|---|---|---|
@@ -62,7 +63,7 @@ Familles : SU Suites · LA Lanternes · CA Cadenas · EN Engrenages · MA Marque
 | **Marché Flottant** | Pont des Épices · Barque du Changeur · Halle aux Poids · Quai des Lampions | BA | BA, CA | MA, FI, SU, EN |
 | **Théâtre d'Ombres** | Foyer · Coulisses · Loge du Souffleur · Grande Scène | ME, EQ | ME, EQ | BA, MO, FI |
 | **Observatoire** | Salle des Lentilles · Coupole · Bibliothèque des Astres · Chambre Noire | MI | MI, MO | toutes |
-| **Grenier de l'Allumeur** | (finale) | — | toutes, paliers Phare/Astre | — |
+| **Grenier de l'Allumeur** | (finale) | — | toutes, paliers Fanal/Astre | — |
 
 Chaque bâtiment se termine par une **lanterne-clé** : une Énigme écrite à la main (24 au total), ou un puzzle d'une famille principale conçu à la main. Les 24 lanternes-clés sont les seules à être entièrement écrites/choisies par un humain ; les ~976 autres sont générées puis sélectionnées (voir `TECHNICAL_ARCHITECTURE.md` § 8).
 
@@ -83,7 +84,7 @@ Règle d'or : **on débloque par quantité de lumière, jamais par un puzzle pr�
 | Élément | Condition d'ouverture |
 |---|---|
 | Lanternes d'une salle | Toutes jouables dès l'entrée (ordre recommandé affiché) |
-| Salle suivante d'un bâtiment | Salle précédente ≥ **6 / 10** |
+| Salle suivante d'un bâtiment | Salle précédente ≥ **60 %** de ses lanternes, arrondi au supérieur (6 / 10 ; 4 / 6 au Phare) |
 | Lanterne-clé | Bâtiment ≥ **30 / 39** |
 | Bâtiment suivant d'un quartier | Bâtiment précédent ≥ **20 / 40** |
 | Quartier suivant | Lumières **totales** ≥ seuil ci-dessous |
@@ -115,13 +116,13 @@ Chaque puzzle reçoit un **score brut** calculé par le `DifficultyRater` de sa 
 | Étincelle | 0–15 | Une seule déduction, découverte des règles |
 | Lueur | 15–30 | Règles appliquées directement |
 | Flamme | 30–50 | Enchaînement de déductions |
-| Lanterne | 50–70 | Une technique non évidente |
-| Phare | 70–85 | Techniques combinées |
+| Brasier | 50–70 | Une technique non évidente |
+| Fanal | 70–85 | Techniques combinées |
 | Astre | 85–100 | Maîtrise ; jamais nécessaire pour progresser |
 
 ### 4.2 Distribution par quartier (en %)
 
-| Quartier | Étincelle | Lueur | Flamme | Lanterne | Phare | Astre |
+| Quartier | Étincelle | Lueur | Flamme | Brasier | Fanal | Astre |
 |---|---|---|---|---|---|---|
 | Phare | 70 | 30 | | | | |
 | Bibliothèque | 25 | 45 | 25 | 5 | | |
@@ -142,6 +143,8 @@ Salle 1 : paliers bas → Salle 4 : paliers hauts → lanterne-clé = sommet. Le
 
 ## 5. Familles de puzzles — spécifications
 
+Les références « Akari », « Lights Out », « zebra puzzle » désignent des **genres** et restent internes : aucun nom de jeu tiers n'apparaît dans les textes de l'app ni dans les métadonnées App Store.
+
 Format pour chaque famille : **Règle** (telle qu'affichée) · **Interaction** · **Paramètres de difficulté** · **Génération** · **Solveur et techniques** · **Validation / unicité** · **Indices** · **Accessibilité** · **Variantes**.
 
 ### 5.1 Suites (SU)
@@ -150,13 +153,13 @@ Format pour chaque famille : **Règle** (telle qu'affichée) · **Interaction** 
 - **Interaction :** suite de 4–7 éléments affichée ; 4 options en QCM ; bouton Valider.
 - **Types d'éléments :** nombres, formes (nombre de côtés, rotation, remplissage), positions sur une petite grille, horloges.
 - **Grammaire de règles :** arithmétique (+k), géométrique (×k), différences d'ordre 2, alternance de deux règles, somme des deux précédents, règles par attribut (forme : rotation +90°, couleur cyclique, nombre de points +1), combinaisons de 2 règles indépendantes (attributs).
-- **Paramètres :** complexité de la règle (nombre de primitives), nombre d'attributs indépendants, longueur visible, taille des nombres (bornée à 3 chiffres hors Astre ; aucune multiplication > 12×12 avant Lanterne).
+- **Paramètres :** complexité de la règle (nombre de primitives), nombre d'attributs indépendants, longueur visible, taille des nombres (bornée à 3 chiffres hors Astre ; aucune multiplication > 12×12 avant Brasier).
 - **Validation (anti-ambiguïté) :** banque de règles `R` énumérée jusqu'à une complexité `k+1` ; le puzzle est accepté seulement si : (1) la bonne réponse est expliquée par une règle de complexité `k` ; (2) **aucun** distracteur n'est expliqué par une règle de complexité ≤ `k+1` ; (3) les distracteurs sont plausibles (erreurs typiques : mauvaise opération, décalage d'un cran, un seul attribut faux).
 - **Difficulté :** complexité `k` de la règle, nombre d'attributs, « distance » des distracteurs.
 - **Indices :** Murmure « Regarde l'écart entre deux termes voisins. » · Piste « Les écarts eux-mêmes augmentent. » · Éclairage « Les écarts sont +2, +4, +6 : le suivant est +8. » · Solution.
 - **Accessibilité :** nombres lus nativement ; formes décrites (« triangle plein tourné vers la droite »).
 
-### 5.2 Lanternes (LA) — règles du genre « Akari »
+### 5.2 Lampes (LA) — règles du genre « Akari »
 
 - **Règle :** « Place des lanternes pour éclairer toutes les cases blanches. Deux lanternes ne doivent pas se voir. Un mur numéroté touche exactement ce nombre de lanternes. »
 - **Interaction :** tap = lanterne · second tap = marque « pas de lanterne » (point) · troisième = vide. Glisser pour marquer plusieurs cases. Annuler/Rétablir. Validation automatique.
@@ -173,13 +176,13 @@ Format pour chaque famille : **Règle** (telle qu'affichée) · **Interaction** 
 - **Difficulté :** technique maximale (poids 60 %), nombre d'étapes « ≥ technique 3 » (25 %), taille (15 %).
 - **Indices :** issus de la prochaine étape du solveur humain à partir de l'état *actuel* du joueur ; si le joueur a une erreur, l'indice 1 la signale d'abord (« Une de tes lanternes n'est pas à la bonne place. »).
 - **Accessibilité :** grille navigable case par case (« ligne 3, colonne 2, mur 2, touche 1 lanterne »), actions personnalisées « poser », « marquer », « effacer ».
-- **Variantes :** lanternes bicolores (Observatoire), murs à forme spéciale (Phare+).
+- **Variantes :** lanternes bicolores (Observatoire), murs à forme spéciale (Fanal+).
 
 ### 5.3 Cadenas (CA)
 
 - **Règle :** « Trouve le code. Chaque ligne indique combien de chiffres sont justes et bien placés (●) ou justes mais mal placés (○). »
 - **Interaction :** molettes (3–5), balayage vertical ou tap ± ; possibilité de **barrer** des chiffres dans un bloc-notes intégré. Bouton Valider.
-- **Paramètres :** longueur du code (3–5), alphabet (chiffres 0–9, puis symboles), répétitions autorisées (Lanterne+), nombre et type d'indices (lignes « rien de juste » faciles, lignes mixtes difficiles).
+- **Paramètres :** longueur du code (3–5), alphabet (chiffres 0–9, puis symboles), répétitions autorisées (Brasier+), nombre et type d'indices (lignes « rien de juste » faciles, lignes mixtes difficiles).
 - **Génération :** code aléatoire → génération de candidats d'indices → ajout jusqu'à unicité → suppression des indices redondants → vérification que **chaque** indice restant est nécessaire.
 - **Solveur :** énumération exhaustive (≤ 10⁵ codes) pour l'unicité ; solveur humain par élimination (techniques : « aucun juste » → barre ; « un bien placé » → position ; croisement de lignes ; raisonnement par cas).
 - **Difficulté :** nombre de lignes nécessaires, nombre de croisements requis, présence de raisonnement par cas.
@@ -195,13 +198,13 @@ Format pour chaque famille : **Règle** (telle qu'affichée) · **Interaction** 
 - **Solveur :** propagation de contraintes par bords (un bord est ouvert/fermé) + backtracking ; techniques humaines : bords de grille, extrémités, droites contraintes, interdiction de boucle, hypothèse.
 - **Unicité :** requise (on rejette sinon) — garantit que les indices ont un sens.
 - **Difficulté :** taille, proportion de tuiles T/croix, technique max, nombre d'hypothèses.
-- **Accessibilité :** chaque tuile décrite (« coude, ouvert vers le haut et la droite, éclairé ») ; action « tourner ».
+- **Accessibilité :** chaque tuile décrite (« coude, ouvert vers le haut et la droite, éclairé ») ; deux actions VoiceOver « tourner à droite » et « tourner à gauche ». L'appui long (anti-horaire) n'est qu'un raccourci : 4 taps suffisent toujours.
 - **Variantes :** tuiles verrouillées, deux couleurs de lumière (motif plein / rayé), tuiles-ponts.
 
 ### 5.5 Marqueterie (MA) — placement
 
 - **Règle :** « Remplis entièrement la silhouette avec toutes les pièces. Tu peux les tourner. »
-- **Interaction :** glisser-déposer des pièces depuis un plateau inférieur, tap pour tourner, double-tap pour retourner (Lanterne+). Aimantation à la grille. Validation automatique.
+- **Interaction :** glisser-déposer des pièces depuis un plateau inférieur, tap pour tourner, double-tap pour retourner (Brasier+). Aimantation à la grille. Validation automatique.
 - **Paramètres :** nombre de pièces (3 → 10), taille des pièces (tromino → pentomino), forme cible (simple → irrégulière, avec trous), retournement autorisé.
 - **Génération :** forme cible choisie dans une bibliothèque de silhouettes thématiques (lanterne, clé, théière…) → découpage aléatoire en polyominos → rejet si pièces trop semblables ou trop de solutions « triviales ».
 - **Solveur :** couverture exacte (Algorithm X / Dancing Links), **compte** les solutions.
@@ -234,7 +237,7 @@ Format pour chaque famille : **Règle** (telle qu'affichée) · **Interaction** 
 
 - **Règle :** « Les balances sont en équilibre. Combien pèse l'objet marqué d'un « ? » ? »
 - **Interaction :** 2–5 balances illustrées (objets empilés sur les plateaux) ; pavé numérique ; bouton Valider.
-- **Paramètres :** nombre d'inconnues, nombre de balances, valeurs (1–20 avant Lanterne), balances déséquilibrées (inégalités) au Phare+.
+- **Paramètres :** nombre d'inconnues, nombre de balances, valeurs (1–20 avant Brasier), balances déséquilibrées (inégalités) au Fanal+.
 - **Génération :** poids entiers aléatoires → équations construites en combinant les objets → vérification : système de rang plein pour l'inconnue demandée, solution entière positive, aucune équation redondante, pas de « raccourci » trivial (l'inconnue n'apparaît pas seule).
 - **Solveur :** élimination de Gauss exacte (rationnels) + calcul de la plus courte chaîne de substitutions (mesure humaine).
 - **Difficulté :** nombre de substitutions nécessaires, taille des nombres, présence d'inégalités.
@@ -273,7 +276,7 @@ Format pour chaque famille : **Règle** (telle qu'affichée) · **Interaction** 
 
 - **Règle :** « Place les miroirs pour que le rayon atteigne toutes les cibles. »
 - **Interaction :** tap sur une case = miroir « / » · second tap « \ » · troisième = vide. Le rayon est tracé en temps réel. Nombre de miroirs disponibles affiché. Validation automatique.
-- **Paramètres :** taille (5×5 → 9×9), nombre de miroirs, obstacles, cibles, filtres de couleur (doublés de motifs), séparateurs de faisceau (Phare+).
+- **Paramètres :** taille (5×5 → 9×9), nombre de miroirs, obstacles, cibles, filtres de couleur (doublés de motifs), séparateurs de faisceau (Fanal+).
 - **Génération :** construction d'un trajet à rebours depuis les cibles, placement des miroirs sur le trajet, ajout d'obstacles et de fausses pistes.
 - **Solveur :** recherche exhaustive bornée avec élagage (le nombre de miroirs est petit) → unicité requise.
 - **Difficulté :** nombre de miroirs, nombre de fausses pistes plausibles, nœuds explorés.
@@ -315,8 +318,8 @@ Règles :
 
 | Source | Éclats |
 |---|---|
-| Lanterne Étincelle / Lueur / Flamme / Lanterne / Phare / Astre | 5 / 8 / 12 / 16 / 20 / 25 |
-| Bonus Clairvoyance (sans indice payant ni validation fausse) | +50 % |
+| Lanterne Étincelle / Lueur / Flamme / Brasier / Fanal / Astre | 5 / 8 / 12 / 16 / 20 / 25 |
+| Bonus Clairvoyance : aucun indice payant, et aucune validation fausse pour les familles à réponse (Suites, Cadenas, Balances, Motifs, Menteurs, Enquêtes, Énigmes). Pour les familles à état (Lampes, Engrenages, Fil, Interrupteurs, Miroirs, Marqueterie), les retours en direct sont de l'exploration : ils ne comptent jamais comme erreurs. | +50 % |
 | Salle entièrement éclairée | +20 |
 | Bâtiment entièrement éclairé | +50 (+ cosmétique de l'habitant) |
 | Quartier entièrement éclairé | +100 (+ cosmétique rare) |
@@ -360,7 +363,7 @@ Catalogue boutique total ≈ **6 000 Éclats** → tous les profils peuvent tout
 - Disponible après les 6 premières lanternes du Phare.
 - Un puzzle par **date locale** (calendrier de l'appareil).
 - `seed = hash("daily", AAAA-MM-JJ, langue du contenu, version du générateur)` → identique pour tous les joueurs de même langue et même version.
-- **Rotation hebdomadaire de difficulté :** lun Lueur · mar Lueur · mer Flamme · jeu Flamme · ven Lanterne · sam Lanterne · dim Phare.
+- **Rotation hebdomadaire de difficulté :** lun Lueur · mar Lueur · mer Flamme · jeu Flamme · ven Brasier · sam Brasier · dim Fanal.
 - **Rotation des familles :** cycle pseudo-aléatoire déterministe sur les 12 familles, sans répétition à moins de 5 jours d'écart.
 - Une famille jamais rencontrée affiche sa carte de règles + démonstration avant de commencer.
 - Si la génération sur l'appareil échoue ou dépasse 1,5 s : repli sur un **pool embarqué** de 400 défis pré-validés, indexé par la même seed.
@@ -392,8 +395,8 @@ Catalogue boutique total ≈ **6 000 Éclats** → tous les profils peuvent tout
 | Catégorie | Exemples |
 |---|---|
 | **Exploration** | *Première lueur* (1ʳᵉ lanterne) · *Rat de bibliothèque* (Bibliothèque éclairée à 100 %) · *Un quartier par soir* (entrer dans chaque quartier) · *Tous les chemins* (ouvrir tous les bâtiments) · *Vesper s'éveille* (finale) |
-| **Maîtrise** | *Clairvoyant* (10 Clairvoyances d'affilée) · *Premier Phare* (1ᵉʳ palier Phare) · *Astronome* (10 Astres) · *Économe* (Interrupteurs résolu en nombre minimal de coups, ×10) · *Sans filet* (un bâtiment entier sans indice payant) |
-| **Familles** | Un succès par famille : 25 puzzles de la famille (*Horloger*, *Cartographe*, *Marchand*…) · *Polymathe* (au moins 1 Phare dans chaque famille) |
+| **Maîtrise** | *Clairvoyant* (10 Clairvoyances d'affilée) · *Premier Fanal* (1ᵉʳ palier Fanal) · *Astronome* (10 Astres) · *Économe* (Interrupteurs résolu en nombre minimal de coups, ×10) · *Sans filet* (un bâtiment entier sans indice payant) |
+| **Familles** | Un succès par famille : 25 puzzles de la famille (*Horloger*, *Cartographe*, *Marchand*…) · *Polymathe* (au moins 1 Fanal dans chaque famille) |
 | **Rituel** | *Flamme du soir* (série 7) · *Veilleur* (série 30) · *Gardien du phare* (série 100) · *Rattrapage* (jouer un défi passé) |
 | **Malice** | *Chut* (utiliser 50 Murmures — l'aide est normale) · *Oups* (se tromper puis réussir au coup suivant) · *Maladroit* (faire tomber le chapeau de Nilo en le secouant) · *Mélomane* (écouter les 7 thèmes de quartier) |
 

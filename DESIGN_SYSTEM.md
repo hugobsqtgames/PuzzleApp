@@ -48,7 +48,7 @@
 | Phrases courtes, une idée par phrase | « Allume toutes les cases. » | « Ton objectif dans ce niveau sera d'essayer d'allumer l'ensemble des cases de la grille. » |
 | Tutoiement (FR), *you* direct (EN) | « Tu y es presque. » | « Vous y êtes presque. » |
 | Le vocabulaire du lieu | « Nouvelle salle éclairée » | « Niveau 12 terminé » |
-| L'erreur est une information | « Ce mur veut 2 lanternes, il en a 3. » | « Faux ! » / « Échec » |
+| L'erreur est une information | « Ce mur veut 2 lampes, il en a 3. » | « Faux ! » / « Échec » |
 | Pas d'emphase artificielle | « Bien vu. » | « INCROYABLE !!! 🎉🎉 » |
 | L'humour vient des personnages | L'Horlogère : « Je suis en retard… depuis quarante ans. » | Blagues de l'interface |
 | Pas de flatterie intellectuelle | « Joli raisonnement. » | « Tu es un génie ! » |
@@ -67,7 +67,8 @@
 | Succès + collection + stats | Carnet | Notebook |
 | Objets de collection | Objets trouvés | Lost & found |
 | Puzzle de fin de bâtiment | Lanterne-clé | Keystone |
-| Paliers | Étincelle · Lueur · Flamme · Lanterne · Phare · Astre | Spark · Glow · Flame · Lantern · Beacon · Star |
+| Paliers | Étincelle · Lueur · Flamme · Brasier · Fanal · Astre | Spark · Glow · Flame · Blaze · Beacon · Star |
+| Famille « Akari » | Lampes | Lamps |
 
 ---
 
@@ -169,7 +170,7 @@ Polices **système Apple uniquement** (licence incluse, Dynamic Type natif, poid
 |---|---|
 | **New York** (serif) | Titres, noms de lieux, répliques des personnages, grands chiffres de célébration |
 | **SF Pro** | Interface, consignes, boutons, corps |
-| **SF Pro Rounded** | Chiffres dans les puzzles (Cadenas, Balances, murs de Lanternes), badges |
+| **SF Pro Rounded** | Chiffres dans les puzzles (Cadenas, Balances, murs de Lampes), badges |
 | **SF Mono** | Uniquement les codes de Cadenas en grand format (chiffres à chasse fixe) |
 
 ### 4.1 Échelle (taille par défaut « Large »)
@@ -289,7 +290,7 @@ Pas d'ombres portées colorées ; pas de *glassmorphism* lourd (coûteux et peu 
 | Famille | Glyphe |
 |---|---|
 | Suites | trois points croissants → |
-| Lanternes | petite lanterne dans une case |
+| Lampes | petite lampe dans une case |
 | Cadenas | cadenas rond à molettes |
 | Engrenages | roue dentée à 6 dents |
 | Marqueterie | deux polyominos imbriqués |
@@ -387,11 +388,11 @@ Matrice appliquée à tous les composants concernés :
 
 - Le plateau est une **surface `surface.1`** posée au centre, `radius.l`, avec grille `line`.
 - **Éléments éteints** : bleu-gris ; **éléments allumés / corrects** : ambre ; **sélection** : clair de lune ; **erreur** : corail.
-- Les puzzles d'éclairage (Lanternes, Engrenages, Miroirs, Interrupteurs) utilisent **réellement** la lumière : les cases éclairées reçoivent un léger halo ambre qui se propage (animation 120 ms par case).
+- Les puzzles d'éclairage (Lampes, Engrenages, Miroirs, Interrupteurs) utilisent **réellement** la lumière : les cases éclairées reçoivent un léger halo ambre qui se propage (animation 120 ms par case).
 - Consigne : 1 phrase, `type.body`, au-dessus (iPhone) ou à gauche (iPad) du plateau, toujours visible. Une icône ⓘ ouvre la règle complète avec animation de démonstration.
 - **Aucun chronomètre visible** par défaut. Un temps est mesuré localement (statistiques du Carnet), jamais affiché pendant la résolution.
 - Validation :
-  - Familles « état final » (Interrupteurs, Engrenages, Fil, Marqueterie, Lanternes, Miroirs) : **validation automatique** dès que l'état est correct (pas de bouton).
+  - Familles « état final » (Interrupteurs, Engrenages, Fil, Marqueterie, Lampes, Miroirs) : **validation automatique** dès que l'état est correct (pas de bouton).
   - Familles « réponse » (Suites, Motifs, Cadenas, Balances, Menteurs, Enquêtes, Énigmes) : bouton **Valider** explicite.
 - Annuler / Rétablir : présents sur toutes les familles à manipulation. Réinitialiser : dans le menu pause.
 
