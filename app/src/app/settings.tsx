@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Alert, Platform, Pressable, Share, Text, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, Share, View } from 'react-native';
+import { Text, TextInput } from '../ui/Text';
 import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
 

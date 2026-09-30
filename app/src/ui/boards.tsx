@@ -2,7 +2,8 @@
 // follow the mockup at its reference width (358 pt) and scale down on
 // narrower screens. Cells highlighted by a hint or an error get an outline.
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from './Text';
 import { SvgXml } from 'react-native-svg';
 
 import { T, R, ROUND, MONO } from './theme';

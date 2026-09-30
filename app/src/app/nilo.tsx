@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '../ui/Text';
 import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
 

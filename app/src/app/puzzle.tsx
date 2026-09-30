@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, Text, View } from 'react-native';
+import { Animated, Pressable, ScrollView, View } from 'react-native';
+import { Text } from '../ui/Text';
 import { useContentSize } from '../ui/layout';
 import { useAnimatedValue } from '../ui/motion';
 import { goBack } from '../ui/nav';

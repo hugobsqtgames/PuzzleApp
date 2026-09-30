@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { Text } from '../ui/Text';
 import { goBack } from '../ui/nav';
 
 import { useStore } from '../game/store';
@@ -35,11 +36,11 @@ export default function Custom() {
       <View style={{ height: 210, borderRadius: 26, backgroundColor: '#161a36', borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}>
         <Nilo size={190} mood="curious" look={preview} />
       </View>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {SLOTS.map((s) => (
           <Pressable key={s} accessibilityRole="tab" accessibilityState={{ selected: s === slot }} onPress={() => { tap(); choose(s); }}
-            style={{ flex: 1, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: s === slot ? T.s2 : 'transparent', borderWidth: 1, borderColor: s === slot ? T.moon : T.line }}>
-            <Text numberOfLines={1} adjustsFontSizeToFit style={{ color: s === slot ? T.tx : T.tx2, fontSize: 13, fontWeight: '600', paddingHorizontal: 4 }}>{SLOT_NAMES[s]}</Text>
+            style={{ flexGrow: 1, minWidth: '18%', minHeight: 36, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: s === slot ? T.s2 : 'transparent', borderWidth: 1, borderColor: s === slot ? T.moon : T.line }}>
+            <Text style={{ color: s === slot ? T.tx : T.tx2, fontSize: 13, fontWeight: '600' }}>{SLOT_NAMES[s]}</Text>
           </Pressable>
         ))}
       </View>

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle, useWindowDimensions } from 'react-native';
+import { Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, View, ViewStyle, useWindowDimensions } from 'react-native';
+import { Text } from './Text';
 import { useAnimatedValue } from './motion';
 import { SvgXml } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
@@ -217,7 +218,7 @@ export function Sheet({ visible, onClose, children }: { visible: boolean; onClos
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: v }]}>
-        <Pressable style={s.sheetBackdrop} onPress={closeFromBackdrop} accessibilityLabel="Fermer" />
+        <Pressable style={s.sheetBackdrop} onPress={closeFromBackdrop} accessibilityRole="button" accessibilityLabel="Fermer" />
       </Animated.View>
       <Animated.View style={[s.sheet, { left: side, right: side, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }] }]}>
         <View style={s.grab} />

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '../ui/Text';
 import { useContentSize } from '../ui/layout';
 import { Redirect, router } from 'expo-router';
 import { SvgXml } from 'react-native-svg';

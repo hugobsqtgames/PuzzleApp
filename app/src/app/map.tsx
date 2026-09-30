@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { Text } from '../ui/Text';
 import { useContentSize } from '../ui/layout';
 import { goBack } from '../ui/nav';
 import { router, useFocusEffect } from 'expo-router';

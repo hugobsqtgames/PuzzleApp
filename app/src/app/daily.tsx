@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '../ui/Text';
 import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
 
@@ -59,9 +60,12 @@ export default function Daily() {
             <View style={{ flex: 1 }}>
               <Text style={type.cap}>{dailyLabel(now)}</Text>
               <Text style={type.title3}>{FAMILIES[p.code].name}</Text>
-              <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><TierBars tier={p.tier} /><Text style={type.foot}>{TIER_NAMES[p.tier]}</Text></View>
+              {/* The reward sits under the name: with large text, a side column would crush it. */}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 2 }}>
+                <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><TierBars tier={p.tier} /><Text style={type.foot}>{TIER_NAMES[p.tier]}</Text></View>
+                <Pill icon="shard" iconColor={T.moon}>+{STANDARD_ECONOMY.dailyReward} · +{bonus}</Pill>
+              </View>
             </View>
-            <Pill icon="shard" iconColor={T.moon}>+{STANDARD_ECONOMY.dailyReward} · +{bonus}</Pill>
           </View>
           {done ? (
             <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>

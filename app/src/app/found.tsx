@@ -2,7 +2,8 @@
 // resident who wakes up, the district keeper, a letter of the Allumeur, a
 // new district.
 import React, { useEffect, useMemo } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '../ui/Text';
 import { useContentSize } from '../ui/layout';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SvgXml } from 'react-native-svg';

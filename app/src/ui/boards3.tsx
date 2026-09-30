@@ -1,6 +1,7 @@
 // Boards of Carillon, Vitraux, Différences, Étagère, Ombres and the Sceau.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, GestureResponderEvent, Pressable, Text, View } from 'react-native';
+import { Animated, Easing, GestureResponderEvent, Pressable, View } from 'react-native';
+import { Text } from './Text';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 import { T, R, ROUND, SERIF_ITALIC } from './theme';

@@ -1,6 +1,7 @@
 // Boards of Motifs, Menteurs, Fil, Miroirs, Enquêtes and Marqueterie.
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from './Text';
 import Svg, { Circle, Defs, G, Line, Path, Pattern, Polyline, Rect } from 'react-native-svg';
 
 import { T, R, SERIF } from './theme';

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Animated, Easing, Text, View } from 'react-native';
+import { Animated, Easing, View } from 'react-native';
+import { Text } from '../ui/Text';
 import { router } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 

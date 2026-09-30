@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { useContentSize } from '../ui/layout';
+import { Text } from '../ui/Text';
 import { goBack } from '../ui/nav';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
@@ -26,10 +28,10 @@ export default function Carnet() {
     <Screen scroll place="library">
       <BackButton label="Accueil" onPress={() => goBack()} />
       <Text style={type.title1}>Carnet</Text>
-      <View style={{ flexDirection: 'row', gap: 6 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {TABS.map(([k, l]) => (
           <Pressable key={k} accessibilityRole="tab" accessibilityState={{ selected: k === tab }} onPress={() => { tap(); setTab(k); }}
-            style={{ flex: 1, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: k === tab ? T.s2 : 'transparent', borderWidth: 1, borderColor: k === tab ? T.moon : T.line }}>
+            style={{ flexGrow: 1, minWidth: '18%', minHeight: 36, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: k === tab ? T.s2 : 'transparent', borderWidth: 1, borderColor: k === tab ? T.moon : T.line }}>
             <Text style={{ color: k === tab ? T.tx : T.tx2, fontSize: 13, fontWeight: '600' }}>{l}</Text>
           </Pressable>
         ))}
@@ -40,6 +42,7 @@ export default function Carnet() {
 }
 
 function Objects() {
+  const { width } = useContentSize();
   const { state, engine, profile } = useStore();
   const [open, setOpen] = useState<number | null>(null);
   const [letter, setLetter] = useState<number | null>(null);
@@ -68,6 +71,8 @@ function Objects() {
   // Found objects first, then the next unknown ones.
   const firstUnknown = found.findIndex((f, i) => !f && !waiting[i]);
   const visible = rooms.map((r, i) => ({ r, i })).filter(({ i }) => found[i] || waiting[i] || (firstUnknown >= 0 && i >= firstUnknown && i < firstUnknown + 6));
+  // Three cards a row, whatever the width (percentages plus gaps overflow on small phones).
+  const cardW = Math.floor((width - 32 - 20) / 3);
   return (
     <>
       <Text style={type.sub}>{count} / {rooms.length} objets trouvés{waiting.some(Boolean) ? ` · ${waiting.filter(Boolean).length} à chercher dans leur salle` : ''}</Text>
@@ -76,7 +81,7 @@ function Objects() {
           <Pressable key={r.room.id} accessibilityRole={found[i] || waiting[i] ? 'button' : undefined} disabled={!found[i] && !waiting[i]}
             accessibilityLabel={waiting[i] ? `Objet à chercher dans ${roomName(r.district, r.bi, r.ri)}` : undefined}
             onPress={() => (found[i] ? setOpen(i) : router.push({ pathname: '/room/[id]', params: { id: r.room.id, search: '1' } }))}
-            style={{ width: '31.5%', minHeight: 120, borderRadius: 24, borderWidth: 1, borderColor: waiting[i] ? 'rgba(255,217,142,0.45)' : T.line, borderStyle: found[i] || waiting[i] ? 'solid' : 'dashed', backgroundColor: found[i] ? T.s1 : 'transparent', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8 }}>
+            style={{ width: cardW, minHeight: 120, borderRadius: 24, borderWidth: 1, borderColor: waiting[i] ? 'rgba(255,217,142,0.45)' : T.line, borderStyle: found[i] || waiting[i] ? 'solid' : 'dashed', backgroundColor: found[i] ? T.s1 : 'transparent', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8 }}>
             {found[i] ? (
               <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,217,142,0.1)', alignItems: 'center', justifyContent: 'center' }}>
                 <SvgXml xml={objectSvg(r.object.name, T.gold)} width={28} height={28} />
@@ -97,7 +102,7 @@ function Objects() {
       <Card style={{ gap: 4, padding: 4 }}>
         <Text style={[type.cap, { margin: 12, marginBottom: 4 }]}>Lettres de l’Allumeur · {letters.filter((l) => l.owned).length} / {letters.length}</Text>
         {letters.map((l) => (
-          <Pressable key={l.i} disabled={!l.owned} onPress={() => setLetter(l.i)} style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12 }}>
+          <Pressable key={l.i} accessibilityRole="button" accessibilityState={{ disabled: !l.owned }} disabled={!l.owned} onPress={() => setLetter(l.i)} style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12 }}>
             <Icon name={l.owned ? 'letter' : 'lock'} size={20} color={l.owned ? T.amber : T.tx3} />
             <View style={{ flex: 1 }}>
               <Text style={[type.headline, !l.owned && { color: T.tx2 }]}>{l.title}</Text>
