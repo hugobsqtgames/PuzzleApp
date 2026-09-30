@@ -146,11 +146,11 @@ export default function Success() {
             <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {s.kind === 'lantern' ? <LightPill n="+1" /> : null}
               {lit && lit.kind === 'lanternLit' && lit.shards ? <Pill icon="shard" iconColor={T.moon}>+{lit.shards}</Pill> : null}
-              {lit && lit.kind === 'lanternLit' && lit.clairvoyanceBonus ? <Pill icon="star" iconColor={T.gold} color={T.gold} borderColor="#6b5a3c">Clairvoyance +{lit.clairvoyanceBonus}</Pill> : null}
+              {lit && lit.kind === 'lanternLit' && lit.clairvoyanceBonus ? <Pill icon="star" iconColor={T.gold} color={T.gold} borderColor="#6b5a3c">{tr('Clairvoyance')} +{lit.clairvoyanceBonus}</Pill> : null}
               {daily && daily.kind === 'dailyCompleted' && daily.shards ? <Pill icon="shard" iconColor={T.moon}>+{daily.shards}</Pill> : null}
             </View>
           )}
-        {s.code === 'IN' && result.minimalMoves && !s.usedSolution ? <Text style={type.foot}>Résolu en {s.state.moves} coup{s.state.moves > 1 ? 's' : ''} · minimum possible : {result.minimalMoves}</Text> : null}
+        {s.code === 'IN' && result.minimalMoves && !s.usedSolution ? <Text style={type.foot}>{trn(s.state.moves, 'Résolu en {0} coup · minimum possible : {1}', 'Résolu en {0} coups · minimum possible : {1}', [s.state.moves, result.minimalMoves])}</Text> : null}
         {s.usedSolution ? <Text style={type.foot}>{tr('Solution consultée : la lumière est gagnée, sans bonus.')}</Text> : null}
       </Rise>
 
@@ -158,9 +158,9 @@ export default function Success() {
         <Card style={{ alignItems: 'center', gap: 4, alignSelf: 'stretch' }}>
           <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
             <Icon name="light" size={22} color={T.amber} />
-            <Text style={type.title3}>{state.daily.streak} soir{state.daily.streak > 1 ? 's' : ''}</Text>
+            <Text style={type.title3}>{trn(state.daily.streak, '{0} soir', '{0} soirs')}</Text>
           </View>
-          <Text style={[type.foot, { textAlign: 'center' }]}>{dailyText} Record : {state.daily.bestStreak}.</Text>
+          <Text style={[type.foot, { textAlign: 'center' }]}>{dailyText} {tr('Record : {0}.', [state.daily.bestStreak])}</Text>
         </Card>
       ) : room ? (
         <Rise delay={750} style={{ alignSelf: 'stretch' }}>
@@ -174,7 +174,7 @@ export default function Success() {
         <View style={{ position: 'absolute', right: 0, bottom: 8 }}><Nilo size={84} mood="joy" look={look(state)} /></View>
       </View>
       <View style={{ alignSelf: 'stretch', gap: 4 }}>
-        <Button title={follow.length || s.kind === 'daily' || isTutorial ? 'Continuer' : 'Suivant'} onPress={next} />
+        <Button title={follow.length || s.kind === 'daily' || isTutorial ? tr('Continuer') : tr('Suivant')} onPress={next} />
         {s.kind === 'lantern' && room && !follow.length ? <Button title={tr('Retour à la salle')} kind="ghost" onPress={() => router.dismissTo({ pathname: '/room/[id]', params: { id: room.id } })} /> : null}
         {s.kind === 'lantern' && !isTutorial ? <Button title={tr('Accueil')} kind="ghost" onPress={() => router.dismissTo('/')} /> : null}
       </View>
@@ -184,7 +184,7 @@ export default function Success() {
           <Icon name="bell" size={34} color={T.amber} />
           <Text style={[type.title2, { textAlign: 'center' }]}>{tr('Un rappel le soir ?')}</Text>
           <Text style={[type.sub, { textAlign: 'center' }]}>{tr('Un rappel par soir, pas plus, seulement si le défi n’est pas fait. Tu peux l’arrêter à tout moment dans les Réglages.')}</Text>
-          <Text style={[type.foot, { textAlign: 'center' }]}>Heure : {String(settings.reminderHour).padStart(2, '0')} h {String(settings.reminderMinute).padStart(2, '0')} (modifiable dans les Réglages)</Text>
+          <Text style={[type.foot, { textAlign: 'center' }]}>{tr('Heure : {0} h {1} (modifiable dans les Réglages)', [String(settings.reminderHour).padStart(2, '0'), String(settings.reminderMinute).padStart(2, '0')])}</Text>
         </View>
         <Button title={tr('Oui, me le rappeler')} onPress={() => reminderAnswer(true)} style={{ marginTop: 16 }} />
         <Button title={tr('Non merci')} kind="ghost" onPress={() => reminderAnswer(false)} />

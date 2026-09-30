@@ -442,4 +442,17 @@ export const EN_UI: Record<string, string> = {
   'Îlot {1}, {0} passerelle': 'Island {1}, {0} footbridge',
   'Îlot {1}, {0} passerelles': 'Island {1}, {0} footbridges',
   'Palier {0}': 'Tier {0}',
+  // Success screen and counters.
+  '{0} coup': '{0} move',
+  '{0} coups': '{0} moves',
+  'Résolu en {0} coup · minimum possible : {1}': 'Solved in {0} move · fewest possible: {1}',
+  'Résolu en {0} coups · minimum possible : {1}': 'Solved in {0} moves · fewest possible: {1}',
+  'Record : {0}.': 'Best: {0}.',
+  'Suivant': 'Next',
+  'Heure : {0} h {1} (modifiable dans les Réglages)': 'Time: {0}:{1} (can be changed in Settings)',
+  'aucun chiffre juste': 'no right digit',
+  'Lettres de l’Allumeur · {0} / {1}': 'Letters from the Lamplighter · {0} / {1}',
+  'Lettres de l’Allumeur : {0} / {1}': 'Letters from the Lamplighter: {0} / {1}',
+  '{0} veilleuse': '{0} night-light',
+  '{0} veilleuses': '{0} night-lights',
 };

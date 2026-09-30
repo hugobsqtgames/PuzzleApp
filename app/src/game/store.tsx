@@ -189,11 +189,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(id);
   }, []);
 
-  // Reminders are (re)planned at each launch, day change and daily success.
+  // Reminders are (re)planned at each launch, day change, daily success and language change
+  // (their text is written in the language of the moment; the layout sets it before effects run).
   useEffect(() => {
     if (!ready) return;
     void scheduleReminders({ enabled: settings.reminder, hour: settings.reminderHour, minute: settings.reminderMinute, doneToday: state.daily.completedDays.has(today), streak: state.daily.streak });
-  }, [ready, settings.reminder, settings.reminderHour, settings.reminderMinute, state.daily.completedDays, state.daily.streak, today]);
+  }, [ready, settings.reminder, settings.reminderHour, settings.reminderMinute, settings.language, state.daily.completedDays, state.daily.streak, today]);
 
   const commit = useCallback((next: GameState) => {
     stateRef.current = next;
@@ -427,17 +428,23 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setResult(null);
   }, [commit, commitProfile]);
 
-  const exportProgress = useCallback(() => JSON.stringify({ app: 'lampion', v: 1, exportedAt: new Date().toISOString(), state: encodeState(stateRef.current) }), []);
+  // The found objects travel with the progress (they live in the side file, not in the game state).
+  const exportProgress = useCallback(() => JSON.stringify({ app: 'lampion', v: 1, exportedAt: new Date().toISOString(), state: encodeState(stateRef.current), picked: profileRef.current.picked }), []);
 
   const importProgress = useCallback((text: string) => {
     try {
-      const o = JSON.parse(text) as { app?: unknown; state?: unknown };
+      const o = JSON.parse(text) as { app?: unknown; state?: unknown; picked?: unknown };
       if (o.app !== 'lampion' || !o.state) return false;
       const s = decodeState(o.state);
+      // Objects can only have been found in rooms the imported progress has fully lit. Older exports
+      // did not carry them: those rooms' objects count as found rather than being lost.
+      const lit = (id: string) => s.collectibles.has(`collectible.${id}`);
+      const picked = Array.isArray(o.picked) ? o.picked.filter((x): x is string => typeof x === 'string' && lit(x)) : [...s.collectibles].filter((c) => c.startsWith('collectible.')).map((c) => c.slice('collectible.'.length));
       commit(s);
+      commitProfile({ ...profileRef.current, picked: [...new Set(picked)] });
       return true;
     } catch { return false; }
-  }, [commit]);
+  }, [commit, commitProfile]);
 
   const value = useMemo<Store>(() => ({
     ready, readOnly, state, engine, settings, profile, session, result, toast, today,

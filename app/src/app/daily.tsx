@@ -13,7 +13,7 @@ import { addDays, daysBetween, dayKey } from '../core/game/dayKey';
 import { dailyLabel, dateOfDay, monthName } from '../ui/dates';
 import { STANDARD_STREAK } from '../core/game/daily';
 import { STANDARD_ECONOMY } from '../core/game/engine';
-import { tr } from '../i18n';
+import { tr, trn } from '../i18n';
 
 export default function Daily() {
   const { state, today, openDaily, showToast } = useStore();
@@ -43,14 +43,14 @@ export default function Daily() {
       <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <View style={{ width: 64, alignItems: 'center' }}><Icon name="light" size={34} color={T.amber} /></View>
         <View style={{ flex: 1 }}>
-          <Text style={type.title2}>{state.daily.streak} soir{state.daily.streak > 1 ? 's' : ''}</Text>
+          <Text style={type.title2}>{trn(state.daily.streak, '{0} soir', '{0} soirs')}</Text>
           <Text style={type.foot}>{tr('Flamme du soir · record {0}', [state.daily.bestStreak])}</Text>
         </View>
         <View style={{ alignItems: 'center', gap: 2 }}>
           <View style={{ flexDirection: 'row', gap: 2 }}>
             {Array.from({ length: STANDARD_STREAK.maxNightlights }, (_, i) => <Icon key={i} name="moonI" size={18} color={i < state.daily.nightlights ? T.moon : T.line} sw={1.8} />)}
           </View>
-          <Text style={type.foot}>{state.daily.nightlights} veilleuse{state.daily.nightlights > 1 ? 's' : ''}</Text>
+          <Text style={type.foot}>{trn(state.daily.nightlights, '{0} veilleuse', '{0} veilleuses')}</Text>
         </View>
       </Card>
 

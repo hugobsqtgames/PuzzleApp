@@ -102,7 +102,7 @@ function Objects() {
         ))}
       </View>
       <Card style={{ gap: 4, padding: 4 }}>
-        <Text style={[type.cap, { margin: 12, marginBottom: 4 }]}>Lettres de l’Allumeur · {letters.filter((l) => l.owned).length} / {letters.length}</Text>
+        <Text style={[type.cap, { margin: 12, marginBottom: 4 }]}>{tr('Lettres de l’Allumeur · {0} / {1}', [letters.filter((l) => l.owned).length, letters.length])}</Text>
         {letters.map((l) => (
           <Pressable key={l.i} accessibilityRole="button" accessibilityState={{ disabled: !l.owned }} disabled={!l.owned} onPress={() => setLetter(l.i)} style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12 }}>
             <Icon name={l.owned ? 'letter' : 'lock'} size={20} color={l.owned ? T.amber : T.tx3} />
@@ -221,7 +221,7 @@ function VesperTab() {
       <Card style={{ alignItems: 'center', gap: 4, padding: 20 }}>
         <Text style={type.cap}>{tr('Vesper')}</Text>
         <Text style={type.display}>{p.totalLights(state)}<Text style={[type.title2, { color: T.tx2 }]}> / {formatCount(LANTERN_COUNT)}</Text></Text>
-        <Text style={type.foot}>Lettres de l’Allumeur : {p.letters(state)} / 6</Text>
+        <Text style={type.foot}>{tr('Lettres de l’Allumeur : {0} / {1}', [p.letters(state), 6])}</Text>
       </Card>
       {state.seenDialogue.has(ENDING_SEEN) ? <Button title={tr('Revoir la fin du premier chapitre')} kind="ghost" icon="light" onPress={() => router.push('/ending')} /> : null}
       <Card style={{ paddingVertical: 4 }}>

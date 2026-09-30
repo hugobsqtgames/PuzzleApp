@@ -173,11 +173,11 @@ function Peg({ kind }: { kind: 'full' | 'hollow' | 'none' }) {
   return <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: kind === 'full' ? T.amber : 'transparent', borderWidth: kind === 'full' ? 0 : 2, borderColor: kind === 'none' ? '#4a5190' : T.amber, borderStyle: kind === 'none' ? 'dashed' : 'solid' }} />;
 }
 export const pegsText = (w: number, m: number) => {
-  if (!w && !m) return 'aucun chiffre juste';
+  if (!w && !m) return tr('aucun chiffre juste');
   const a: string[] = [];
   if (w) a.push(trn(w, '{0} bien placé', '{0} bien placés'));
   if (m) a.push(trn(m, '{0} mal placé', '{0} mal placés'));
-  return a.join(' et ');
+  return a.join(tr(' et '));
 };
 
 function Lock({ s, width, onPlay, tap }: BoardProps) {

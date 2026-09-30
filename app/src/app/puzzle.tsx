@@ -20,7 +20,7 @@ import { buildingName, infoOf, locateRoom } from '../game/views';
 import { dailyLabel, dateOfDay } from '../ui/dates';
 import { roomSlotsOf, slotText } from '../ui/scenes';
 import { HintLevel } from '../core/puzzlekit/types';
-import { tr, translated } from '../i18n';
+import { tr, trn, translated } from '../i18n';
 
 const HINT_NAMES = translated(['Murmure', 'Piste', 'Éclairage', 'Solution']);
 const HINT_ICONS = ['whisper', 'hint', 'light', 'star'];
@@ -128,7 +128,7 @@ export default function PuzzleScreen() {
   else if (live && live.kind === 'invalid' && live.issues[0]) feedback = <Message tone="error" text={t(live.issues[0].message)} />;
   else if (s.hint.texts.length && !s.hint.stale) feedback = <Message tone="hint" icon={HINT_ICONS[s.hint.level - 1]} title={HINT_NAMES[s.hint.level - 1]} text={s.hint.texts[s.hint.texts.length - 1]} />;
   else if (s.id === 'phare.b1.r1.1') feedback = <Message tone="hint" icon="whisper" text={tr('Touche la lanterne éteinte en haut à gauche.')} />;
-  else if (s.code === 'IN') feedback = <Text style={[type.foot, { textAlign: 'center' }]}>{s.moves} coup{s.moves > 1 ? 's' : ''}</Text>;
+  else if (s.code === 'IN') feedback = <Text style={[type.foot, { textAlign: 'center' }]}>{trn(s.moves, '{0} coup', '{0} coups')}</Text>;
   const oops = !!s.error || (live?.kind === 'invalid');
   const mood = celebrating ? 'joy' : oops ? 'oops' : s.hint.level > 0 && !s.hint.stale ? 'hint' : 'think';
   const hintButton = <IconButton name="hint" label={tr('Indices')} size={52} color={T.moon} borderColor="#3d4f7a" onPress={() => setSheet('hints')} />;
@@ -257,7 +257,7 @@ export default function PuzzleScreen() {
         <Row icon="undo" label={tr('Recommencer ce puzzle')} onPress={restart} />
         <ToggleRow icon="music" label={tr('Musique')} value={settings.music} onChange={(v) => setSettings({ music: v })} />
         <ToggleRow icon="sound" label={tr('Effets sonores')} value={settings.effects} onChange={(v) => setSettings({ effects: v })} />
-        <Button title={s.kind === 'daily' ? tr('Retour au défi') : tr('Retour à la salle')} kind="secondary" onPress={() => { setSheet(null); leave(); }} style={{ marginTop: 12 }} />
+        <Button title={s.kind === 'daily' ? tr('Retour au défi') : where?.room ? tr('Retour à la salle') : tr('Retour au bâtiment')} kind="secondary" onPress={() => { setSheet(null); leave(); }} style={{ marginTop: 12 }} />
         <Text style={[type.foot, { marginTop: 10, textAlign: 'center' }]}>{s.kind === 'daily' ? tr('Le défi reste jouable toute la soirée.') : tr('Ta progression dans ce puzzle est gardée.')}</Text>
       </Sheet>
 
