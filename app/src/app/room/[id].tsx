@@ -77,6 +77,8 @@ export default function RoomScreen() {
   const title = roomName(d, bi, ri);
   // The building's seal digit appears once the room is 60 % lit (it is then needed by the keystone).
   const digitShown = sealDigitOf(at.room.id) !== null && n >= lightsToOpenNextRoom(lanterns.length);
+  const key = at.district.buildings[at.buildingIndex].keystone;
+  const sealOpened = !!key && state.solved.has(key.puzzle);
 
   const play_ = (i: number) => {
     setSelected(null);
@@ -119,7 +121,7 @@ export default function RoomScreen() {
         <Text style={type.title1} accessibilityRole="header">{title}</Text>
         <GaugeRow n={n} total={lanterns.length} label="Lanternes de la salle" />
         <Text style={[type.dialogue, { fontSize: 15, lineHeight: 21, color: T.tx2 }]} numberOfLines={3}>{introOf(at.room.id)}</Text>
-        {digitShown ? <Text style={[type.foot, { color: T.gold }]}>La lumière a fait apparaître un chiffre dans la salle. La lanterne-clé du bâtiment en aura besoin.</Text> : null}
+        {digitShown && !sealOpened ? <Text style={[type.foot, { color: T.gold }]}>Un chiffre est apparu dans le décor : la lanterne-clé en aura besoin.</Text> : null}
       </View>
 
       <View style={{ flex: 1, minHeight: 470, marginTop: -8, marginBottom: -8 }} onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
