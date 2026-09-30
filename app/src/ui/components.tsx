@@ -176,7 +176,7 @@ export function GaugeRow({ n, total, label, from }: { n: number; total: number; 
 
 export function TierBars({ tier }: { tier: number }) {
   return (
-    <View style={s.tier} accessible accessibilityLabel={`Palier ${TIERS[tier]}`}>
+    <View style={s.tier} accessible accessibilityLabel={tr('Palier {0}', [TIERS[tier]])}>
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <View key={i} style={{ width: 6, height: 6 + i * 2.4, borderTopLeftRadius: 3, borderTopRightRadius: 3, borderRadius: 1, backgroundColor: i <= tier ? T.amber : '#2e3360' }} />
       ))}

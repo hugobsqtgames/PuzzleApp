@@ -97,7 +97,7 @@ function Objects() {
                 <Text style={{ fontFamily: SERIF, fontSize: 24, color: T.tx3 }}>?</Text>
               </View>
             )}
-            <Text style={{ color: found[i] ? T.tx : waiting[i] ? T.gold : T.tx2, fontSize: found[i] ? 13 : 12, textAlign: 'center' }}>{found[i] ? r.object.name : waiting[i] ? `À chercher : ${roomName(r.district, r.bi, r.ri)}` : `${infoOf(r.district).short}`}</Text>
+            <Text style={{ color: found[i] ? T.tx : waiting[i] ? T.gold : T.tx2, fontSize: found[i] ? 13 : 12, textAlign: 'center' }}>{found[i] ? r.object.name : waiting[i] ? tr('À chercher : {0}', [roomName(r.district, r.bi, r.ri)]) : `${infoOf(r.district).short}`}</Text>
           </Pressable>
         ))}
       </View>
@@ -141,7 +141,7 @@ function Achievements() {
   const done = status.filter((x) => x.done).length;
   return (
     <>
-      <Text style={type.sub}>{done} / {status.length} succès</Text>
+      <Text style={type.sub}>{tr('{0} / {1} succès', [done, status.length])}</Text>
       <Card style={{ paddingVertical: 4 }}>
         {status.map(({ a, n, total, done: d }) => (
           <View key={a.id} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.line }}>

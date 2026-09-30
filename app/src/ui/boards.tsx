@@ -106,7 +106,7 @@ function Lamps({ s, width, onPlay, tap }: BoardProps) {
               const have = need === null ? 0 : b.neighbors[i].filter((j) => b.white[j] && st.marks[j] === 1).length;
               const col = need === null ? T.tx3 : have > need ? T.coral : have === need ? T.amber : T.tx;
               return (
-                <View key={c} accessible accessibilityLabel={need === null ? 'Mur' : `Mur ${need}, touche ${have} lampe${have > 1 ? 's' : ''}`}
+                <View key={c} accessible accessibilityLabel={need === null ? tr('Mur') : trn(have, 'Mur {1}, touche {0} lampe', 'Mur {1}, touche {0} lampes', [have, need])}
                   style={[{ width: sz, height: sz, borderRadius: 8, backgroundColor: '#080914', alignItems: 'center', justifyContent: 'center', borderWidth: over.has(i) ? 2 : 0, borderColor: T.coral }, outline(hasCell(focus, r, c))]}>
                   {need !== null ? <Text style={{ fontFamily: ROUND, fontWeight: '800', fontSize: sz * 0.44, color: col }}>{need}</Text> : null}
                 </View>
@@ -221,14 +221,14 @@ function Lock({ s, width, onPlay, tap }: BoardProps) {
       <View style={{ flexDirection: 'row', gap: 14, justifyContent: 'center', marginTop: 10 }} accessibilityLabel={tr('Molettes du cadenas')}>
         {st.symbols.map((d, i) => (
           <View key={i} style={{ alignItems: 'center', gap: 4 }}>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Chiffre ${i + 1} : augmenter`} onPress={() => { tap(); turn(i, 1); }}
+            <Pressable accessibilityRole="button" accessibilityLabel={tr('Chiffre {0} : augmenter', [i + 1])} onPress={() => { tap(); turn(i, 1); }}
               style={{ width: wheelW, height: 32, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}>
               <Icon name="up" size={18} color={T.tx2} sw={2} />
             </Pressable>
-            <View accessible accessibilityLabel={`Chiffre ${i + 1} : ${d}`} style={[{ width: wheelW, height: 52, borderRadius: 14, backgroundColor: '#0f1226', borderWidth: 1.5, borderColor: T.moon, alignItems: 'center', justifyContent: 'center' }, hasCell(focus, -1, i) ? { borderColor: T.gold, borderWidth: 2 } : null]}>
+            <View accessible accessibilityLabel={tr('Chiffre {0} : {1}', [i + 1, d ?? '?'])} style={[{ width: wheelW, height: 52, borderRadius: 14, backgroundColor: '#0f1226', borderWidth: 1.5, borderColor: T.moon, alignItems: 'center', justifyContent: 'center' }, hasCell(focus, -1, i) ? { borderColor: T.gold, borderWidth: 2 } : null]}>
               <Text style={{ fontFamily: MONO, fontSize: 40, fontWeight: '600', color: T.tx }}>{d ?? 0}</Text>
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Chiffre ${i + 1} : diminuer`} onPress={() => { tap(); turn(i, -1); }}
+            <Pressable accessibilityRole="button" accessibilityLabel={tr('Chiffre {0} : diminuer', [i + 1])} onPress={() => { tap(); turn(i, -1); }}
               style={{ width: wheelW, height: 32, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}>
               <Icon name="down" size={18} color={T.tx2} sw={2} />
             </Pressable>

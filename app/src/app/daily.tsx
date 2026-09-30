@@ -44,7 +44,7 @@ export default function Daily() {
         <View style={{ width: 64, alignItems: 'center' }}><Icon name="light" size={34} color={T.amber} /></View>
         <View style={{ flex: 1 }}>
           <Text style={type.title2}>{state.daily.streak} soir{state.daily.streak > 1 ? 's' : ''}</Text>
-          <Text style={type.foot}>Flamme du soir · record {state.daily.bestStreak}</Text>
+          <Text style={type.foot}>{tr('Flamme du soir · record {0}', [state.daily.bestStreak])}</Text>
         </View>
         <View style={{ alignItems: 'center', gap: 2 }}>
           <View style={{ flexDirection: 'row', gap: 2 }}>
@@ -71,10 +71,10 @@ export default function Daily() {
           {done ? (
             <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
               <Icon name="check" size={22} color={T.gold} sw={2} />
-              <Text style={[type.callout, { flex: 1 }]}>Réussi.{tomorrow ? ` Demain : ${FAMILIES[tomorrow.code].name}, palier ${TIER_NAMES[tomorrow.tier]}.` : ''}</Text>
+              <Text style={[type.callout, { flex: 1 }]}>{tr('Réussi.')}{tomorrow ? ' ' + tr('Demain : {0}, palier {1}.', [FAMILIES[tomorrow.code].name, TIER_NAMES[tomorrow.tier]]) : ''}</Text>
             </View>
           ) : <Button title={tr('Jouer le défi')} onPress={() => play(today)} />}
-          <Text style={type.foot}>{tr('Même énigme pour tous les joueurs en français ce soir. Préparée à l’avance, jouable sans connexion.')}</Text>
+          <Text style={type.foot}>{tr('Même énigme pour tous les joueurs ce soir. Préparée à l’avance, jouable sans connexion.')}</Text>
         </Card>
       ) : null}
 

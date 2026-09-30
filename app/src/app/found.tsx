@@ -90,7 +90,7 @@ export default function Found() {
             <Text style={type.title1}>{tr('Objet trouvé')}</Text>
             <Text style={[type.title3, { textAlign: 'center' }]}>{obj.name}</Text>
             <Text style={[type.dialogue, { maxWidth: 320, textAlign: 'center', color: T.tx2 }]}>{obj.story}</Text>
-            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}><ShardPill n="+20" /><Pill icon="book">Carnet · {profile.picked.length} / {allRooms().length}</Pill></View>
+            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}><ShardPill n="+20" /><Pill icon="book">{tr('Carnet')} · {profile.picked.length} / {allRooms().length}</Pill></View>
           </>
         );
       }
@@ -128,7 +128,7 @@ export default function Found() {
         </View>
         <Text style={[type.cap, { color: info.hue }]}>{tr('Quartier entièrement éclairé')}</Text>
         <Text style={[type.title1, { textAlign: 'center' }]}>{info.name}</Text>
-        {info.keeper ? <Text style={[type.dialogue, { textAlign: 'center' }]}>{info.keeper.name} se réveille. {info.keeper.line}</Text> : null}
+        {info.keeper ? <Text style={[type.dialogue, { textAlign: 'center' }]}>{tr('{0} se réveille.', [info.keeper.name])} {info.keeper.line}</Text> : null}
         <ShardPill n="+100" />
       </>
     );
@@ -160,7 +160,7 @@ export default function Found() {
         <Text style={[type.cap, { color: info.hue }]}>{tr('Nouveau quartier')}</Text>
         <Text style={[type.display, { fontSize: 34, lineHeight: 40, textAlign: 'center' }]}>{info.name}</Text>
         <Text style={[type.dialogue, { color: T.tx2 }]}>{info.tagline}</Text>
-        <Text style={[type.sub, { textAlign: 'center' }]}>{families.length} familles de casse-têtes t’y attendent.</Text>
+        <Text style={[type.sub, { textAlign: 'center' }]}>{tr('{0} familles de casse-têtes t’y attendent.', [families.length])}</Text>
       </>
     );
     buttons = (

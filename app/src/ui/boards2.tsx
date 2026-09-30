@@ -215,7 +215,7 @@ function Mirrors({ s, width, onPlay, tap }: BoardProps) {
   const used = st.marks.filter(Boolean).length;
   return (
     <View style={[box, { padding: 8, alignItems: 'center' }]}>
-      <Text style={{ color: used > p.mirrors ? T.coral : T.tx2, fontSize: 13, marginBottom: 4 }}>Miroirs : {used} / {p.mirrors}</Text>
+      <Text style={{ color: used > p.mirrors ? T.coral : T.tx2, fontSize: 13, marginBottom: 4 }}>{tr('Miroirs : {0} / {1}', [used, p.mirrors])}</Text>
       <View style={{ width: W, height: H }}>
         <Svg width={W} height={H} style={{ position: 'absolute' }}>
           {Array.from({ length: p.rows * p.columns }, (_, i) => {
@@ -349,7 +349,7 @@ function Marquetry({ s, width, onPlay, tap }: BoardProps) {
               const v = grid[r][c];
               if (v === -2) return <View key={c} style={{ width: cellW, height: cellW }} />;
               return (
-                <Pressable key={c} accessibilityRole="button" accessibilityLabel={`Ligne ${r + 1}, colonne ${c + 1} : ${v >= 0 ? `pièce ${v + 1}` : 'vide'}`} onPress={() => { tap(); tapCell(r, c); }}
+                <Pressable key={c} accessibilityRole="button" accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${v >= 0 ? tr('pièce {0}', [v + 1]) : tr('vide')}`} onPress={() => { tap(); tapCell(r, c); }}
                   style={{ width: cellW, height: cellW, padding: 1.5 }}>
                   <View style={{ flex: 1, borderRadius: 6, backgroundColor: v >= 0 ? PIECE_COLORS[v % PIECE_COLORS.length] : T.dark2, borderWidth: v >= 0 ? 0 : 1, borderColor: T.line }} />
                 </Pressable>
@@ -372,7 +372,7 @@ function Marquetry({ s, width, onPlay, tap }: BoardProps) {
       {sel !== null ? (
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
           <Pressable accessibilityRole="button" onPress={() => { tap(); rotate(); }} style={{ height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Icon name="redo" size={18} color={T.tx} /><Text style={{ color: T.tx, fontWeight: '600' }}>Tourner{p.flips ? ' / retourner' : ''}</Text>
+            <Icon name="redo" size={18} color={T.tx} /><Text style={{ color: T.tx, fontWeight: '600' }}>{tr(p.flips ? 'Tourner / retourner' : 'Tourner')}</Text>
           </Pressable>
         </View>
       ) : null}

@@ -104,7 +104,7 @@ export default function DistrictScreen() {
           </Text>
         </View>
       ) : null}
-      {target ? <Button title={`Entrer · ${target.name}`} onPress={() => openBuilding(target)} style={{ marginTop: 4 }} /> : null}
+      {target ? <Button title={tr('Entrer · {0}', [target.name])} onPress={() => openBuilding(target)} style={{ marginTop: 4 }} /> : null}
     </Screen>
   );
 }

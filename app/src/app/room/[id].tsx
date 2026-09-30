@@ -171,7 +171,7 @@ export default function RoomScreen() {
           : rec >= 0
             ? open
               ? <Button title={tr('Allumer la lanterne {0} · {1}', [rec + 1, fam(lanterns[rec].family).name])} onPress={() => choose(rec)} />
-              : <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', padding: 14, borderRadius: 16, borderWidth: 1, borderColor: T.line }}><Icon name="lock" size={20} color={T.tx2} /><Text style={[type.sub, { flex: 1 }]}>Salle encore fermée. {lockHint}</Text></View>
+              : <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', padding: 14, borderRadius: 16, borderWidth: 1, borderColor: T.line }}><Icon name="lock" size={20} color={T.tx2} /><Text style={[type.sub, { flex: 1 }]}>{tr('Salle encore fermée.')} {lockHint}</Text></View>
             : canSearch
               ? <Button title={tr('Chercher l’objet caché')} icon="star" onPress={() => { tap(); setSearching(true); }} />
               : <Button title={tr('Retour au bâtiment')} kind="secondary" onPress={() => goBack()} />}

@@ -22,7 +22,7 @@ import { roomSlotsOf, slotText } from '../ui/scenes';
 import { HintLevel } from '../core/puzzlekit/types';
 import { tr, translated } from '../i18n';
 
-const HINT_NAMES = ['Murmure', 'Piste', 'Éclairage', 'Solution'];
+const HINT_NAMES = translated(['Murmure', 'Piste', 'Éclairage', 'Solution']);
 const HINT_ICONS = ['whisper', 'hint', 'light', 'star'];
 
 /** iPad: width of the left pane, and the phone width the board is drawn at. */
@@ -104,7 +104,7 @@ export default function PuzzleScreen() {
     if (level === null) return;
     const r = buyHint(s, level);
     if (!r) return;
-    if ('missing' in r) { showToast(`Il te manque ${r.missing} Éclats. Le Murmure reste gratuit.`, 'shard'); return; }
+    if ('missing' in r) { showToast(tr('Il te manque {0} Éclats. Le Murmure reste gratuit.', [r.missing]), 'shard'); return; }
     play('hint');
     setSheet(null);
     if (level === HintLevel.Solution) {
@@ -236,12 +236,12 @@ export default function PuzzleScreen() {
                     <Pressable accessibilityRole="button" disabled={!afford || cooling} onPress={() => { tap(); onBuyHint(); }}
                       style={{ height: 38, paddingHorizontal: 14, borderRadius: R.m, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, flexDirection: 'row', alignItems: 'center', gap: 6, opacity: afford && !cooling ? 1 : 0.5 }}>
                       {cost ? <Icon name="shard" size={16} color={T.moon} /> : null}
-                      <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>{cooling ? `${Math.ceil(wait / 1000)} s` : cost ? cost : 'Gratuit'}</Text>
+                      <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>{cooling ? `${Math.ceil(wait / 1000)} s` : cost ? cost : tr('Gratuit')}</Text>
                     </Pressable>
-                  ) : <Text style={type.foot}>{cost ? `${cost} Éclats` : 'Gratuit'}</Text>}
+                  ) : <Text style={type.foot}>{cost ? tr('{0} Éclats', [cost]) : tr('Gratuit')}</Text>}
               </View>
               {reached && s.hint.texts[i] && i < 3 ? <Text style={[type.callout, { marginTop: 8 }]}>{s.hint.texts[i]}</Text> : null}
-              {isNext && !afford ? <Text style={[type.foot, { marginTop: 6 }]}>Il te manque {cost - state.wallet.balance} Éclats. Le Murmure reste gratuit, et tu peux jouer une autre lanterne.</Text> : null}
+              {isNext && !afford ? <Text style={[type.foot, { marginTop: 6 }]}>{tr('Il te manque {0} Éclats. Le Murmure reste gratuit, et tu peux jouer une autre lanterne.', [cost - state.wallet.balance])}</Text> : null}
               {isNext && i === 3 ? <Text style={[type.foot, { marginTop: 6 }]}>{tr('La lumière est gagnée, sans le bonus Clairvoyance.')}</Text> : null}
             </View>
           );
@@ -274,7 +274,7 @@ export default function PuzzleScreen() {
   );
 }
 
-const RULE_DETAILS_FR: Record<string, string> = {
+const RULE_DETAILS: Record<string, string> = translated({
   IN: 'Touche un bouton : il change d’état, avec ses voisins. Le compteur montre tes coups ; le nombre minimal s’affiche une fois la lanterne allumée.',
   CA: 'Chaque ligne est un essai. ● : un chiffre juste à la bonne place. ○ : un chiffre juste à la mauvaise place. Tourne les molettes, puis Valider.',
   LA: 'Touche une case : une lampe. Touche encore : un point (« pas de lampe ici »), pour t’aider. Une lampe éclaire sa ligne et sa colonne jusqu’au premier mur.',
@@ -301,8 +301,7 @@ const RULE_DETAILS_FR: Record<string, string> = {
   RU: 'Touche une épingle, puis fais glisser le doigt (ou touche case après case) jusqu’à l’épingle de même couleur. Les rubans ne se croisent jamais et doivent couvrir tout le métier. Touche un ruban pour le reprendre à cet endroit.',
   LU: 'Chaque lanterne a sa luciole juste à côté : au-dessus, en dessous, à gauche ou à droite. Deux lucioles ne se touchent jamais, même par un coin. Les nombres comptent les lucioles de chaque ligne et colonne. Touche une case : luciole, puis herbe, puis libre.',
   PA: 'Relie les îlots par des passerelles droites, une ou deux entre deux îlots, qui ne se croisent jamais. Le nombre d’un îlot est son nombre de passerelles. À la fin, tous les îlots doivent être reliés ensemble. Touche un îlot, puis un autre en face.',
-};
-const RULE_DETAILS = translated(RULE_DETAILS_FR);
+});
 
 function Row({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
   return (

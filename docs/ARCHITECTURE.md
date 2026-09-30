@@ -55,6 +55,16 @@ Le fichier est déterministe : même code, même `pack.json`, octet pour octet. 
 
 Les identifiants de lanternes ne changent jamais : une sauvegarde reste valide quand le contenu grandit.
 
+## Les langues
+
+Le jeu est écrit en français ; l'anglais est un dictionnaire dont les clés sont les textes français (`src/i18n/en/*.ts` : `engine`, `ui`, `world`, `scenes`).
+
+- Dans le code, un texte affiché passe par `tr('Salle {0}', [n])` ou `trn(n, 'un', 'plusieurs')`. Les données (quartiers, lettres, garde-robe…) passent par `translated(...)`, qui les lit dans la langue courante.
+- La langue suit le téléphone (français pour un appareil en français, anglais sinon) ; le joueur peut la forcer dans Réglages › Langue.
+- L'historique des Éclats est enregistré en français et traduit à l'affichage : changer de langue ne mélange rien.
+- `src/core/__tests__/i18n.test.ts` échoue si un texte n'a pas sa traduction ou si les `{0}` ne correspondent pas. `I18N_DUMP=manquants.json npx jest i18n` écrit la liste de ce qui manque.
+- Une nouvelle langue : un dictionnaire de plus dans `src/i18n/`, une entrée dans `Lang`, `resolveLang` et le sélecteur des Réglages.
+
 ## Ajouter un chapitre (mise à jour de contenu)
 
 La fin du premier chapitre (`app/ending.tsx`) annonce la suite « de l'autre côté de la mer ». Pour l'ajouter :
@@ -64,7 +74,8 @@ La fin du premier chapitre (`app/ending.tsx`) annonce la suite « de l'autre cô
 3. **La carte** : la position du quartier dans `MAP_POS` (`ui/art.ts`), son ambiance sonore.
 4. **Le contenu** : `npm run content:extend` (les 1000 lanternes publiées ne bougent pas), puis `npm run content:lock` au moment de la sortie.
 5. **L'histoire** : une nouvelle scène de fin ou d'ouverture, sur le modèle de `app/ending.tsx`, et une clé dans `game/story.ts`.
-6. **Vérifier** : `npm test`, `npx tsc --noEmit`, `npx expo lint`, puis les parcours web de `tools/store` et un essai sur iPhone.
+6. **L'anglais** : les nouveaux textes dans `src/i18n/en/` (le test i18n liste ceux qui manquent).
+7. **Vérifier** : `npm test`, `npx tsc --noEmit`, `npx expo lint`, puis les parcours web de `tools/store` et un essai sur iPhone.
 
 ## Qualité
 

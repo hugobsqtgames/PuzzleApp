@@ -82,7 +82,7 @@ export default function Settings() {
       <Group title={tr('Jeu')}>
         <ToggleRow icon="chev" label={tr('Ouvrir directement les puzzles')} sub={tr('Sans l’aperçu de la lanterne')} value={settings.direct} onChange={(v) => setSettings({ direct: v })} />
       </Group>
-      <Group title={tr('Rappel')}>
+      <Group title={tr('Notifications')}>
         <ToggleRow icon="bell" label={tr('Rappel du défi du soir')} sub={tr('Un seul par jour, seulement s’il n’est pas fait')} value={settings.reminder} onChange={(v) => { void toggleReminder(v); }} />
         {settings.reminder ? <LinkRow label={tr('Heure : {0} h {1}', [hh(settings.reminderHour), hh(settings.reminderMinute)])} onPress={() => setSheet('time')} /> : null}
       </Group>

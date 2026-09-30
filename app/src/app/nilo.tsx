@@ -36,7 +36,7 @@ export default function NiloScreen() {
     }
     const next = MOODS[(MOODS.indexOf(mood) + 1) % MOODS.length];
     setMood(next);
-    showToast(`Nilo : ${MOOD_FR[next]}`, 'light');
+    showToast(tr('Nilo : {0}', [MOOD_FR[next]]), 'light');
   };
 
   return (

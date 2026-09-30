@@ -22,7 +22,9 @@ function argLiterals(src: string, open: number, pick: number[]): string[] {
     if (ch === "'" || ch === '`' || ch === '"') {
       let j = i + 1, body = '';
       while (j < src.length && src[j] !== ch) { if (src[j] === '\\') { body += src[j + 1] === 'n' ? '\n' : src[j + 1]; j += 2; } else body += src[j++]; }
-      if (ch === "'" && pick.includes(arg)) out.push(body);
+      // A literal compared with (`kind === 'daily' ? …`) is code, not text.
+      const compared = /[=!]==\s*$/.test(src.slice(Math.max(0, i - 6), i));
+      if (ch === "'" && pick.includes(arg) && body && !compared) out.push(body);
       i = j;
       continue;
     }

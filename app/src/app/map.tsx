@@ -11,10 +11,9 @@ import { useStore } from '../game/store';
 import { BackButton, LightPill, Nilo, Toast, tap } from '../ui/components';
 import { MAP_H, MAP_POS, MAP_W, mapXml } from '../ui/art';
 import { type } from '../ui/theme';
-import { current, districtById, districtViews, infoOf, unlockText } from '../game/views';
+import { current, districtById, districtViews, infoOf, lowerFirst, unlockText } from '../game/views';
 import { look } from '../game/rewards';
 import { tr } from '../i18n';
-import { lowerFirst } from '../game/views';
 
 export default function MapScreen() {
   const { state, engine, showToast, toast, play, enterPlace } = useStore();

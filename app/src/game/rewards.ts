@@ -39,7 +39,7 @@ function solvedLanterns(s: GameState): Lantern[] {
 }
 
 const districtDone = (id: string, name: string, title: string): Achievement => ({
-  id: `district.${id}`, name: title, description: `Éclaire tout ${name}.`, reward: 30,
+  id: `district.${id}`, name: title, description: `Éclaire ${name} en entier.`, reward: 30,
   progress: ({ s, p }) => { const d = WORLD.districts.find((x) => x.id === id)!; const all = districtLanterns(d); return [p.lights(all, s), all.length]; },
 });
 
@@ -80,7 +80,7 @@ const ACHIEVEMENTS_FR: Achievement[] = [
   } },
   // Familles
   ...CODES.map((code): Achievement => ({
-    id: `family.${code}`, name: FAMILIES[code].achievement, description: `Résous 25 puzzles de ${FAMILIES[code].name}.`, reward: 20,
+    id: `family.${code}`, name: FAMILIES[code].achievement, description: `Résous 25 puzzles ${/^[AEIOUÉÈ]/.test(FAMILIES[code].name) ? 'd’' : 'de '}${FAMILIES[code].name}.`, reward: 20,
     progress: ({ solvedByFamily }) => [Math.min(25, (solvedByFamily[code] ?? []).length), 25],
   })),
   { id: 'polymath', name: 'Polymathe', description: 'Allume au moins un Brasier dans chaque famille.', reward: 40, progress: ({ solvedByFamily }) => [CODES.filter((c) => (solvedByFamily[c] ?? []).some((l) => l.tier >= Tier.Blaze)).length, CODES.length] },

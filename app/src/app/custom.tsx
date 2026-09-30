@@ -67,7 +67,7 @@ export default function Custom() {
         ? <Button title={worn(slot) === item.id ? tr('Porté') : tr('Porter')} disabled={worn(slot) === item.id} onPress={() => { equip(slot, item.id); play('unlock'); }} />
         : item.earn
           ? <Button kind="secondary" icon="lock" title={item.earn.text} disabled />
-          : <Button title={`Acheter · ${item.price} Éclats`} disabled={state.wallet.balance < (item.price ?? 0)} onPress={buy} />}
+          : <Button title={tr('Acheter · {0} Éclats', [item.price ?? 0])} disabled={state.wallet.balance < (item.price ?? 0)} onPress={buy} />}
     </Screen>
   );
 }

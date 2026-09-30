@@ -17,7 +17,7 @@ import { FirefliesPuzzle, FirefliesState } from '../core/families/fireflies';
 import { BridgesFamily, BridgesPuzzle, BridgesState, edgesOf, linkKey } from '../core/families/bridges';
 import { useStore } from '../game/store';
 import type { BoardProps } from './boards';
-import { tr, translated } from '../i18n';
+import { tr, trn, translated } from '../i18n';
 
 const box = { backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: R.l } as const;
 const focusOf = (s: BoardProps['s']): CellRef[] => [...(s.hint.focus ?? []), ...(s.error?.focus ?? [])];
@@ -97,7 +97,7 @@ function Embroidery({ s, width, onPlay, tap }: BoardProps) {
           </View>
         ))}
       </View>
-      <Segmented value={tool} onChange={(k) => { tap(); setTool(k); }} options={[['stitch', 'Broder', 'knit'], ['cross', 'Marquer vide', 'x']]} />
+      <Segmented value={tool} onChange={(k) => { tap(); setTool(k); }} options={[['stitch', tr('Broder'), 'knit'], ['cross', tr('Marquer vide'), 'x']]} />
     </View>
   );
 }
@@ -108,7 +108,7 @@ function NumberPad({ n, onPick, onErase }: { n: number; onPick: (v: number) => v
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
       {[...Array(n)].map((_, k) => (
-        <Pressable key={k} accessibilityRole="button" accessibilityLabel={`Chiffre ${k + 1}`} onPress={() => onPick(k + 1)}
+        <Pressable key={k} accessibilityRole="button" accessibilityLabel={tr('Chiffre {0}', [k + 1])} onPress={() => onPick(k + 1)}
           style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: T.tx, fontSize: 22, fontWeight: '700', fontFamily: ROUND }}>{k + 1}</Text>
         </Pressable>
@@ -158,7 +158,7 @@ function Signs({ s, width, onPlay, tap }: BoardProps) {
           {[...Array(p.n * p.n)].map((_, i) => {
             const r = Math.floor(i / p.n), c = i % p.n, v = st.values[i], given = !!p.givens[i], hot = has(focusOf(s), r, c);
             return (
-              <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected: sel === i, disabled: given }} accessibilityLabel={`Ligne ${r + 1}, colonne ${c + 1} : ${v || 'vide'}`} disabled={given}
+              <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected: sel === i, disabled: given }} accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${v || tr('vide')}`} disabled={given}
                 onPress={() => { tap(); setSel(i); }}
                 style={{ position: 'absolute', left: c * step, top: r * step, width: size + 6, height: size + 6, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#12152b', borderWidth: sel === i ? 2.5 : 1, borderColor: hot ? T.coral : sel === i ? T.moon : T.line }}>
                 <Text style={{ color: given ? T.gold : T.tx, fontSize: size * 0.5, fontWeight: given ? '800' : '600', fontFamily: ROUND }}>{v || ''}</Text>
@@ -203,7 +203,7 @@ function Roofs({ s, width, onPlay, tap }: BoardProps) {
         <View style={{ flexDirection: 'row' }}>
           <View>{[...Array(p.n)].map((_, r) => <View key={r} style={{ height: size + 6, justifyContent: 'center' }}><Clue v={p.left[r]} good={ok(row(r), p.left[r])} /></View>)}</View>
           <DigitSquare n={p.n} values={st.values} givens={p.givens} size={size} focus={focusOf(s)} sel={sel} onSelect={(i) => { tap(); setSel(i); }} cellStyle={shade}
-            label={(r, c, v) => `Ligne ${r + 1}, colonne ${c + 1} : ${v ? `cheminée de ${v}` : 'vide'}`} />
+            label={(r, c, v) => `${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${v ? tr('cheminée de {0}', [v]) : tr('vide')}`} />
           <View>{[...Array(p.n)].map((_, r) => <View key={r} style={{ height: size + 6, justifyContent: 'center' }}><Clue v={p.right[r]} good={ok([...row(r)].reverse(), p.right[r])} /></View>)}</View>
         </View>
         <View style={{ flexDirection: 'row', marginLeft: clue }}>{[...Array(p.n)].map((_, c) => <View key={c} style={{ width: size + 6, alignItems: 'center' }}><Clue v={p.bottom[c]} good={ok([...col(c)].reverse(), p.bottom[c])} /></View>)}</View>
@@ -284,7 +284,7 @@ function Slider({ s, width, onPlay, tap }: BoardProps) {
             const i = r * p.cols + c, v = st.tiles[i], home = v === i + 1;
             if (!v) return <View key={c} style={{ width: size, height: size, margin: 3 }} />;
             return (
-              <Pressable key={c} accessibilityRole="button" accessibilityLabel={`Tuile ${v}`} onPress={() => { const t = tapTile(p.rows, p.cols, st.tiles, i); if (t !== st.tiles) { tap(); onPlay({ tiles: t }); } }}
+              <Pressable key={c} accessibilityRole="button" accessibilityLabel={tr('Tuile {0}', [v])} onPress={() => { const t = tapTile(p.rows, p.cols, st.tiles, i); if (t !== st.tiles) { tap(); onPlay({ tiles: t }); } }}
                 style={{ width: size, height: size, margin: 3, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: home ? '#3a2f22' : T.s2, borderWidth: has(focus, r, c) ? 2.5 : 1, borderColor: has(focus, r, c) ? T.gold : home ? '#8a6a45' : T.line }}>
                 <Text style={{ color: home ? T.gold : T.tx, fontSize: size * 0.42, fontWeight: '800', fontFamily: ROUND }}>{v}</Text>
               </Pressable>
@@ -351,7 +351,7 @@ function Ribbons({ s, width, onPlay, tap }: BoardProps) {
         {/* VoiceOver: the pins and cells as buttons, reading the ribbon they belong to. */}
         {[...Array(p.rows * p.cols)].map((_, i) => {
           const pin = pinColour(p, i), k = owner(i);
-          return <Pressable key={`a${i}`} accessible accessibilityRole="button" accessibilityLabel={`Ligne ${Math.floor(i / p.cols) + 1}, colonne ${(i % p.cols) + 1}${pin >= 0 ? `, épingle ${String.fromCharCode(65 + pin)}` : k >= 0 ? `, ruban ${String.fromCharCode(65 + k)}` : ', libre'}`}
+          return <Pressable key={`a${i}`} accessible accessibilityRole="button" accessibilityLabel={tr('Ligne {0}, colonne {1}', [Math.floor(i / p.cols) + 1, (i % p.cols) + 1]) + (pin >= 0 ? tr(', épingle {0}', [String.fromCharCode(65 + pin)]) : k >= 0 ? tr(', ruban {0}', [String.fromCharCode(65 + k)]) : tr(', libre'))}
             onPress={() => { last.current = -1; startAt.current = null; touch(i); }} style={{ position: 'absolute', left: (i % p.cols) * size, top: Math.floor(i / p.cols) * size, width: size, height: size }} />;
         })}
       </View>
@@ -378,7 +378,7 @@ function Fireflies({ s, width, onPlay, tap }: BoardProps) {
               </View>
             );
             return (
-              <Pressable key={c} accessibilityRole="button" accessibilityLabel={`Ligne ${r + 1}, colonne ${c + 1} : ${v === 1 ? 'luciole' : v === 2 ? 'herbe' : 'libre'}`} onPress={() => press(i)}
+              <Pressable key={c} accessibilityRole="button" accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${tr(v === 1 ? 'luciole' : v === 2 ? 'herbe' : 'libre')}`} onPress={() => press(i)}
                 style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', backgroundColor: hot ? 'rgba(232,138,138,0.25)' : v === 2 ? '#1d3a2c' : '#13241d', borderWidth: 0.5, borderColor: '#2e4a3e' }}>
                 {v === 1 ? <Svg width={size * 0.7} height={size * 0.7} viewBox="0 0 24 24"><Circle cx={12} cy={12} r={10} fill="rgba(240,228,66,0.3)" /><Circle cx={12} cy={12} r={4.5} fill="#F0E442" /><Path d="M12 7c-3-4-7-3-6 0M12 7c3-4 7-3 6 0" stroke="#BFE6F0" strokeWidth={1.4} fill="none" /></Svg> : null}
                 {v === 2 ? <Svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24"><Path d="M6 20c1-6 1-9 0-13M12 20c0-7 1-11 3-15M18 20c-1-5 0-8 2-11" stroke="#4f8a5e" strokeWidth={2} fill="none" strokeLinecap="round" /></Svg> : null}
@@ -423,7 +423,7 @@ function Bridges({ s, width, onPlay, tap }: BoardProps) {
         {p.islands.map(([pos, need], k) => {
           const [x, y] = xy(pos), done = sums[k] === need, over = sums[k] > need, hot = has(focus, Math.floor(pos / p.cols), pos % p.cols), sel = st.selected === k;
           return (
-            <Pressable key={k} accessibilityRole="button" accessibilityState={{ selected: sel }} accessibilityLabel={`Îlot ${need}, ${sums[k]} passerelle${sums[k] > 1 ? 's' : ''}${sel ? ', choisi' : ''}`}
+            <Pressable key={k} accessibilityRole="button" accessibilityState={{ selected: sel }} accessibilityLabel={trn(sums[k], 'Îlot {1}, {0} passerelle', 'Îlot {1}, {0} passerelles', [sums[k], need]) + (sel ? tr(', choisi') : '')}
               onPress={() => { tap(); onPlay(bridgesFamily.tapIsland(p, st, k), st.selected !== null && st.selected !== k); }}
               style={{ position: 'absolute', left: x - size * 0.44, top: y - size * 0.44, width: size * 0.88, height: size * 0.88, borderRadius: size, alignItems: 'center', justifyContent: 'center', backgroundColor: done ? '#3a5a3e' : over ? '#5a2a2a' : T.s2, borderWidth: sel || hot ? 3 : 1.5, borderColor: sel ? T.moon : hot ? T.gold : done ? '#9CCB8A' : '#8a8fa8' }}>
               <Text style={{ color: T.tx, fontSize: size * 0.42, fontWeight: '800', fontFamily: ROUND }}>{need}</Text>

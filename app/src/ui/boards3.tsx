@@ -60,7 +60,7 @@ const BELL_COLORS = ['#E88A8A', '#F4B45E', '#FFD98E', '#9CCB8A', '#8FB8F0', '#B7
 function Bell({ i, size, lit, focus, onPress, swing }: { i: number; size: number; lit: boolean; focus: boolean; onPress: () => void; swing: Animated.Value }) {
   const c = BELL_COLORS[i % BELL_COLORS.length];
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`Cloche ${i + 1}`} onPress={onPress} hitSlop={4}
+    <Pressable accessibilityRole="button" accessibilityLabel={tr('Cloche {0}', [i + 1])} onPress={onPress} hitSlop={4}
       style={{ width: size, height: size * 1.25, alignItems: 'center', justifyContent: 'flex-start' }}>
       <Animated.View style={{ transformOrigin: 'top', transform: [{ rotate: swing.interpolate({ inputRange: [-1, 1], outputRange: ['-14deg', '14deg'] }) }] }}>
         <Svg width={size} height={size * 1.15} viewBox="0 0 60 70">
@@ -434,8 +434,8 @@ function Seal({ s, width, onPlay, tap, visitRoom }: BoardProps) {
                 <Text style={{ fontFamily: SERIF_ITALIC, fontSize: 18, color: T.gold }}>?</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>Salle {i + 1}</Text>
-                <Text style={{ color: T.tx2, fontSize: 13 }}>{at ? roomName(at.d, at.bi, at.ri) : ''} · un chiffre peint dans le décor</Text>
+                <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>{tr('Salle {0}', [i + 1])}</Text>
+                <Text style={{ color: T.tx2, fontSize: 13 }}>{at ? roomName(at.d, at.bi, at.ri) : ''} · {tr('un chiffre peint dans le décor')}</Text>
               </View>
               {visitRoom ? (
                 <Pressable accessibilityRole="button" accessibilityLabel={tr('Aller voir la Salle {0}', [i + 1])} onPress={() => { tap(); visitRoom(id); }}
@@ -450,11 +450,11 @@ function Seal({ s, width, onPlay, tap, visitRoom }: BoardProps) {
       <View style={{ flexDirection: 'row', gap: 14, justifyContent: 'center' }} accessibilityLabel={tr('Molettes du sceau')}>
         {st.wheels.map((d, i) => (
           <View key={i} style={{ alignItems: 'center', gap: 4 }}>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Chiffre ${i + 1} : augmenter`} onPress={() => turn(i, 1)} style={{ width: wheelW, height: 36, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}><Icon name="up" size={18} color={T.tx2} sw={2} /></Pressable>
-            <View accessible accessibilityLabel={`Chiffre ${i + 1} : ${d}`} style={{ width: wheelW, height: 56, borderRadius: 14, backgroundColor: '#0f1226', borderWidth: 1.5, borderColor: T.gold, alignItems: 'center', justifyContent: 'center' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={tr('Chiffre {0} : augmenter', [i + 1])} onPress={() => turn(i, 1)} style={{ width: wheelW, height: 36, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}><Icon name="up" size={18} color={T.tx2} sw={2} /></Pressable>
+            <View accessible accessibilityLabel={tr('Chiffre {0} : {1}', [i + 1, d])} style={{ width: wheelW, height: 56, borderRadius: 14, backgroundColor: '#0f1226', borderWidth: 1.5, borderColor: T.gold, alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ fontFamily: ROUND, fontWeight: '800', fontSize: 30, color: T.tx }}>{d}</Text>
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Chiffre ${i + 1} : diminuer`} onPress={() => turn(i, -1)} style={{ width: wheelW, height: 36, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}><Icon name="down" size={18} color={T.tx2} sw={2} /></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={tr('Chiffre {0} : diminuer', [i + 1])} onPress={() => turn(i, -1)} style={{ width: wheelW, height: 36, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}><Icon name="down" size={18} color={T.tx2} sw={2} /></Pressable>
           </View>
         ))}
       </View>

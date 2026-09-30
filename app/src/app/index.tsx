@@ -11,7 +11,7 @@ import { Button, Card, Crumb, Gauge, GaugeRow, GlyphCircle, Icon, LightPill, Nil
 import { useReducedMotion } from '../ui/motion';
 import { vesperWindowXml } from '../ui/art';
 import { T, R, type } from '../ui/theme';
-import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName } from '../game/views';
+import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName, lowerArticle } from '../game/views';
 import { districtLanterns } from '../core/game/world';
 import { FAMILIES, LANTERN_COUNT, TIER_NAMES, dailyPuzzle, WORLD, formatCount } from '../game/catalog';
 import { ENDING_SEEN } from '../game/story';
@@ -19,7 +19,6 @@ import { look } from '../game/rewards';
 import { dailyLabel, dateOfDay } from '../ui/dates';
 import { addDays } from '../core/game/dayKey';
 import { tr } from '../i18n';
-import { lowerArticle } from '../game/views';
 
 export const DAILY_UNLOCK_LIGHTS = 6;
 
@@ -66,7 +65,7 @@ export default function Home() {
           {!reduce ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
             <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')}</Text>
-            <Text style={type.foot}>{total} / {formatCount(LANTERN_COUNT)} lanternes</Text>
+            <Text style={type.foot}>{tr('{0} / {1} lanternes', [total, formatCount(LANTERN_COUNT)])}</Text>
           </View>
           <View style={{ position: 'absolute', right: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 999, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line }}>
             <Icon name="map" size={16} /><Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>{tr('Carte')}</Text>
@@ -98,7 +97,7 @@ export default function Home() {
           <View style={{ flex: 1, gap: 14 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Lumières', [total])} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })}><LightPill n={total} /></Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel={`${state.wallet.balance} Éclats`} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
 
 
@@ -108,7 +107,7 @@ export default function Home() {
           <GlyphCircle icon={daily.code} color={dailyDone ? T.tx2 : T.amber} />
           <View style={{ flex: 1 }}>
             <Text style={type.headline}>{dailyDone ? tr('Défi du soir réussi') : tr('Défi du soir')}</Text>
-            <Text style={type.sub}>{dailyDone && tomorrow ? `Demain : ${FAMILIES[tomorrow.code].name} · ${TIER_NAMES[tomorrow.tier]}` : `${dailyLabel(dateOfDay(today))} · ${FAMILIES[daily.code].name} · ${TIER_NAMES[daily.tier]}`}</Text>
+            <Text style={type.sub}>{dailyDone && tomorrow ? tr('Demain : {0} · {1}', [FAMILIES[tomorrow.code].name, TIER_NAMES[tomorrow.tier]]) : `${dailyLabel(dateOfDay(today))} · ${FAMILIES[daily.code].name} · ${TIER_NAMES[daily.tier]}`}</Text>
           </View>
           <View style={{ alignItems: 'center' }}>
             <Icon name="light" size={22} color={T.amber} />
@@ -121,7 +120,7 @@ export default function Home() {
           <GlyphCircle icon="cal" color={T.tx2} />
           <View style={{ flex: 1 }}>
             <Text style={type.headline}>{tr('Défi du soir')}</Text>
-            <Text style={type.sub}>Disponible après {DAILY_UNLOCK_LIGHTS} lanternes</Text>
+            <Text style={type.sub}>{tr('Disponible après {0} lanternes', [DAILY_UNLOCK_LIGHTS])}</Text>
           </View>
           <Icon name="lock" size={20} color={T.tx2} />
         </View>
@@ -182,7 +181,7 @@ export default function Home() {
         <>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Lumières', [total])} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })}><LightPill n={total} /></Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel={`${state.wallet.balance} Éclats`} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
 
       <View style={{ height: winH, marginBottom: 6 }}>
@@ -192,7 +191,7 @@ export default function Home() {
           {!reduce ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
             <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')}</Text>
-            <Text style={type.foot}>{total} / {formatCount(LANTERN_COUNT)} lanternes</Text>
+            <Text style={type.foot}>{tr('{0} / {1} lanternes', [total, formatCount(LANTERN_COUNT)])}</Text>
           </View>
           <View style={{ position: 'absolute', right: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 999, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line }}>
             <Icon name="map" size={16} /><Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>{tr('Carte')}</Text>
@@ -227,7 +226,7 @@ export default function Home() {
           <GlyphCircle icon={daily.code} color={dailyDone ? T.tx2 : T.amber} />
           <View style={{ flex: 1 }}>
             <Text style={type.headline}>{dailyDone ? tr('Défi du soir réussi') : tr('Défi du soir')}</Text>
-            <Text style={type.sub}>{dailyDone && tomorrow ? `Demain : ${FAMILIES[tomorrow.code].name} · ${TIER_NAMES[tomorrow.tier]}` : `${dailyLabel(dateOfDay(today))} · ${FAMILIES[daily.code].name} · ${TIER_NAMES[daily.tier]}`}</Text>
+            <Text style={type.sub}>{dailyDone && tomorrow ? tr('Demain : {0} · {1}', [FAMILIES[tomorrow.code].name, TIER_NAMES[tomorrow.tier]]) : `${dailyLabel(dateOfDay(today))} · ${FAMILIES[daily.code].name} · ${TIER_NAMES[daily.tier]}`}</Text>
           </View>
           <View style={{ alignItems: 'center' }}>
             <Icon name="light" size={22} color={T.amber} />
@@ -240,7 +239,7 @@ export default function Home() {
           <GlyphCircle icon="cal" color={T.tx2} />
           <View style={{ flex: 1 }}>
             <Text style={type.headline}>{tr('Défi du soir')}</Text>
-            <Text style={type.sub}>Disponible après {DAILY_UNLOCK_LIGHTS} lanternes</Text>
+            <Text style={type.sub}>{tr('Disponible après {0} lanternes', [DAILY_UNLOCK_LIGHTS])}</Text>
           </View>
           <Icon name="lock" size={20} color={T.tx2} />
         </View>
