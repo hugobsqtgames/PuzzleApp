@@ -456,4 +456,7 @@ export const EN_UI: Record<string, string> = {
   '{0} veilleuse': '{0} night-light',
   '{0} veilleuses': '{0} night-lights',
   'Porter : {0}': 'Wear: {0}',
+  'Recommencer ce puzzle ?': 'Restart this puzzle?',
+  'La grille revient à son état de départ. Les indices déjà utilisés restent comptés.': 'The board goes back to how it started. Hints already used still count.',
+  'Recommencer': 'Restart',
 };

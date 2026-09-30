@@ -33,7 +33,7 @@ export default function PuzzleScreen() {
   const { state, engine, session, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
   const { width } = useContentSize();
   const { wide, width: wideWidth } = useWide();
-  const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | null>(null);
+  const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | 'restart' | null>(null);
   const [offered, setOffered] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -256,11 +256,19 @@ export default function PuzzleScreen() {
         <Text style={[type.title2, { marginBottom: 10 }]}>{tr('Pause')}</Text>
         <Button title={tr('Reprendre')} onPress={() => setSheet(null)} />
         <Row icon="info" label={tr('Revoir la règle')} onPress={() => setSheet('rule')} />
-        <Row icon="undo" label={tr('Recommencer ce puzzle')} onPress={restart} />
+        {/* Asked first: a restart erases the board, and a slip of the finger should not cost a long think. */}
+        <Row icon="undo" label={tr('Recommencer ce puzzle')} onPress={() => (s.history.length ? setSheet('restart') : restart())} />
         <ToggleRow icon="music" label={tr('Musique')} value={settings.music} onChange={(v) => setSettings({ music: v })} />
         <ToggleRow icon="sound" label={tr('Effets sonores')} value={settings.effects} onChange={(v) => setSettings({ effects: v })} />
         <Button title={s.kind === 'daily' ? tr('Retour au défi') : where?.room ? tr('Retour à la salle') : tr('Retour au bâtiment')} kind="secondary" onPress={() => { setSheet(null); leave(); }} style={{ marginTop: 12 }} />
         <Text style={[type.foot, { marginTop: 10, textAlign: 'center' }]}>{s.kind === 'daily' ? tr('Le défi reste jouable toute la soirée.') : tr('Ta progression dans ce puzzle est gardée.')}</Text>
+      </Sheet>
+
+      <Sheet visible={sheet === 'restart'} onClose={() => setSheet('pause')}>
+        <Text style={[type.title2, { marginBottom: 8 }]}>{tr('Recommencer ce puzzle ?')}</Text>
+        <Text style={[type.sub, { marginBottom: 16 }]}>{tr('La grille revient à son état de départ. Les indices déjà utilisés restent comptés.')}</Text>
+        <Button title={tr('Recommencer')} onPress={restart} />
+        <Button title={tr('Annuler')} kind="ghost" onPress={() => setSheet('pause')} style={{ marginTop: 4 }} />
       </Sheet>
 
       <Sheet visible={sheet === 'rule'} onClose={() => setSheet(null)}>
