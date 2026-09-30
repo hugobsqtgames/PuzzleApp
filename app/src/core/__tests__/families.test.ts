@@ -1,5 +1,5 @@
 import { CandidatePipeline } from '../puzzlekit/pipeline';
-import { SeededRNG, StableHash } from '../puzzlekit/rng';
+import { SeededRNG } from '../puzzlekit/rng';
 import { HINT_LEVELS, HintLevel, LocalizedTemplate, Tier, TierThresholds, tierKey } from '../puzzlekit/types';
 import { canonicalGrid, ALL_SYMMETRIES, source } from '../puzzlekit/grid';
 import { SwitchesFamily, SwitchesPuzzle, moveCount } from '../families/switches';

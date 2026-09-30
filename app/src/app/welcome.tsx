@@ -1,7 +1,7 @@
 // Splash then onboarding (GAME_DESIGN § 14): 3 short pages, then the first
 // puzzle. No account, no permission, no choice to make.
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Pressable, Text, View, useWindowDimensions } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Animated, Pressable, Text, View, useWindowDimensions, useAnimatedValue } from 'react-native';
 import { router } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 import { LinearGradientBackdrop } from '../ui/Backdrop';
@@ -34,7 +34,7 @@ export default function Welcome() {
   const { state, openLantern } = useStore();
   const { width, height } = useWindowDimensions();
   const [page, setPage] = useState(-1); // -1 = splash
-  const fade = useRef(new Animated.Value(0)).current;
+  const fade = useAnimatedValue(0);
   const dark = useMemo(() => vesperWindowXml(views('dark'), 390, 470), []);
   const phare = useMemo(() => vesperWindowXml(views('phare'), 390, 470), []);
 

@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Animated, Easing, Text, View, useAnimatedValue } from 'react-native';
 import { router } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
 import { useStore, Result } from '../game/store';
 import { Screen } from '../ui/Screen';
-import { Button, Card, GaugeRow, Icon, LightPill, Nilo, Pill, Sheet } from '../ui/components';
+import { Button, Card, GaugeRow, Icon, LightPill, Nilo, Pill, Rise, Sheet } from '../ui/components';
+import { useReducedMotion } from '../ui/motion';
 import { bigLanternXml } from '../ui/art';
 import { T, type } from '../ui/theme';
 import { FAMILIES, TIER_NAMES } from '../game/catalog';
@@ -13,8 +14,43 @@ import { look } from '../game/rewards';
 import { askPermission } from '../game/reminders';
 import { TUTORIAL_LANTERN } from './welcome';
 
+/** Slow rays of light behind the lantern. */
+function Rays() {
+  const v = useAnimatedValue(0);
+  const o = useAnimatedValue(0);
+  useEffect(() => {
+    const loop = Animated.loop(Animated.timing(v, { toValue: 1, duration: 24000, easing: Easing.linear, useNativeDriver: true }));
+    loop.start();
+    Animated.timing(o, { toValue: 1, duration: 900, delay: 300, useNativeDriver: true }).start();
+    return () => loop.stop();
+  }, [v, o]);
+  const rays = [...Array(12)].map((_, i) => `<path d="M100 100L${(100 + 100 * Math.cos((i * 30 - 4) * Math.PI / 180)).toFixed(1)} ${(100 + 100 * Math.sin((i * 30 - 4) * Math.PI / 180)).toFixed(1)}L${(100 + 100 * Math.cos((i * 30 + 4) * Math.PI / 180)).toFixed(1)} ${(100 + 100 * Math.sin((i * 30 + 4) * Math.PI / 180)).toFixed(1)}z" fill="#FFD98E" opacity="${i % 2 ? 0.05 : 0.09}"/>`).join('');
+  return (
+    <Animated.View pointerEvents="none" style={{ position: 'absolute', width: 260, height: 260, opacity: o, transform: [{ rotate: v.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] }}>
+      <SvgXml xml={`<svg viewBox="0 0 200 200">${rays}</svg>`} width={260} height={260} />
+    </Animated.View>
+  );
+}
+
+/** A burst of sparks when the lantern catches. */
+function Sparks() {
+  const [sparks] = useState(() => [...Array(10)].map((_, i) => ({ a: (i / 10) * Math.PI * 2 + (i % 2) * 0.3, d: 70 + (i % 3) * 22, v: new Animated.Value(0) })));
+  useEffect(() => { Animated.stagger(25, sparks.map((sp) => Animated.timing(sp.v, { toValue: 1, duration: 1000, delay: 420, easing: Easing.out(Easing.quad), useNativeDriver: true }))).start(); }, [sparks]);
+  return (
+    <>
+      {sparks.map((sp, i) => (
+        <Animated.View key={i} pointerEvents="none" style={{
+          position: 'absolute', width: i % 3 ? 5 : 7, height: i % 3 ? 5 : 7, borderRadius: 4, backgroundColor: i % 2 ? T.gold : T.amber,
+          opacity: sp.v.interpolate({ inputRange: [0, 0.15, 1], outputRange: [0, 1, 0] }),
+          transform: [{ translateX: sp.v.interpolate({ inputRange: [0, 1], outputRange: [0, Math.cos(sp.a) * sp.d] }) }, { translateY: sp.v.interpolate({ inputRange: [0, 1], outputRange: [0, Math.sin(sp.a) * sp.d] }) }],
+        }} />
+      ))}
+    </>
+  );
+}
+
 function Wave({ color, delay }: { color: string; delay: number }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const v = useAnimatedValue(0);
   useEffect(() => { Animated.timing(v, { toValue: 1, duration: 1400, delay, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(); }, [v, delay]);
   return <Animated.View style={{ position: 'absolute', width: 60, height: 60, borderRadius: 30, borderWidth: 2, borderColor: color, opacity: v.interpolate({ inputRange: [0, 0.1, 1], outputRange: [0, 1, 0] }), transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 3.2] }) }] }} />;
 }
@@ -38,7 +74,8 @@ export function followUps(r: Result | null): string[] {
 
 export default function Success() {
   const { state, engine, result, openLantern, completeOnboarding, showToast, settings, setSettings } = useStore();
-  const pop = useRef(new Animated.Value(0)).current;
+  const pop = useAnimatedValue(0);
+  const reduce = useReducedMotion();
   const [offer, setOffer] = useState(false);
   useEffect(() => { Animated.spring(pop, { toValue: 1, delay: 350, friction: 5, useNativeDriver: true }).start(); }, [pop]);
   const isTutorial = result?.session.id === TUTORIAL_LANTERN;
@@ -89,6 +126,8 @@ export default function Success() {
   return (
     <Screen style={{ alignItems: 'center', gap: 14, paddingTop: 80 }}>
       <View style={{ width: 200, height: 200, alignItems: 'center', justifyContent: 'center' }}>
+        {!reduce ? <Rays /> : null}
+        {!reduce ? <Sparks /> : null}
         <Wave color={T.gold} delay={200} />
         <Wave color={T.amber} delay={500} />
         <Animated.View style={{ opacity: pop, transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }] }}>
@@ -96,7 +135,7 @@ export default function Success() {
         </Animated.View>
       </View>
 
-      <View style={{ alignItems: 'center', gap: 10 }}>
+      <Rise delay={500} style={{ alignItems: 'center', gap: 10 }}>
         <Text style={[type.cap, { color: T.gold }]}>{FAMILIES[s.code].name} · {TIER_NAMES[s.tier]}</Text>
         <Text style={[type.title1, { textAlign: 'center' }]}>{title}</Text>
         {result.replay
@@ -111,7 +150,7 @@ export default function Success() {
           )}
         {s.code === 'IN' && result.minimalMoves && !s.usedSolution ? <Text style={type.foot}>Résolu en {s.state.moves} coup{s.state.moves > 1 ? 's' : ''} · minimum possible : {result.minimalMoves}</Text> : null}
         {s.usedSolution ? <Text style={type.foot}>Solution consultée : la lumière est gagnée, sans bonus.</Text> : null}
-      </View>
+      </Rise>
 
       {s.kind === 'daily' ? (
         <Card style={{ alignItems: 'center', gap: 4, alignSelf: 'stretch' }}>
@@ -122,10 +161,10 @@ export default function Success() {
           <Text style={[type.foot, { textAlign: 'center' }]}>{dailyText} Record : {state.daily.bestStreak}.</Text>
         </Card>
       ) : room ? (
-        <View style={{ alignSelf: 'stretch' }}>
-          <GaugeRow n={n} total={room.lanterns.length} label="Salle" />
+        <Rise delay={750} style={{ alignSelf: 'stretch' }}>
+          <GaugeRow n={n} total={room.lanterns.length} label="Salle" from={result.replay ? undefined : n - 1} />
           <Text style={[type.foot, { marginTop: 6, textAlign: 'center' }]}>{n === room.lanterns.length ? 'Salle entièrement éclairée !' : `Encore ${room.lanterns.length - n} lanterne${room.lanterns.length - n > 1 ? 's' : ''} avant l’objet caché`}</Text>
-        </View>
+        </Rise>
       ) : null}
 
       <View style={{ flex: 1 }} />

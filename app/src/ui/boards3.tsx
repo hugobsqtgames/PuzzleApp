@@ -75,12 +75,12 @@ function Bell({ i, size, lit, focus, onPress, swing }: { i: number; size: number
 
 function Chimes({ s, width, onPlay, tap, note }: BoardProps) {
   const p = s.data as ChimesPuzzle, st = s.state as ChimesState;
-  const swings = useRef([...Array(p.bells)].map(() => new Animated.Value(0))).current;
+  const [swings] = useState(() => [...Array(p.bells)].map(() => new Animated.Value(0)));
   const [lit, setLit] = useState<number | null>(null);
   const [listening, setListening] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const focus = focusOf(s);
-  const size = Math.min(64, (width - 24) / p.bells - 8);
+  const size = Math.min(84, (width - 40) / p.bells - 8);
   const ring = (i: number) => {
     note?.(i);
     setLit(i);
@@ -99,7 +99,7 @@ function Chimes({ s, width, onPlay, tap, note }: BoardProps) {
     timers.current.push(setTimeout(() => setListening(false), 450 + p.melody.length * 620));
   };
   // The melody plays once when the puzzle opens.
-  useEffect(() => { if (!st.played.length) listen(); return () => timers.current.forEach(clearTimeout); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { const all = timers.current; if (!st.played.length) all.push(setTimeout(listen, 0)); return () => all.forEach(clearTimeout); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const k = goodPrefix(p, st.played);
   const wrong = k < st.played.length;
   const press = (i: number) => {
@@ -220,7 +220,8 @@ function SpotPicture({ items, w, found, p, hintAt, onTap, label }: { items: (Spo
 function Spot({ s, width, onPlay, tap }: BoardProps) {
   const p = s.data as SpotPuzzle, st = s.state as SpotState;
   const after = useMemo(() => changed(p), [p]);
-  const w = width - 28;
+  // Both pictures on screen at once, whatever the phone: the height decides.
+  const w = Math.min(width - 28, 196 / (SPOT_H / SPOT_W));
   const hint = s.hint.focus?.[0] && !s.hint.stale ? s.hint.focus[0] : null;
   const [miss, setMiss] = useState(0);
   const onTap = (x: number, y: number) => {
@@ -229,10 +230,10 @@ function Spot({ s, width, onPlay, tap }: BoardProps) {
     if (d < 0) { setMiss((m) => m + 1); onPlay({ ...st, misses: st.misses + 1 }, false); }
   };
   return (
-    <View style={[box, { padding: 14, gap: 8 }]}>
-      <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600' }}>AVANT</Text>
+    <View style={[box, { padding: 14, gap: 8, alignItems: 'center' }]}>
+      <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600', alignSelf: 'flex-start' }}>AVANT</Text>
       <SpotPicture items={p.items} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label="Première image. Toucher une différence." />
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', alignSelf: 'stretch' }}>
         <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600' }}>MAINTENANT</Text>
         <Text style={{ color: T.gold, fontSize: 14, fontWeight: '700' }} accessibilityLiveRegion="polite">{st.found.length} / {p.diffs.length}{miss ? '' : ''}</Text>
       </View>

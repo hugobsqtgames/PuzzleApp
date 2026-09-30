@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { goBack } from '../ui/nav';
-import { router } from 'expo-router';
 
 import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
@@ -54,7 +53,7 @@ export default function Custom() {
               style={{ width: '31.5%', minHeight: 112, backgroundColor: T.s1, borderWidth: 1.5, borderColor: isSel ? T.moon : T.line, borderRadius: 18, padding: 8, alignItems: 'center', gap: 6, opacity: !o && c.earn ? 0.55 : 1 }}>
               {slot === 'flame'
                 ? <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: c.color, shadowColor: c.color, shadowOpacity: 0.9, shadowRadius: 10, alignItems: 'center', justifyContent: 'center' }}><View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#FFF3D6' }} /></View>
-                : <Nilo size={52} look={{ ...look(state), [slot]: c.id.split('.')[1] }} />}
+                : <Nilo size={52} still look={{ ...look(state), [slot]: c.id.split('.')[1] }} />}
               <Text style={{ color: T.tx, fontSize: 12.5, textAlign: 'center' }}>{c.name}</Text>
               <Text style={[type.foot, { fontSize: 11.5 }]}>{on ? 'Porté' : o ? 'Possédé' : c.earn ? 'À gagner' : `${c.price} Éclats`}</Text>
               {!o && c.earn ? <View style={{ position: 'absolute', top: 8, right: 8 }}><Icon name="lock" size={14} color={T.tx2} /></View> : null}

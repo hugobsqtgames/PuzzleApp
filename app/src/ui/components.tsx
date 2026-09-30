@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle,
-} from 'react-native';
+import { Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle, useAnimatedValue } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 
 import { T, R, type } from './theme';
 import { iconXml, niloXml, Mood, Look } from './art';
+import { NiloLive } from './NiloLive';
 import { TIER_NAMES as TIERS } from '../game/catalog';
 
 let hapticsOn = true;
@@ -28,39 +27,11 @@ export function Icon({ name, size = 22, color = T.tx, sw = 1.6 }: { name: string
   return <SvgXml xml={xml} width={size} height={size} />;
 }
 
-export function Nilo({ size = 120, mood = 'neutral', look = {}, onPress }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void }) {
-  const xml = useMemo(() => niloXml(mood, look), [mood, look.flame, look.hat, look.scarf, look.comp]); // eslint-disable-line react-hooks/exhaustive-deps
-  const bob = useRef(new Animated.Value(0)).current;
-  const flick = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    // Gentle breathing (joy hops a little more) and the flame's flicker. Stopped on unmount.
-    const amp = mood === 'joy' ? 1 : 0.35;
-    const d = mood === 'joy' ? 450 : 1500;
-    const loop = Animated.loop(Animated.sequence([
-      Animated.timing(bob, { toValue: amp, duration: d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      Animated.timing(bob, { toValue: 0, duration: d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-    ]));
-    loop.start();
-    return () => loop.stop();
-  }, [bob, mood]);
-  useEffect(() => {
-    const d = mood === 'oops' ? 220 : 1500;
-    const loop = Animated.loop(Animated.sequence([
-      Animated.timing(flick, { toValue: 1.04, duration: d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      Animated.timing(flick, { toValue: 0.98, duration: d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-    ]));
-    loop.start();
-    return () => loop.stop();
-  }, [flick, mood]);
-  const translateY = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -size * 0.06] });
-  const h = size * (120 / 132);
-  const body = (
-    <Animated.View style={{ width: size, height: h, transform: [{ translateY }, { scale: flick }] }}>
-      <SvgXml xml={xml} width={size} height={h} />
-    </Animated.View>
-  );
-  if (!onPress) return <View accessible accessibilityLabel="Nilo">{body}</View>;
-  return <Pressable accessibilityRole="button" accessibilityLabel="Nilo" onPress={onPress}>{body}</Pressable>;
+/** Nilo. Alive by default (see NiloLive); `still` for small thumbnails in lists. */
+export function Nilo({ size = 120, mood = 'neutral', look = {}, onPress, still = false }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void; still?: boolean }) {
+  const xml = useMemo(() => (still ? niloXml(mood, look) : ''), [still, mood, look.flame, look.hat, look.scarf, look.comp]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!still) return <NiloLive size={size} mood={mood} look={look} onPress={onPress} />;
+  return <View accessible accessibilityLabel="Nilo"><SvgXml xml={xml} width={size} height={size * (120 / 132)} /></View>;
 }
 
 export function Pill({ icon, iconColor, children, color, borderColor }: { icon?: string; iconColor?: string; children: React.ReactNode; color?: string; borderColor?: string }) {
@@ -77,42 +48,98 @@ export const ShardPill = ({ n }: { n: number | string }) => <Pill icon="shard" i
 
 type BtnKind = 'primary' | 'secondary' | 'ghost';
 
+/** One press at a time: a double tap never opens two screens or pays twice. */
+function useOnce(fn?: () => void, ms = 450) {
+  const last = useRef(0);
+  return () => { const now = Date.now(); if (now - last.current < ms) return; last.current = now; fn?.(); };
+}
+
+/** Springy press feedback (native driver). */
+function usePress(to = 0.96) {
+  const v = useAnimatedValue(1);
+  return {
+    scale: v,
+    onPressIn: () => Animated.spring(v, { toValue: to, friction: 7, tension: 320, useNativeDriver: true }).start(),
+    onPressOut: () => Animated.spring(v, { toValue: 1, friction: 4, tension: 220, useNativeDriver: true }).start(),
+  };
+}
+
 export function Button({ title, onPress, kind = 'primary', icon, disabled, style }: {
   title: string; onPress?: () => void; kind?: BtnKind; icon?: string; disabled?: boolean; style?: StyleProp<ViewStyle>;
 }) {
   const base = kind === 'primary' ? s.btnP : kind === 'secondary' ? s.btnS : s.btnG;
   const color = kind === 'primary' ? '#0D0F1E' : kind === 'secondary' ? T.tx : T.amber;
+  const press = usePress(0.97);
+  const once = useOnce(onPress);
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ disabled: !!disabled }}
-      disabled={disabled}
-      onPress={() => { tap(); onPress?.(); }}
-      style={({ pressed }) => [s.btn, base, pressed && kind === 'primary' ? { backgroundColor: T.amberP } : null, pressed ? { transform: [{ scale: 0.98 }] } : null, disabled ? { opacity: 0.4 } : null, style]}
-    >
-      {icon ? <Icon name={icon} size={20} color={color} sw={1.8} /> : null}
-      <Text style={[s.btnText, { color }]}>{title}</Text>
-    </Pressable>
+    <Animated.View style={[{ transform: [{ scale: press.scale }] }, style]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !!disabled }}
+        disabled={disabled}
+        onPressIn={press.onPressIn} onPressOut={press.onPressOut}
+        onPress={() => { tap(); once(); }}
+        style={({ pressed }) => [s.btn, base, pressed && kind === 'primary' ? { backgroundColor: T.amberP } : null, pressed && kind !== 'primary' ? { opacity: 0.8 } : null, disabled ? { opacity: 0.4 } : null]}
+      >
+        {icon ? <Icon name={icon} size={20} color={color} sw={1.8} /> : null}
+        <Text style={[s.btnText, { color }]}>{title}</Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 
 export function IconButton({ name, onPress, label, disabled, size = 44, color = T.tx, borderColor }: {
   name: string; onPress: () => void; label: string; disabled?: boolean; size?: number; color?: string; borderColor?: string;
 }) {
+  const press = usePress(0.9);
+  const once = useOnce(onPress, 300);
   return (
-    <Pressable
-      accessibilityRole="button" accessibilityLabel={label} disabled={disabled}
-      onPress={() => { tap(); onPress(); }}
-      style={({ pressed }) => [s.btnI, { width: size, height: size, borderRadius: size / 2 }, borderColor ? { borderColor } : null, disabled ? { opacity: 0.4 } : null, pressed ? { transform: [{ scale: 0.95 }] } : null]}
-    >
-      <Icon name={name} size={size * 0.46} color={color} />
-    </Pressable>
+    <Animated.View style={{ transform: [{ scale: press.scale }] }}>
+      <Pressable
+        accessibilityRole="button" accessibilityLabel={label} disabled={disabled} hitSlop={4}
+        onPressIn={press.onPressIn} onPressOut={press.onPressOut}
+        onPress={() => { tap(); once(); }}
+        style={[s.btnI, { width: size, height: size, borderRadius: size / 2 }, borderColor ? { borderColor } : null, disabled ? { opacity: 0.4 } : null]}
+      >
+        <Icon name={name} size={size * 0.46} color={color} />
+      </Pressable>
+    </Animated.View>
   );
 }
 
-export function BackButton({ label, onPress }: { label: string; onPress: () => void }) {
+/** A few stars twinkling over a night picture (off with Reduce Motion). */
+export function Twinkles({ w, h, n = 7, seed = 1 }: { w: number; h: number; n?: number; seed?: number }) {
+  const stars = useMemo(() => [...Array(n)].map((_, i) => {
+    const r = (k: number) => ((Math.sin((i + 1) * 12.9898 * (seed + k)) * 43758.5453) % 1 + 1) % 1;
+    return { x: r(1) * w, y: r(2) * h, s: 1.5 + r(3) * 2, d: 1400 + r(4) * 2600, delay: r(5) * 3000, v: new Animated.Value(0) };
+  }), [n, w, h, seed]);
+  useEffect(() => {
+    const loops = stars.map((st) => Animated.loop(Animated.sequence([
+      Animated.delay(st.delay),
+      Animated.timing(st.v, { toValue: 1, duration: st.d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      Animated.timing(st.v, { toValue: 0, duration: st.d, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+    ])));
+    loops.forEach((l) => l.start());
+    return () => loops.forEach((l) => l.stop());
+  }, [stars]);
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`Retour : ${label}`} onPress={() => { tap(); onPress(); }} style={s.back} hitSlop={8}>
+    <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, width: w, height: h }}>
+      {stars.map((st, i) => <Animated.View key={i} style={{ position: 'absolute', left: st.x, top: st.y, width: st.s, height: st.s, borderRadius: st.s, backgroundColor: '#EFE8D8', opacity: st.v.interpolate({ inputRange: [0, 1], outputRange: [0.15, 0.95] }), transform: [{ scale: st.v.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.3] }) }] }} />)}
+    </View>
+  );
+}
+
+/** Content that rises gently into place (entering a screen, a reward appearing). */
+export function Rise({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: StyleProp<ViewStyle> }) {
+  const v = useAnimatedValue(0);
+  useEffect(() => { Animated.timing(v, { toValue: 1, duration: 420, delay, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start(); }, [v, delay]);
+  return <Animated.View style={[{ opacity: v, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }] }, style]}>{children}</Animated.View>;
+}
+
+export function BackButton({ label, onPress }: { label: string; onPress: () => void }) {
+  const once = useOnce(onPress);
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`Retour : ${label}`} onPress={() => { tap(); once(); }} style={({ pressed }) => [s.back, pressed ? { opacity: 0.6 } : null]} hitSlop={8}>
       <Icon name="back" size={20} color={T.amber} />
       <Text style={{ color: T.amber, fontSize: 17 }}>{label}</Text>
     </Pressable>
@@ -123,19 +150,21 @@ export function Card({ children, style }: { children: React.ReactNode; style?: S
   return <View style={[s.card, style]}>{children}</View>;
 }
 
-export function Gauge({ n, total, height = 8 }: { n: number; total: number; height?: number }) {
-  const pct = Math.max(0, Math.min(100, Math.round((100 * n) / total)));
+export function Gauge({ n, total, height = 8, from }: { n: number; total: number; height?: number; from?: number }) {
+  const pct = Math.max(0, Math.min(100, (100 * n) / Math.max(1, total)));
+  const [v] = useState(() => new Animated.Value(from !== undefined ? Math.max(0, (100 * from) / Math.max(1, total)) : pct));
+  useEffect(() => { Animated.timing(v, { toValue: pct, duration: from !== undefined ? 1100 : 700, delay: from !== undefined ? 900 : 0, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start(); }, [pct, v]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <View style={[s.gauge, { height }]}>
-      <View style={[s.gaugeFill, { width: `${pct}%` }]} />
+      <Animated.View style={[s.gaugeFill, { width: v.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }) }]} />
     </View>
   );
 }
 
-export function GaugeRow({ n, total, label }: { n: number; total: number; label: string }) {
+export function GaugeRow({ n, total, label, from }: { n: number; total: number; label: string; from?: number }) {
   return (
     <View style={s.gaugeRow} accessible accessibilityLabel={`${label} ${n} sur ${total}`}>
-      <View style={{ flex: 1 }}><Gauge n={n} total={total} /></View>
+      <View style={{ flex: 1 }}><Gauge n={n} total={total} from={from} /></View>
       <Text style={s.gaugeText}>{n} / {total}</Text>
     </View>
   );
@@ -166,13 +195,27 @@ export function Crumb({ parent, current }: { parent: string; current: string }) 
 }
 
 export function Sheet({ visible, onClose, children }: { visible: boolean; onClose: () => void; children: React.ReactNode }) {
+  // Stays mounted while it slides away; the backdrop fades on its own.
+  const [shown, setShown] = useState(visible);
+  if (visible && !shown) setShown(true);
+  const v = useAnimatedValue(0);
+  useEffect(() => {
+    if (visible) {
+      Animated.spring(v, { toValue: 1, friction: 9, tension: 70, useNativeDriver: true }).start();
+    } else if (shown) {
+      Animated.timing(v, { toValue: 0, duration: 200, easing: Easing.in(Easing.quad), useNativeDriver: true }).start(({ finished }) => { if (finished) setShown(false); });
+    }
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!shown) return null;
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-      <Pressable style={s.sheetBackdrop} onPress={onClose} accessibilityLabel="Fermer" />
-      <View style={s.sheet}>
+    <Modal visible transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: v }]}>
+        <Pressable style={s.sheetBackdrop} onPress={onClose} accessibilityLabel="Fermer" />
+      </Animated.View>
+      <Animated.View style={[s.sheet, { transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }] }]}>
         <View style={s.grab} />
         {children}
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
@@ -180,10 +223,10 @@ export function Sheet({ visible, onClose, children }: { visible: boolean; onClos
 export function Toast({ text, icon = 'moonI' }: { text: string | null; icon?: string }) {
   // Keeps the last text while sliding out, so the card never empties mid-animation.
   const [shown, setShown] = useState<{ text: string; icon: string } | null>(null);
-  const v = useRef(new Animated.Value(0)).current;
+  if (text && (shown?.text !== text || shown.icon !== icon)) setShown({ text, icon });
+  const v = useAnimatedValue(0);
   useEffect(() => {
     if (text) {
-      setShown({ text, icon });
       v.setValue(0);
       Animated.spring(v, { toValue: 1, friction: 8, tension: 90, useNativeDriver: true }).start();
     } else {
@@ -231,7 +274,7 @@ export const s = StyleSheet.create({
   tier: { flexDirection: 'row', gap: 2, alignItems: 'flex-end' },
   crumb: { ...type.cap },
   sheetBackdrop: { flex: 1, backgroundColor: 'rgba(5,6,15,0.6)' },
-  sheet: { backgroundColor: T.s2, borderTopLeftRadius: R.xl, borderTopRightRadius: R.xl, paddingTop: 10, paddingHorizontal: 20, paddingBottom: 34 },
+  sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, maxHeight: '92%', backgroundColor: T.s2, borderTopLeftRadius: R.xl, borderTopRightRadius: R.xl, paddingTop: 10, paddingHorizontal: 20, paddingBottom: 34 },
   grab: { width: 40, height: 5, borderRadius: 3, backgroundColor: T.line, alignSelf: 'center', marginBottom: 14 },
   toast: { position: 'absolute', left: 16, right: 16, top: 58, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, borderRadius: R.m, paddingVertical: 10, paddingHorizontal: 12, flexDirection: 'row', gap: 10, alignItems: 'center', zIndex: 40, shadowColor: '#000', shadowOpacity: 0.45, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, Pressable, ScrollView, Text, View, useWindowDimensions, useAnimatedValue } from 'react-native';
 import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
 
@@ -8,14 +8,13 @@ import { Screen } from '../ui/Screen';
 import { BackButton, Button, GlyphCircle, Icon, IconButton, Nilo, Sheet, ShardPill, TierBars, ToggleRow, tap } from '../ui/components';
 import { Board, ruleFor } from '../ui/boards';
 import { T, R, type } from '../ui/theme';
-import { FAMILIES, TIER_NAMES } from '../game/catalog';
-import { HINT_COSTS, Session, canSubmit, isComplete, murmureWait, nextHintLevel, play as playMove, redo, startSession, submit, undo } from '../game/session';
+import { FAMILIES, TIER_NAMES, dailyPuzzle, puzzleFor } from '../game/catalog';
+import { HINT_COSTS, MURMURE_COOLDOWN_MS, Session, canSubmit, isComplete, murmureWait, nextHintLevel, play as playMove, redo, startSession, submit, undo } from '../game/session';
 import { t } from '../content/strings';
 import { look } from '../game/rewards';
 import { buildingName, infoOf, locateRoom } from '../game/views';
 import { dailyLabel, dateOfDay } from '../ui/dates';
 import { roomSlotsOf } from '../ui/scenes';
-import { puzzleFor, dailyPuzzle } from '../game/catalog';
 import { HintLevel } from '../core/puzzlekit/types';
 
 const HINT_NAMES = ['Murmure', 'Piste', 'Éclairage', 'Solution'];
@@ -27,15 +26,16 @@ export default function PuzzleScreen() {
   const { width } = useWindowDimensions();
   const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | null>(null);
   const [offered, setOffered] = useState(false);
-  const [, force] = useState(0);
-  const shake = useRef(new Animated.Value(0)).current;
+  const [celebrating, setCelebrating] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const shake = useAnimatedValue(0);
   const finishing = useRef(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
   // Re-render once per second while the Murmure is cooling down.
   useEffect(() => {
-    if (!session || murmureWait(session, Date.now()) === 0) return;
-    const id = setInterval(() => force((x) => x + 1), 1000);
+    if (!session || session.hint.murmureAt === null) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [session]);
 
@@ -55,9 +55,10 @@ export default function PuzzleScreen() {
   const end = (q: Session, delay: number) => {
     if (finishing.current) return;
     finishing.current = true;
+    setCelebrating(true);
     later(() => {
       const r = finishSession(q);
-      if (!r) { finishing.current = false; return; }
+      if (!r) { finishing.current = false; setCelebrating(false); return; }
       play('lanternLit');
       if (r.celebrations.some((c) => (c.kind === 'lanternLit' && c.shards > 0) || (c.kind === 'dailyCompleted' && c.shards > 0))) later(() => play('shards'), 750);
       later(() => router.replace('/success'), 420);
@@ -87,7 +88,7 @@ export default function PuzzleScreen() {
   };
 
   const level = nextHintLevel(s);
-  const wait = murmureWait(s, Date.now());
+  const wait = Math.min(MURMURE_COOLDOWN_MS, murmureWait(s, now));
   const onBuyHint = () => {
     if (level === null) return;
     const r = buyHint(s, level);
@@ -118,7 +119,7 @@ export default function PuzzleScreen() {
   else if (s.id === 'phare.b1.r1.1') feedback = <Message tone="hint" icon="whisper" text="Touche la lanterne éteinte en haut à gauche." />;
   else if (s.code === 'IN') feedback = <Text style={[type.foot, { textAlign: 'center' }]}>{s.moves} coup{s.moves > 1 ? 's' : ''}</Text>;
   const oops = !!s.error || (live?.kind === 'invalid');
-  const mood = oops ? 'oops' : s.hint.level > 0 && !s.hint.stale ? 'hint' : 'think';
+  const mood = celebrating ? 'joy' : oops ? 'oops' : s.hint.level > 0 && !s.hint.stale ? 'hint' : 'think';
   const hintButton = <IconButton name="hint" label="Indices" size={52} color={T.moon} borderColor="#3d4f7a" onPress={() => setSheet('hints')} />;
 
   return (

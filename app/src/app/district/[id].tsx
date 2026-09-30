@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { goBack } from '../../ui/nav';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -21,14 +21,14 @@ export default function DistrictScreen() {
   const info = infoOf(d);
   // The Grenier de l'Allumeur is at the top of the Phare: shown with it.
   const grenier = d.id === 'phare' ? districtById('grenier') : null;
-  const rows = useMemo(() => buildingRows(p, state, d), [p, state, d]);
+  const rows = buildingRows(p, state, d);
   const all = districtLanterns(d), lit = p.lights(all, state);
   const complete = lit === all.length;
   const artW = Math.min(width, 600) - 32;
   const buildings = [...rows.map((r) => ({ name: r.name, open: r.open, lit: r.lit / r.total })),
     ...(grenier ? [{ name: 'Grenier', open: p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state)), lit: p.lights(districtLanterns(grenier), state) / 16 }] : [])];
-  const xml = useMemo(() => districtXml(d.id, info.hue, buildings, complete), [d.id, info.hue, JSON.stringify(buildings), complete]); // eslint-disable-line react-hooks/exhaustive-deps
-  const k = Math.min(artW / 360, 250 / 300);
+  const xml = districtXml(d.id, info.hue, buildings, complete);
+  const k = Math.max(artW / 360, 250 / 300);
   const ox = (artW - 360 * k) / 2, oy = 250 - 300 * k;
   const plan = PANORAMA[d.id] ?? PANORAMA.horlo;
   const here = current(p, state).lantern;

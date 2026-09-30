@@ -2,7 +2,7 @@
 // that warms it lantern after lantern, a little dust in the air, and the
 // search for the hidden object once everything is lit.
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, GestureResponderEvent, Pressable, View } from 'react-native';
+import { Animated, Easing, GestureResponderEvent, Pressable, View, useAnimatedValue } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 import { roomLanternXml } from './art';
@@ -18,7 +18,7 @@ export function sceneFit(w: number, h: number) {
 }
 
 function PulseRing({ size, color = T.amber }: { size: number; color?: string }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const v = useAnimatedValue(0);
   useEffect(() => {
     const loop = Animated.loop(Animated.timing(v, { toValue: 1, duration: 1800, easing: Easing.out(Easing.quad), useNativeDriver: true }));
     loop.start();
@@ -59,9 +59,9 @@ function Lantern({ index, slot, lit, isKey, recommended, justLit, k, disabled, l
   index: number; slot: Slot; lit: boolean; isKey?: boolean; recommended: boolean; justLit: boolean; k: number; disabled: boolean; label: string; onPress: () => void; reduce: boolean;
 }) {
   const L = Math.max(52, 60 * k);
-  const pop = useRef(new Animated.Value(justLit && !reduce ? 0 : 1)).current;
-  const wave = useRef(new Animated.Value(0)).current;
-  const press = useRef(new Animated.Value(1)).current;
+  const pop = useAnimatedValue(justLit && !reduce ? 0 : 1);
+  const wave = useAnimatedValue(0);
+  const press = useAnimatedValue(1);
   useEffect(() => {
     if (!justLit || reduce) return;
     Animated.sequence([Animated.delay(350), Animated.parallel([
@@ -110,7 +110,7 @@ export function RoomScene({ roomId, w, h, lanterns, lit, recommended, justLit, o
   const shownLit = useMemo(() => shownKey.split('').map((c) => c === '1'), [shownKey]);
   const shownCount = shownLit.filter(Boolean).length;
   const xml = useMemo(() => sceneXml(roomId, n, { t: shownCount / Math.max(1, n), lit: shownLit, complete: shownCount === n && n > 0, object, objectFound, digit }), [roomId, n, shownKey, object, objectFound, digit]); // eslint-disable-line react-hooks/exhaustive-deps
-  const fade = useRef(new Animated.Value(1)).current;
+  const fade = useAnimatedValue(1);
   const prevXml = useRef(xml);
   const [under, setUnder] = useState<string | null>(null);
   useEffect(() => {
@@ -124,12 +124,13 @@ export function RoomScene({ roomId, w, h, lanterns, lit, recommended, justLit, o
   }, [xml, fade, reduce]);
 
   const { k, ox, oy } = sceneFit(w, h);
-  const at = (s: Slot): Slot => ({ ...s, x: ox + s.x * k, y: oy + s.y * k });
+  // Always fully on screen and easy to touch, whatever the phone's shape.
+  const at = (s: Slot): Slot => ({ ...s, x: Math.min(w - 28, Math.max(28, ox + s.x * k)), y: Math.min(h - 22, Math.max(34, oy + s.y * k)) });
 
   // Search: taps on the scene, near the hidden object or not.
   const [misses, setMisses] = useState(0);
   const [tapAt, setTapAt] = useState<{ x: number; y: number; id: number } | null>(null);
-  const ripple = useRef(new Animated.Value(0)).current;
+  const ripple = useAnimatedValue(0);
   const hide = hideOf(roomId, n);
   const onSceneTap = (e: GestureResponderEvent) => {
     if (!search?.active || !hide) return;

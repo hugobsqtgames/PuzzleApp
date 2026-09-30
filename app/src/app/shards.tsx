@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { goBack } from '../ui/nav';
-import { router } from 'expo-router';
 
 import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';

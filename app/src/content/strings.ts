@@ -2,6 +2,9 @@
 // engine never writes text itself: it returns a key and arguments.
 import type { LocalizedTemplate } from '../core/puzzlekit/types';
 
+import { CHARACTERS } from '../core/families/liars';
+import { OBJECTS, PEOPLE, PLACES } from '../core/families/inquiries';
+
 export const FR: Record<string, string> = {
   // Lampes
   'lamps.error.seeEachOther': 'Ces lampes se voient : une seule peut rester.',
@@ -199,12 +202,9 @@ export const FR: Record<string, string> = {
   // Paliers
   'tier.spark': 'Étincelle', 'tier.glow': 'Lueur', 'tier.flame': 'Flamme', 'tier.blaze': 'Brasier', 'tier.beacon': 'Fanal', 'tier.star': 'Astre',
 };
-
-import { CHARACTERS } from '../core/families/liars';
 /** Objects of the Étagère (same order as ui/boards3 SHELF_ART). */
 export const SHELF_NAMES = ['le sablier', 'la théière', 'le livre', 'la bougie', 'la clé', 'le coquillage', 'la loupe', 'le vase', 'la boussole', 'la plume'];
 SHELF_NAMES.forEach((n, i) => { FR[`shelf.item.${i}`] = n; });
-import { OBJECTS, PEOPLE, PLACES } from '../core/families/inquiries';
 CHARACTERS.forEach((n, i) => { FR[`liars.name.${i}`] = n; });
 PEOPLE.forEach((n, i) => { FR[`inquiries.person.${i}`] = n; });
 OBJECTS.forEach((n, i) => { FR[`inquiries.object.${i}`] = n; });

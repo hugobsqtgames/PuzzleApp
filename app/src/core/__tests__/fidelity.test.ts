@@ -2,6 +2,10 @@ import { SeededRNG, SplitMix64, StableHash } from '../puzzlekit/rng';
 import { CandidatePipeline } from '../puzzlekit/pipeline';
 import { SwitchesFamily } from '../families/switches';
 
+import { LocksFamily } from '../families/locks';
+
+import { LampsFamily } from '../families/lamps';
+
 const golden = (fingerprints: string[]) => fingerprints.map((f) => StableHash.fnv1a64(f).toString(16));
 
 describe('Fidélité au cœur Swift', () => {
@@ -22,14 +26,10 @@ describe('Fidélité au cœur Swift', () => {
     expect(golden(r.accepted.map((a) => a.fingerprint))).toEqual(['314983cb036cb244', '25c760094cc17d02', 'a2111db38fcb1055']);
   });
 });
-
-import { LocksFamily } from '../families/locks';
 test('Cadenas : mêmes puzzles que Swift', () => {
   const r = new CandidatePipeline(new LocksFamily()).generate(3, {}, 2026n);
   expect(golden(r.accepted.map((a) => a.fingerprint))).toEqual(['4dc9e4d2c8a85510', 'a339e6462e6759f5', 'd9dca26b32d6ecfc']);
 });
-
-import { LampsFamily } from '../families/lamps';
 test('Lampes : mêmes puzzles que Swift', () => {
   const r = new CandidatePipeline(new LampsFamily()).generate(3, { rows: 6, columns: 6 }, 2026n);
   expect(golden(r.accepted.map((a) => a.fingerprint))).toEqual(['f1c4b6166823127d', '560a9a2097f3b2ef', '8f8782f587a900ac']);

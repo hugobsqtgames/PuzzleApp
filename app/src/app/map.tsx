@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { goBack } from '../ui/nav';
 import { router, useFocusEffect } from 'expo-router';
@@ -15,7 +15,7 @@ import { look } from '../game/rewards';
 export default function MapScreen() {
   const { state, engine, showToast, toast, play, enterPlace } = useStore();
   useFocusEffect(useCallback(() => { enterPlace('night'); }, [enterPlace]));
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const p = engine.progression;
   const k = width / MAP_W;
@@ -23,6 +23,10 @@ export default function MapScreen() {
   const xml = useMemo(() => mapXml(views), [views]);
   const here = current(p, state).district.id;
   const [hx, hy] = MAP_POS[here === 'grenier' ? 'phare' : here] ?? MAP_POS.phare;
+  // Opens on the current district, a little below the middle: Vesper reads from the bottom up.
+  const startY = Math.min(Math.max(0, MAP_H * k - height), Math.max(0, hy * k - height * 0.58));
+  const scroller = useRef<ScrollView>(null);
+  const scrolled = useRef(false);
 
   const onDistrict = (id: string) => {
     const v = views.find((x) => x.id === id)!;
@@ -38,7 +42,7 @@ export default function MapScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#080914' }}>
-      <ScrollView contentOffset={{ x: 0, y: Math.max(0, (hy - 500) * k) }} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scroller} onContentSizeChange={() => { if (!scrolled.current) { scrolled.current = true; scroller.current?.scrollTo({ y: startY, animated: false }); } }} contentOffset={{ x: 0, y: startY }} showsVerticalScrollIndicator={false}>
         <View style={{ width, height: MAP_H * k }}>
           <SvgXml xml={xml} width={width} height={MAP_H * k} />
           {views.map((d) => {

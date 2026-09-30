@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -6,12 +6,14 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { goBack } from '../../ui/nav';
 import { useStore } from '../../game/store';
 import { Screen } from '../../ui/Screen';
-import { BackButton, Button, Crumb, GaugeRow, GlyphCircle, Icon, Pill, Sheet, TierBars, tap } from '../../ui/components';
+import { BackButton, Button, Crumb, GaugeRow, GlyphCircle, Icon, Nilo, Pill, Sheet, TierBars, tap } from '../../ui/components';
+import { look } from '../../game/rewards';
+import type { Mood } from '../../ui/art';
 import { RoomScene } from '../../ui/RoomScene';
 import { introOf, roomSlotsOf } from '../../ui/scenes';
 import { T, type } from '../../ui/theme';
 import { FAMILIES, REWARDS, TIER_NAMES, Code } from '../../game/catalog';
-import { buildingName, collectibleOf, infoOf, locateRoom, roomName } from '../../game/views';
+import { buildingName, collectibleOf, infoOf, locateRoom, roomName, roomRows } from '../../game/views';
 import { sealDigitOf } from '../../game/seal';
 import { followUps } from '../success';
 import { lightsToOpenNextRoom } from '../../core/game/progression';
@@ -44,6 +46,9 @@ export default function RoomScreen() {
   const [selected, setSelected] = useState<number | null>(null);
   const [searching, setSearching] = useState(searchParam === '1');
   const [feedback, setFeedback] = useState<string | null>(null);
+  // Nilo's face: wonder when entering, then calm; he follows the search.
+  const [niloMood, setNiloMood] = useState<Mood>('wonder');
+  useEffect(() => { const t = setTimeout(() => setNiloMood('neutral'), 1800); return () => clearTimeout(t); }, [id]);
   const at = locateRoom(id ?? '');
   const p = engine.progression;
   const lanterns = at?.room.lanterns ?? [];
@@ -51,15 +56,14 @@ export default function RoomScreen() {
   const n = lit.filter(Boolean).length;
   const info = at ? infoOf(at.district) : null;
   const complete = n === lanterns.length && lanterns.length > 0;
-  const lanternKeys = useMemo(() => lanterns.map((l) => ({ key: l.puzzle })), [lanterns]);
+  const lanternKeys = lanterns.map((l) => ({ key: l.puzzle }));
 
   // The lantern just lit in this room (coming back from its success screen) pops once.
-  const justLit = useMemo(() => {
+  const [justLit] = useState(() => {
     if (!result || result.session.kind !== 'lantern' || result.replay || celebrated.has(result.session.id)) return -1;
-    const i = lanterns.findIndex((l) => l.puzzle === result.session.id);
-    if (i >= 0) celebrated.add(result.session.id);
-    return i;
-  }, [result, lanterns]);
+    return lanterns.findIndex((l) => l.puzzle === result.session.id);
+  });
+  useEffect(() => { if (justLit >= 0 && result) celebrated.add(result.session.id); }, [justLit, result]);
 
   if (!at || !info) return <Screen><BackButton label="Vesper" onPress={() => goBack()} /></Screen>;
   const { district: d, buildingIndex: bi, index: ri } = at;
@@ -69,6 +73,7 @@ export default function RoomScreen() {
   const picked = profile.picked.includes(at.room.id);
   const canSearch = complete && credited && !picked;
   const open = p.isPlayable(lanterns[0]?.puzzle ?? '', state);
+  const lockHint = open ? '' : (roomRows(p, state, at.district, at.buildingIndex, null)[at.index]?.lockText || 'Allume d’abord le bâtiment précédent') + '.';
   const title = roomName(d, bi, ri);
   // The building's seal digit appears once the room is 60 % lit (it is then needed by the keystone).
   const digitShown = sealDigitOf(at.room.id) !== null && n >= lightsToOpenNextRoom(lanterns.length);
@@ -83,6 +88,7 @@ export default function RoomScreen() {
 
   const found = () => {
     haptic('success');
+    setNiloMood('joy');
     play('roomCompleted');
     pickObject(at.room.id);
     setSearching(false);
@@ -92,6 +98,7 @@ export default function RoomScreen() {
   };
   const miss = (near: boolean) => {
     haptic('selection');
+    setNiloMood(near ? 'hint' : 'think');
     setFeedback(near ? 'Tout près ! Regarde bien autour.' : 'Pas ici… Cherche ce qui brille un peu.');
   };
   const leaveSearch = () => {
@@ -128,6 +135,9 @@ export default function RoomScreen() {
       </View>
 
       <View style={{ paddingHorizontal: 16, gap: 10, paddingTop: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Nilo size={50} look={look(state)} mood={searching && canSearch && niloMood === 'neutral' ? 'curious' : complete && niloMood === 'neutral' ? 'joy' : niloMood} onPress={() => { tap(); setNiloMood((m) => (m === 'joy' ? 'curious' : 'joy')); }} />
+          <View style={{ flex: 1 }}>
         {searching && canSearch ? (
           <View style={{ backgroundColor: 'rgba(255,217,142,0.07)', borderColor: 'rgba(255,217,142,0.35)', borderWidth: 1, borderRadius: 16, padding: 12, gap: 4 }} accessibilityLiveRegion="polite">
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -147,10 +157,14 @@ export default function RoomScreen() {
             </Text>
           </Pressable>
         )}
+          </View>
+        </View>
         {searching && canSearch
           ? (step === undefined ? <Button title="Chercher plus tard" kind="ghost" onPress={() => { setSearching(false); setFeedback(null); }} /> : null)
           : rec >= 0
-            ? <Button title={`Allumer la lanterne ${rec + 1} · ${fam(lanterns[rec].family).name}`} onPress={() => choose(rec)} disabled={!open} />
+            ? open
+              ? <Button title={`Allumer la lanterne ${rec + 1} · ${fam(lanterns[rec].family).name}`} onPress={() => choose(rec)} />
+              : <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', padding: 14, borderRadius: 16, borderWidth: 1, borderColor: T.line }}><Icon name="lock" size={20} color={T.tx2} /><Text style={[type.sub, { flex: 1 }]}>Salle encore fermée. {lockHint}</Text></View>
             : canSearch
               ? <Button title="Chercher l’objet caché" icon="star" onPress={() => { tap(); setSearching(true); }} />
               : <Button title="Retour au bâtiment" kind="secondary" onPress={() => goBack()} />}

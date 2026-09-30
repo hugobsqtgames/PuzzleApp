@@ -5,10 +5,10 @@
 import { T } from './theme';
 import { COSMETICS } from '../game/rewards';
 
+import { hex2rgb, mix, rng } from './color';
+
 let uidCounter = 0;
 const uid = (p: string) => `${p}${++uidCounter}`;
-
-import { hex2rgb, mix, rng } from './color';
 export { hex2rgb, mix, rng };
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
@@ -301,7 +301,7 @@ function keeperArt(district: string, awake: boolean, hue: string): string {
 
 export function districtXml(districtId: string, hue: string, buildings: BuildingView[], keeperAwake: boolean): string {
   const gid = uid('g');
-  let s = `<svg viewBox="0 0 360 300" preserveAspectRatio="xMidYMax meet"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#080914"/><stop offset="1" stop-color="#1a1a2e"/></linearGradient></defs>
+  let s = `<svg viewBox="0 0 360 300" preserveAspectRatio="xMidYMax slice"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#080914"/><stop offset="1" stop-color="#1a1a2e"/></linearGradient></defs>
   <rect width="360" height="300" fill="url(#${gid})"/>${stars(360, 120, 26, 21 + districtId.length)}
   <path d="M0 262h360v38H0z" fill="#121530"/><path d="M0 262h360" stroke="#3a3350" stroke-width="1"/>`;
   const plan = PANORAMA[districtId] ?? PANORAMA.horlo;
@@ -358,47 +358,6 @@ export function coupeXml(hue: string, cells: RoomCell[], rects: CoupeRect[]): st
 
 // MARK: - Room
 
-export const ROOM_W = 390, ROOM_H = 470;
-const SLOTS10 = [[62, 150], [195, 70], [104, 96], [328, 126], [196, 196], [150, 318], [246, 318], [326, 236], [326, 396], [70, 414]];
-const EXTRA = [[160, 250], [236, 250], [290, 190], [104, 250], [30, 380], [360, 330]];
-export const SLOT_OBJECTS = ['la pendule', 'la suspension', 'la roue murale', 'l’étagère haute', 'le rebord de fenêtre', 'l’établi, à gauche', 'l’établi, à droite', 'l’étagère basse', 'le coffre', 'le tabouret', 'le tapis', 'le fauteuil', 'la fenêtre', 'la cheminée', 'le seuil', 'la malle'];
-
-/** Lantern positions for a room of `n` lanterns. */
-export function roomSlots(n: number): [number, number][] {
-  if (n === 6) return [0, 1, 3, 5, 7, 9].map((i) => SLOTS10[i] as [number, number]);
-  return [...SLOTS10, ...EXTRA].slice(0, n) as [number, number][];
-}
-export const slotObject = (n: number, i: number) => (n === 6 ? SLOT_OBJECTS[[0, 1, 3, 5, 7, 9][i]] : SLOT_OBJECTS[i]);
-
-/** The room scene of the mockup ("L'Établi"), tinted by the district and lit by its lanterns. */
-export function roomXml(hue: string, litSlots: [number, number][], fraction: number, complete: boolean): string {
-  const t = fraction;
-  const wall = mix('#141833', mix(hue, '#2d2238', 0.6), t * 0.75), floor = mix('#0f1128', mix(hue, '#1e1712', 0.7), t * 0.6);
-  const obj = (dark: string, litc: string) => mix(dark, litc, t * 0.85);
-  const gid = uid('g');
-  let s = `<svg viewBox="0 0 390 470" preserveAspectRatio="xMidYMid meet">
-  <defs><radialGradient id="${gid}"><stop offset="0" stop-color="${hue}" stop-opacity=".5"/><stop offset="1" stop-color="${hue}" stop-opacity="0"/></radialGradient></defs>
-  <rect width="390" height="470" fill="${wall}"/>
-  <path d="M0 360h390v110H0z" fill="${floor}"/><path d="M0 360h390" stroke="${obj('#1f2448', '#6b5638')}" stroke-width="2"/>
-  ${[0, 1, 2, 3, 4, 5, 6].map((i) => `<path d="M${i * 65} 360L${i * 65 - 40} 470" stroke="${obj('#141833', '#2b2217')}" stroke-width="1.5"/>`).join('')}
-  <rect x="150" y="84" width="92" height="110" rx="46" fill="#0a0c1e"/><circle cx="214" cy="114" r="11" fill="#EFE8D8" opacity=".9"/><circle cx="219" cy="111" r="10" fill="#0a0c1e"/>${stars(92, 100, 8, 41, 150, 90)}
-  <path d="M196 84v110M150 140h92" stroke="${obj('#262B52', '#8a6f45')}" stroke-width="4"/><rect x="146" y="192" width="100" height="8" rx="3" fill="${obj('#262B52', '#7a5f3a')}"/>
-  <path d="M195 0v52" stroke="${obj('#262B52', '#8a6f45')}" stroke-width="2"/><path d="M178 52h34l-6 12h-22z" fill="${obj('#262B52', '#8a6f45')}"/>
-  <g transform="translate(104,96)"><circle r="24" fill="none" stroke="${obj('#262B52', '#9b7d4c')}" stroke-width="6" stroke-dasharray="7 5"/><circle r="12" fill="${obj('#1B1F3A', '#6d5634')}"/></g>
-  <rect x="36" y="118" width="54" height="214" rx="8" fill="${obj('#1B1F3A', '#5a4330')}"/><circle cx="63" cy="152" r="20" fill="${obj('#262B52', '#e9d6ae')}"/><path d="M63 152v-12M63 152l8 4" stroke="#1B1F3A" stroke-width="2.2" stroke-linecap="round"/>
-  <rect x="48" y="186" width="30" height="120" rx="6" fill="${obj('#141833', '#3a2a1e')}"/><path d="M63 190v80" stroke="${obj('#2E3360', '#c9a563')}" stroke-width="2"/><circle cx="63" cy="274" r="9" fill="${obj('#2E3360', '#D8B56A')}"/>
-  <g fill="${obj('#262B52', '#6d5230')}"><rect x="288" y="148" width="84" height="7" rx="2"/><rect x="288" y="256" width="84" height="7" rx="2"/></g>
-  <g opacity=".9"><rect x="296" y="120" width="16" height="28" rx="5" fill="${obj('#1f2448', '#7FC8A9')}"/><rect x="342" y="126" width="18" height="22" rx="5" fill="${obj('#1f2448', '#EE8A6B')}"/></g>
-  <g><rect x="296" y="222" width="14" height="34" rx="4" fill="${obj('#1f2448', '#E7A98B')}"/><rect x="346" y="232" width="20" height="24" rx="5" fill="${obj('#1f2448', '#8FB8F0')}"/></g>
-  <rect x="104" y="324" width="182" height="16" rx="4" fill="${obj('#262B52', '#7a5a36')}"/><path d="M116 340v60M274 340v60" stroke="${obj('#1f2448', '#5a4328')}" stroke-width="10" stroke-linecap="round"/>
-  <g transform="translate(196,308)"><circle r="14" fill="none" stroke="${obj('#2E3360', hue)}" stroke-width="5" stroke-dasharray="5 4"/><circle cx="24" cy="6" r="9" fill="none" stroke="${obj('#2E3360', '#c9a563')}" stroke-width="4" stroke-dasharray="4 3"/></g>
-  <rect x="294" y="394" width="68" height="46" rx="6" fill="${obj('#1B1F3A', '#6a4a2c')}"/><path d="M294 410h68" stroke="${obj('#262B52', hue)}" stroke-width="2"/>
-  <ellipse cx="70" cy="424" rx="26" ry="7" fill="${obj('#262B52', '#7a5a36')}"/><path d="M52 428l-6 34M88 428l6 34M70 430v32" stroke="${obj('#1f2448', '#5a4328')}" stroke-width="5" stroke-linecap="round"/>`;
-  for (const [x, y] of litSlots) s += `<circle cx="${x}" cy="${y}" r="70" fill="url(#${gid})" opacity=".55"/>`;
-  if (complete) s += `<g transform="translate(330,380)"><circle r="18" fill="#FFD98E" opacity=".25"/><path d="M-6 -2a6 6 0 1 1 6 6" stroke="#FFD98E" stroke-width="2.4" fill="none"/></g>`;
-  return s + '</svg>';
-}
-
 export function roomLanternXml(i: number, lit: boolean, key = false): string {
   const x = 30, y = 34;
   return `<svg viewBox="0 0 60 60">
@@ -452,26 +411,6 @@ export function scalesBalanceXml(p: { shapes: string[] }, b: { left: PanItem[]; 
 
 export function bigLanternXml(): string {
   return `<svg viewBox="0 0 100 120"><circle cx="50" cy="62" r="48" fill="${T.amber}" opacity=".18"/><path d="M50 6v10" stroke="#c9a563" stroke-width="3"/><path d="M40 16h20" stroke="#c9a563" stroke-width="4" stroke-linecap="round"/><rect x="28" y="20" width="44" height="66" rx="18" fill="${T.amber}" stroke="#FFE6B0" stroke-width="3"/><circle cx="50" cy="52" r="12" fill="#FFF3D6"/><path d="M36 92h28" stroke="#c9a563" stroke-width="5" stroke-linecap="round"/></svg>`;
-}
-
-// Found objects: the mockup's collection icons, in gold.
-const COLL_IC = [
-  '<path d="M8 14a4 4 0 1 1 3.5-6H21v3h-2v2h-2v-2h-5.5A4 4 0 0 1 8 14z"/>',
-  '<path d="M20 4C10 6 6 12 5 20M20 4c-2 7-6 11-12 12M9 15l-3 5"/>',
-  '<path d="M3 6l6-2.5 6 2.5 6-2.5v15L15 21l-6-2.5L3 21z"/><path d="M7 11c2 1 3-1 5 0s3 2 5 0"/>',
-  '<path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9"/>',
-  '<rect x="6" y="3" width="12" height="18" rx="3"/><path d="M6 8h12M6 16h12M9 8l6 8M15 8l-6 8"/>',
-  '<circle cx="10" cy="10" r="6"/><path d="M14.5 14.5L21 21M7 8l2 2"/>',
-  '<path d="M12 12m0-2a2 2 0 1 1-2 2 4 4 0 0 1 4-4 6 6 0 0 1 6 6 8 8 0 0 1-8 8"/>',
-  '<path d="M12 3l2.6 5.4 5.9.9-4.3 4.1 1 5.9L12 16.5l-5.2 2.8 1-5.9-4.3-4.1 5.9-.9z"/>',
-  '<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',
-  '<path d="M6 20V9a6 6 0 0 1 12 0v11"/><path d="M4 20h16M12 13v3"/>',
-];
-export const objectIconXml = (index: number, color = T.gold) =>
-  `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${COLL_IC[index % COLL_IC.length]}</svg>`;
-
-export function objectArtXml(index: number, hue: string): string {
-  return `<svg viewBox="0 0 200 160"><circle cx="100" cy="80" r="70" fill="${T.gold}" opacity=".12"/><circle cx="100" cy="80" r="44" fill="${hue}" opacity=".1"/><g transform="translate(64 44) scale(3)" fill="none" stroke="#D8B56A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${COLL_IC[index % COLL_IC.length]}</g><path d="M150 40l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="${T.gold}"/><path d="M40 118l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="${T.gold}"/></svg>`;
 }
 
 export function letterArtXml(): string {

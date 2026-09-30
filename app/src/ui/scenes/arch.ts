@@ -71,9 +71,6 @@ function stones(g: G, x0: number, y0: number, w: number, h: number, seed = 0): s
   }
   return s;
 }
-function beams(g: G, y: number): string {
-  return `<rect x="0" y="${y}" width="${W}" height="16" fill="${m(g, 'woodD')}"/><path d="M0 ${y + 16}H${W}" stroke="${m(g, 'wood')}" stroke-width="2"/>`;
-}
 function wainscot(g: G, fy: number, h = 70): string {
   let s = `<rect x="0" y="${fy - h}" width="${W}" height="${h}" fill="${m(g, 'woodD')}"/><path d="M0 ${fy - h}H${W}" stroke="${m(g, 'woodL')}" stroke-width="3"/>`;
   for (let x = 14; x < W; x += 64) s += `<rect x="${x}" y="${fy - h + 12}" width="50" height="${h - 24}" rx="4" fill="none" stroke="${m(g, 'wood')}" stroke-width="2"/>`;

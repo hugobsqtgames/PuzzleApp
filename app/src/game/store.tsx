@@ -5,7 +5,7 @@
  * before any animation, so leaving the app mid-celebration loses nothing.
  */
 import { AppState } from 'react-native';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 
 import { GameEngine, Celebration } from '../core/game/engine';
@@ -124,10 +124,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<Store['toast']>(null);
   const [today, setToday] = useState<DayKey>(() => localDayKey(new Date()));
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const stateRef = useRef(state); stateRef.current = state;
-  const settingsRef = useRef(settings); settingsRef.current = settings;
-  const profileRef = useRef(profile); profileRef.current = profile;
-  const sessionRef = useRef(session); sessionRef.current = session;
+  // Latest values for callbacks (every writer below also updates them at once).
+  const stateRef = useRef(state);
+  const settingsRef = useRef(settings);
+  const profileRef = useRef(profile);
+  const sessionRef = useRef(session);
+  useLayoutEffect(() => { stateRef.current = state; settingsRef.current = settings; profileRef.current = profile; sessionRef.current = session; });
 
   const haptic = useCallback((kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium') => {
     if (!settingsRef.current.haptics) return;
@@ -201,10 +203,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   // Toasts are queued: two messages never overwrite each other.
   const toastQueue = useRef<{ text: string; icon?: string }[]>([]);
-  const nextToast = useCallback(() => {
+  const nextToast = useCallback(function next() {
     const t = toastQueue.current.shift() ?? null;
     setToast(t);
-    toastTimer.current = t ? setTimeout(nextToast, 2600 + Math.min(1400, t.text.length * 18)) : null;
+    toastTimer.current = t ? setTimeout(next, 2600 + Math.min(1400, t.text.length * 18)) : null;
   }, []);
   const showToast = useCallback((text: string, icon?: string) => {
     if (toastQueue.current.some((t) => t.text === text)) return;
@@ -247,7 +249,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, []);
 
-  const updateSession = useCallback((s: Session) => { setSession(s); }, []);
+  const updateSession = useCallback((s: Session) => { sessionRef.current = s; setSession(s); }, []);
 
   /** Keeps the board of an unfinished lantern (GameState.inProgress). */
   const leaveSession = useCallback(() => {
@@ -389,7 +391,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const st = cloneState(stateRef.current);
     const names = creditAchievements(st, p);
     commitProfile(p);
-    if (names.length) { commit(st); showToast(names.length === 1 ? `Succès : ${names[0]}` : `${names.length} succès débloqués : ${names.join(', ')}`, 'star'); }
+    if (names.length) { commit(st); showToast(names.length <= 3 ? `Succès : ${names.join(', ')}` : `${names.length} succès débloqués. Retrouve-les dans le Carnet.`, 'star'); }
   }, [commit, commitProfile, creditAchievements, showToast]);
 
   const pickObject = useCallback((roomId: string) => {

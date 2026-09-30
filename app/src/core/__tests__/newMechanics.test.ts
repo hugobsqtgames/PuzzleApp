@@ -1,5 +1,4 @@
 import { CandidatePipeline } from '../puzzlekit/pipeline';
-import { SeededRNG } from '../puzzlekit/rng';
 import { HintLevel, PuzzleFamily } from '../puzzlekit/types';
 import { ChimesFamily } from '../families/chimes';
 import { StainedFamily, assignments } from '../families/stained';

@@ -14,10 +14,11 @@ function Navigator() {
   // Until the save is read, only the night: no flash of an empty game.
   if (!ready) return <View style={{ flex: 1, backgroundColor: '#05060f' }} />;
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: T.bg }, animation: 'fade' }}>
-      <Stack.Screen name="puzzle" options={{ gestureEnabled: false }} />
-      <Stack.Screen name="success" options={{ gestureEnabled: false }} />
-      <Stack.Screen name="found" options={{ gestureEnabled: false }} />
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: T.bg }, animation: 'slide_from_right', animationDuration: 320 }}>
+      <Stack.Screen name="index" options={{ animation: 'fade' }} />
+      <Stack.Screen name="puzzle" options={{ gestureEnabled: false, animation: 'fade', animationDuration: 280 }} />
+      <Stack.Screen name="success" options={{ gestureEnabled: false, animation: 'fade', animationDuration: 380 }} />
+      <Stack.Screen name="found" options={{ gestureEnabled: false, animation: 'fade', animationDuration: 380 }} />
       <Stack.Screen name="welcome" options={{ gestureEnabled: false, animation: 'none' }} />
     </Stack>
   );

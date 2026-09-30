@@ -1,5 +1,5 @@
 // Generated from assets/audio/manifest.json (tools/audio/render.js). Do not edit.
-/* eslint-disable */
+ 
 export const SFX_FILES: Record<string, number> = {
   "error": require("../../assets/audio/sfx_error.m4a"),
   "shards": require("../../assets/audio/sfx_shards.m4a"),

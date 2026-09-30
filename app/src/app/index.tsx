@@ -5,7 +5,8 @@ import { SvgXml } from 'react-native-svg';
 
 import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
-import { Button, Card, Crumb, Gauge, GaugeRow, GlyphCircle, Icon, LightPill, Nilo, ShardPill, tap } from '../ui/components';
+import { Button, Card, Crumb, Gauge, GaugeRow, GlyphCircle, Icon, LightPill, Nilo, Rise, ShardPill, Twinkles, tap } from '../ui/components';
+import { useReducedMotion } from '../ui/motion';
 import { vesperWindowXml } from '../ui/art';
 import { T, R, type } from '../ui/theme';
 import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName } from '../game/views';
@@ -19,6 +20,7 @@ export const DAILY_UNLOCK_LIGHTS = 6;
 export default function Home() {
   const { state, engine, openLantern, today } = useStore();
   const { width } = useWindowDimensions();
+  const reduce = useReducedMotion();
   const p = engine.progression;
   const winW = Math.min(width, 600) - 32;
   const total = p.totalLights(state);
@@ -54,6 +56,7 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel="Ouvrir la carte de Vesper" onPress={() => { tap(); router.push('/map'); }}
           style={{ flex: 1, borderRadius: R.l, overflow: 'hidden', backgroundColor: '#080914', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={windowXml} width={winW} height={210} />
+          {!reduce ? <Twinkles w={winW} h={120} n={8} seed={3} /> : null}
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
             <Text style={[type.cap, { color: T.tx }]}>Vesper</Text>
             <Text style={type.foot}>{total} / 1 000 lanternes</Text>
@@ -67,7 +70,7 @@ export default function Home() {
         </View>
       </View>
 
-      <Card style={{ gap: 10 }}>
+      <Rise delay={80}><Card style={{ gap: 10 }}>
         {room ? (
           <>
             <Crumb parent={infoOf(room.district).short} current={buildingName(room.district, room.buildingIndex)} />
@@ -83,7 +86,7 @@ export default function Home() {
           <Text style={type.title2}>Vesper est entièrement éclairée.</Text>
         )}
         <Button title="Continuer" icon="light" onPress={onContinue} style={{ marginTop: 4 }} />
-      </Card>
+      </Card></Rise>
 
       {dailyOpen && daily ? (
         <Pressable accessibilityRole="button" onPress={() => { tap(); router.push('/daily'); }}
