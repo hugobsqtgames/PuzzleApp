@@ -13,6 +13,8 @@ import { MAP_H, MAP_POS, MAP_W, mapXml } from '../ui/art';
 import { type } from '../ui/theme';
 import { current, districtById, districtViews, infoOf, unlockText } from '../game/views';
 import { look } from '../game/rewards';
+import { tr } from '../i18n';
+import { lowerFirst } from '../game/views';
 
 export default function MapScreen() {
   const { state, engine, showToast, toast, play, enterPlace } = useStore();
@@ -35,7 +37,7 @@ export default function MapScreen() {
     if (v.state === 'locked') {
       tap('error');
       play('locked');
-      showToast(`${infoOf(districtById(id)).short} ${unlockText(districtById(id), p.totalLights(state), p.letters(state)).replace(/^S’ouvre/, 's’ouvre')}`, 'lock');
+      showToast(`${infoOf(districtById(id)).short} ${lowerFirst(unlockText(districtById(id), p.totalLights(state), p.letters(state)))}`, 'lock');
       return;
     }
     tap();
@@ -51,7 +53,7 @@ export default function MapScreen() {
             const [cx, cy, sc] = MAP_POS[d.id];
             return (
               <Pressable key={d.id} accessibilityRole="button"
-                accessibilityLabel={`${infoOf(districtById(d.id)).name}, ${d.state === 'locked' ? 'verrouillé' : d.label.replace('/', 'sur')}`}
+                accessibilityLabel={`${infoOf(districtById(d.id)).name}, ${d.state === 'locked' ? tr('verrouillé') : d.label.replace('/', tr('sur'))}`}
                 onPress={() => onDistrict(d.id)}
                 style={{ position: 'absolute', left: (cx - 100) * k, top: (cy - 120 * sc - 20) * k, width: 200 * k, height: (120 * sc + 80) * k }} />
             );
@@ -62,8 +64,8 @@ export default function MapScreen() {
         </View>
       </ScrollView>
       <View style={{ position: 'absolute', left: 0, right: 0, top: 0, paddingTop: insets.top + 6, paddingHorizontal: 16, paddingBottom: 10, backgroundColor: 'rgba(8,9,20,0.88)', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <BackButton label="Accueil" onPress={() => goBack()} />
-        <Text style={[type.title2, { position: 'absolute', left: 0, right: 0, bottom: 16, textAlign: 'center' }]} pointerEvents="none">Vesper</Text>
+        <BackButton label={tr('Accueil')} onPress={() => goBack()} />
+        <Text style={[type.title2, { position: 'absolute', left: 0, right: 0, bottom: 16, textAlign: 'center' }]} pointerEvents="none">{tr('Vesper')}</Text>
         <LightPill n={p.totalLights(state)} />
       </View>
       <View style={{ position: 'absolute', left: 0, right: 0, top: insets.top + 8 }} pointerEvents="none">

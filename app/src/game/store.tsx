@@ -20,6 +20,8 @@ import { Session, giveHint, progressOf, record, startSession, HINT_COSTS } from 
 import { ACHIEVEMENTS, COSMETICS, Profile, Slot, achievementContext, achievementStatus, newProfile, owns } from './rewards';
 import { SAVE_DIRECTORY, deviceFS } from './files';
 import { scheduleReminders } from './reminders';
+import { inFrench, tr } from '../i18n';
+import type { LangSetting } from '../i18n';
 
 export interface Settings {
   music: boolean;
@@ -34,8 +36,10 @@ export interface Settings {
   reminderOffered: boolean;
   /** Colour-blind aid: patterns on the stained glass, dashes on the spot-the-difference pictures. */
   colorAid: boolean;
+  /** 'auto' follows the phone. */
+  language: LangSetting;
 }
-export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false };
+export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto' };
 
 export interface Result {
   session: Session;
@@ -109,6 +113,7 @@ function decodeSide(text: string): { settings: Settings; profile: Profile; legac
       history: Array.isArray(p.history) ? p.history.filter((h): h is Profile['history'][number] => !!h && typeof h.label === 'string' && typeof h.amount === 'number' && typeof h.at === 'string').slice(-30) : [],
     };
   } catch { /* defaults */ }
+  if (!['auto', 'fr', 'en'].includes(out.settings.language)) out.settings.language = 'auto';
   out.settings.reminderHour = Math.min(23, Math.max(0, Math.trunc(out.settings.reminderHour)));
   out.settings.reminderMinute = Math.min(59, Math.max(0, Math.trunc(out.settings.reminderMinute)));
   return out;
@@ -227,8 +232,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return names;
   }, []);
 
-  const addHistory = (p: Profile, label: string, amount: number): Profile =>
-    amount === 0 ? p : { ...p, history: [...p.history, { label, amount, at: new Date().toISOString() }].slice(-30) };
+  /** History labels are stored in French (`label` is read with French texts) and translated when shown. */
+  const addHistory = (p: Profile, label: () => string, amount: number): Profile =>
+    amount === 0 ? p : { ...p, history: [...p.history, { label: inFrench(label), amount, at: new Date().toISOString() }].slice(-30) };
 
   // ---------------------------------------------------------------- sessions
   const openLantern = useCallback((id: string) => {
@@ -284,10 +290,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         const secs = Math.round((now.getTime() - Date.parse(s.startedAt)) / 1000);
         if (secs > 0 && secs < 86400) p = { ...p, durations: p.durations.map((d, t) => (t === s.tier ? [...d, secs].slice(-100) : d)) };
         for (const c of celebrations) {
-          if (c.kind === 'lanternLit') p = addHistory(p, `Lanterne · ${FAMILIES[s.code].name}`, c.shards + c.clairvoyanceBonus);
-          if (c.kind === 'roomCompleted') p = addHistory(p, 'Salle entièrement éclairée', c.shards);
-          if (c.kind === 'buildingCompleted') p = addHistory(p, 'Bâtiment entièrement éclairé', c.shards);
-          if (c.kind === 'districtCompleted') p = addHistory(p, 'Quartier entièrement éclairé', c.shards);
+          if (c.kind === 'lanternLit') p = addHistory(p, () => `Lanterne · ${FAMILIES[s.code].name}`, c.shards + c.clairvoyanceBonus);
+          if (c.kind === 'roomCompleted') p = addHistory(p, () => 'Salle entièrement éclairée', c.shards);
+          if (c.kind === 'buildingCompleted') p = addHistory(p, () => 'Bâtiment entièrement éclairé', c.shards);
+          if (c.kind === 'districtCompleted') p = addHistory(p, () => 'Quartier entièrement éclairé', c.shards);
         }
       }
     } else {
@@ -297,7 +303,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (c && c.kind === 'dailyCompleted') {
         replay = c.result.kind === 'alreadyDone';
         if (c.result.kind === 'caughtUp') p = { ...p, catchUps: p.catchUps + 1 };
-        p = addHistory(p, `Défi du soir · ${FAMILIES[s.code].name}`, c.shards);
+        p = addHistory(p, () => `Défi du soir · ${FAMILIES[s.code].name}`, c.shards);
       }
     }
     if (s.code === 'IN') {
@@ -310,7 +316,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     }
     if (s.wrongAnswers === 1 && !s.usedSolution) p = { ...p, oops: p.oops + 1 };
     const newAchievements = creditAchievements(next, p);
-    for (const name of newAchievements) p = addHistory(p, `Succès · ${name}`, ACHIEVEMENTS.find((a) => a.name === name)?.reward ?? 0);
+    for (const name of newAchievements) {
+      const a = ACHIEVEMENTS.find((x) => x.name === name);
+      p = addHistory(p, () => `Succès · ${a?.name ?? name}`, a?.reward ?? 0);
+    }
     commit(next);
     commitProfile(p);
     const done = { ...s, solved: true };
@@ -337,7 +346,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (!next) return null;
     if (purchase.kind === 'granted') {
       commit(st);
-      commitProfile(addHistory(profileRef.current, `${['Murmure', 'Piste', 'Éclairage', 'Solution'][level - 1]} · ${FAMILIES[s.code].name}`, -purchase.cost));
+      commitProfile(addHistory(profileRef.current, () => `${['Murmure', 'Piste', 'Éclairage', 'Solution'][level - 1]} · ${FAMILIES[s.code].name}`, -purchase.cost));
     }
     setSession(next);
     return { session: next };
@@ -353,7 +362,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     next.ownedCosmetics.add(id);
     next.equippedCosmetics.set(c.slot, id);
     commit(next);
-    commitProfile(addHistory(profileRef.current, c.name, -c.price));
+    commitProfile(addHistory(profileRef.current, () => c.name, -c.price));
     return true;
   }, [commit, commitProfile]);
 
@@ -378,7 +387,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const next = cloneState(stateRef.current);
     next.onboardingDone = true;
     // A welcome gift: the first Piste is never out of reach (credited once, by its id).
-    if (credit(next.wallet, WELCOME_SHARDS, 'gift:welcome')) commitProfile(addHistory(profileRef.current, 'Cadeau de bienvenue', WELCOME_SHARDS));
+    if (credit(next.wallet, WELCOME_SHARDS, 'gift:welcome')) commitProfile(addHistory(profileRef.current, () => 'Cadeau de bienvenue', WELCOME_SHARDS));
     commit(next);
   }, [commit, commitProfile]);
 
@@ -394,7 +403,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const st = cloneState(stateRef.current);
     const names = creditAchievements(st, p);
     commitProfile(p);
-    if (names.length) { commit(st); showToast(names.length <= 3 ? `Succès : ${names.join(', ')}` : `${names.length} succès débloqués. Retrouve-les dans le Carnet.`, 'star'); }
+    if (names.length) { commit(st); showToast(names.length <= 3 ? tr('Succès : {0}', [names.join(', ')]) : tr('{0} succès débloqués. Retrouve-les dans le Carnet.', [names.length]), 'star'); }
   }, [commit, commitProfile, creditAchievements, showToast]);
 
   const pickObject = useCallback((roomId: string) => {

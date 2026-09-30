@@ -4,14 +4,15 @@
 // more is scheduled ("auto-silence") until the next opening.
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { tr, translated } from '../i18n';
 
 export interface ReminderPlan { enabled: boolean; hour: number; minute: number; doneToday: boolean; streak: number }
 
-const MESSAGES = [
+const MESSAGES = translated([
   'Le défi du soir t’attend.',
   'Une nouvelle énigme brille sur Vesper ce soir.',
   'Nilo garde une énigme pour toi ce soir.',
-];
+]);
 
 let handlerSet = false;
 
@@ -51,7 +52,7 @@ export async function scheduleReminders(plan: ReminderPlan, now = new Date()): P
     const dates = reminderDates(plan, now);
     for (const [i, date] of dates.entries()) {
       const body = plan.streak >= 3 && i === 0
-        ? `Ta flamme du soir brûle depuis ${plan.streak} jours. Le défi d’aujourd’hui est prêt.`
+        ? tr('Ta flamme du soir brûle depuis {0} jours. Le défi d’aujourd’hui est prêt.', [plan.streak])
         : MESSAGES[(date.getDate() + i) % MESSAGES.length];
       await Notifications.scheduleNotificationAsync({
         content: { title: 'Lampion', body },

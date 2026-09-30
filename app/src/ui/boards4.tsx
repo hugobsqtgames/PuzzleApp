@@ -17,6 +17,7 @@ import { FirefliesPuzzle, FirefliesState } from '../core/families/fireflies';
 import { BridgesFamily, BridgesPuzzle, BridgesState, edgesOf, linkKey } from '../core/families/bridges';
 import { useStore } from '../game/store';
 import type { BoardProps } from './boards';
+import { tr, translated } from '../i18n';
 
 const box = { backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: R.l } as const;
 const focusOf = (s: BoardProps['s']): CellRef[] => [...(s.hint.focus ?? []), ...(s.error?.focus ?? [])];
@@ -86,7 +87,7 @@ function Embroidery({ s, width, onPlay, tap }: BoardProps) {
             {[...Array(p.cols)].map((__, c) => {
               const i = r * p.cols + c, v = st.cells[i], hot = has(focus, r, c);
               return (
-                <Pressable key={c} accessibilityRole="button" accessibilityLabel={`Ligne ${r + 1}, colonne ${c + 1} : ${v === 1 ? 'brodée' : v === 2 ? 'vide' : 'libre'}`} onPress={() => press(i)}
+                <Pressable key={c} accessibilityRole="button" accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${tr(v === 1 ? 'brodée' : v === 2 ? 'vide' : 'libre')}`} onPress={() => press(i)}
                   style={{ width: size, height: size, borderWidth: 0.5, borderColor: '#3a3f6a', borderRightWidth: (c + 1) % 5 === 0 && c + 1 < p.cols ? 1.5 : 0.5, borderBottomWidth: (r + 1) % 5 === 0 && r + 1 < p.rows ? 1.5 : 0.5, backgroundColor: hot ? 'rgba(143,211,224,0.25)' : '#12152b', alignItems: 'center', justifyContent: 'center' }}>
                   {v === 1 ? <View style={{ width: size - 6, height: size - 6, borderRadius: 4, backgroundColor: T.amber }}><Svg width={size - 6} height={size - 6}><Path d={`M3 ${size - 9}L${size - 9} 3M3 3L${size - 9} ${size - 9}`} stroke="#b0702a" strokeWidth={1.4} /></Svg></View> : null}
                   {v === 2 ? <Icon name="x" size={size * 0.4} color={T.tx3} /> : null}
@@ -112,7 +113,7 @@ function NumberPad({ n, onPick, onErase }: { n: number; onPick: (v: number) => v
           <Text style={{ color: T.tx, fontSize: 22, fontWeight: '700', fontFamily: ROUND }}>{k + 1}</Text>
         </Pressable>
       ))}
-      <Pressable accessibilityRole="button" accessibilityLabel="Effacer" onPress={onErase}
+      <Pressable accessibilityRole="button" accessibilityLabel={tr('Effacer')} onPress={onErase}
         style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'transparent', borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}>
         <Icon name="x" size={20} color={T.tx2} />
       </Pressable>
@@ -214,7 +215,7 @@ function Roofs({ s, width, onPlay, tap }: BoardProps) {
 
 // ---------------------------------------------------------------- Glissade
 const glide = new GlideFamily();
-const ARROWS: [Dir, string, string][] = [[0, 'up', 'Glisser vers le haut'], [3, 'back', 'Glisser vers la gauche'], [1, 'chev', 'Glisser vers la droite'], [2, 'down', 'Glisser vers le bas']];
+const ARROWS: [Dir, string, string][] = translated([[0, 'up', 'Glisser vers le haut'], [3, 'back', 'Glisser vers la gauche'], [1, 'chev', 'Glisser vers la droite'], [2, 'down', 'Glisser vers le bas']]);
 
 function Glide({ s, width, onPlay, tap }: BoardProps) {
   const p = s.data as GlidePuzzle, st = s.state as GlideState;
@@ -238,7 +239,7 @@ function Glide({ s, width, onPlay, tap }: BoardProps) {
     <View style={{ gap: 14 }}>
       <View style={[box, { padding: 14, alignItems: 'center' }]}>
         <View onStartShouldSetResponder={() => true} onResponderGrant={(e) => { start.current = { x: e.nativeEvent.pageX, y: e.nativeEvent.pageY }; }} onResponderRelease={onEnd}
-          accessible accessibilityLabel={`Canal gelé. Nilo est ligne ${Math.floor(st.pos / p.cols) + 1}, colonne ${(st.pos % p.cols) + 1}. La lanterne est ligne ${Math.floor(p.goal / p.cols) + 1}, colonne ${(p.goal % p.cols) + 1}.`}
+          accessible accessibilityLabel={tr('Canal gelé. Nilo est ligne {0}, colonne {1}. La lanterne est ligne {2}, colonne {3}.', [Math.floor(st.pos / p.cols) + 1, (st.pos % p.cols) + 1, Math.floor(p.goal / p.cols) + 1, (p.goal % p.cols) + 1])}
           style={{ width: size * p.cols, height: size * p.rows, borderRadius: 12, overflow: 'hidden', backgroundColor: '#1d3048' }}>
           {[...Array(p.rows * p.cols)].map((_, i) => {
             const r = Math.floor(i / p.cols), c = i % p.cols;
@@ -372,7 +373,7 @@ function Fireflies({ s, width, onPlay, tap }: BoardProps) {
           {[...Array(p.cols)].map((__, c) => {
             const i = r * p.cols + c, v = st.cells[i], hot = has(focus, r, c);
             if (posts.has(i)) return (
-              <View key={c} accessible accessibilityLabel={`Ligne ${r + 1}, colonne ${c + 1} : lanterne`} style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1a2a24', borderWidth: 0.5, borderColor: '#2e4a3e' }}>
+              <View key={c} accessible accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${tr('lanterne')}`} style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1a2a24', borderWidth: 0.5, borderColor: '#2e4a3e' }}>
                 <Svg width={size * 0.7} height={size * 0.7} viewBox="0 0 24 24"><Rect x={11} y={10} width={2} height={13} fill="#6b5a3c" /><Rect x={7} y={2} width={10} height={10} rx={3} fill={T.amber} /><Circle cx={12} cy={7} r={2} fill="#FFF3D6" /></Svg>
               </View>
             );
@@ -430,7 +431,7 @@ function Bridges({ s, width, onPlay, tap }: BoardProps) {
           );
         })}
       </View>
-      <Text style={{ color: T.tx3, fontSize: 12, marginTop: 10, textAlign: 'center' }}>Touche un îlot, puis un autre en face : 1, 2, puis aucune passerelle.</Text>
+      <Text style={{ color: T.tx3, fontSize: 12, marginTop: 10, textAlign: 'center' }}>{tr('Touche un îlot, puis un autre en face : 1, 2, puis aucune passerelle.')}</Text>
     </View>
   );
 }

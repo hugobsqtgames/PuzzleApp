@@ -19,6 +19,7 @@ import { WORLD } from '../game/catalog';
 import { roomName } from '../game/views';
 import type { BoardProps } from './boards';
 import { useStore } from '../game/store';
+import { tr, trn, translated } from '../i18n';
 
 const box = { backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: R.l } as const;
 const focusOf = (s: BoardProps['s']): CellRef[] => [...(s.hint.focus ?? []), ...(s.error?.focus ?? [])];
@@ -123,10 +124,10 @@ function Chimes({ s, width, onPlay, tap, note }: BoardProps) {
       {p.reverse ? (
         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', paddingHorizontal: 12, height: 28, borderRadius: 14, backgroundColor: 'rgba(143,184,240,0.14)' }}>
           <Icon name="undo" size={14} color={T.moon} />
-          <Text style={{ color: T.moon, fontSize: 13, fontWeight: '700' }}>À rebours : de la dernière note à la première</Text>
+          <Text style={{ color: T.moon, fontSize: 13, fontWeight: '700' }}>{tr('À rebours : de la dernière note à la première')}</Text>
         </View>
       ) : null}
-      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }} accessible accessibilityLabel={`${k} note${k > 1 ? 's' : ''} sur ${p.melody.length}`}>
+      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }} accessible accessibilityLabel={trn(k, '{0} note sur {1}', '{0} notes sur {1}', [k, p.melody.length])}>
         {p.melody.map((_, i) => (
           <View key={i} style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: i < k ? T.amber : wrong && i === k ? T.coral : 'transparent', borderWidth: 1.5, borderColor: i < k ? T.amber : wrong && i === k ? T.coral : T.tx3 }} />
         ))}
@@ -134,7 +135,7 @@ function Chimes({ s, width, onPlay, tap, note }: BoardProps) {
       <Pressable accessibilityRole="button" onPress={() => { tap(); listen(); }} disabled={listening}
         style={{ flexDirection: 'row', gap: 8, alignItems: 'center', paddingHorizontal: 18, height: 44, borderRadius: 22, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, opacity: listening ? 0.5 : 1 }}>
         <Icon name="music" size={18} color={T.moon} />
-        <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>{listening ? 'Écoute…' : 'Réécouter la mélodie'}</Text>
+        <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>{listening ? tr('Écoute…') : tr('Réécouter la mélodie')}</Text>
       </Pressable>
     </View>
   );
@@ -142,7 +143,7 @@ function Chimes({ s, width, onPlay, tap, note }: BoardProps) {
 
 // ---------------------------------------------------------------- Vitraux
 export const GLASS: Record<number, string> = { 0: '#2a2f55', 1: '#E0625A', 2: '#F2C65A', 4: '#5C8FE0', 3: '#F0924A', 5: '#A070D0', 6: '#6DBE7A', 7: '#8a6a4a' };
-const FILTER_NAME: Record<number, string> = { 0: 'aucun filtre', 1: 'rouge', 2: 'jaune', 4: 'bleu' };
+const FILTER_NAME: Record<number, string> = translated({ 0: 'aucun filtre', 1: 'rouge', 2: 'jaune', 4: 'bleu' });
 const NEXT_FILTER: Record<number, number> = { 0: 1, 1: 2, 2: 4, 4: 0 };
 
 /**
@@ -165,7 +166,7 @@ export function GlassMarks({ bits, size, round = false }: { bits: number; size: 
 
 function FilterButton({ f, given, focus, onPress, label, size, aid }: { f: number; given: boolean; focus: boolean; onPress: () => void; label: string; size: number; aid: boolean }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${label} : ${FILTER_NAME[f]}${given ? ', fixé' : '. Toucher pour changer.'}`} disabled={given} onPress={onPress}
+    <Pressable accessibilityRole="button" accessibilityLabel={`${label} : ${FILTER_NAME[f]}${given ? tr(', fixé') : '. ' + tr('Toucher pour changer.')}`} disabled={given} onPress={onPress}
       style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: f ? GLASS[f] : 'transparent', borderWidth: focus ? 3 : 2, borderColor: focus ? T.gold : given ? '#8a8fa8' : T.line, alignItems: 'center', justifyContent: 'center', borderStyle: f ? 'solid' : 'dashed' }}>
       {aid ? <GlassMarks bits={f} size={size - 4} round /> : null}
       {given ? <Icon name="lock" size={size * 0.4} color={f ? '#0D0F1E' : T.tx3} /> : null}
@@ -190,20 +191,20 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
       <View style={{ flexDirection: 'row', gap: 6, marginLeft: sel + 12, marginBottom: 8 }}>
         {st.colF.map((f, c) => (
           <View key={c} style={{ width: pane, alignItems: 'center' }}>
-            <FilterButton f={f} size={sel} given={p.givenCols[c] !== null} focus={focus.some((x) => x.row === -1 && x.column === c)} onPress={() => set('c', c)} label={`Colonne ${c + 1}`} aid={aid} />
+            <FilterButton f={f} size={sel} given={p.givenCols[c] !== null} focus={focus.some((x) => x.row === -1 && x.column === c)} onPress={() => set('c', c)} label={tr('Colonne {0}', [c + 1])} aid={aid} />
           </View>
         ))}
       </View>
       {st.rowF.map((rf, r) => (
         <View key={r} style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginBottom: 6 }}>
           <View style={{ width: sel, marginRight: 6 }}>
-            <FilterButton f={rf} size={sel} given={p.givenRows[r] !== null} focus={focus.some((x) => x.row === r && x.column === -1)} onPress={() => set('r', r)} label={`Ligne ${r + 1}`} aid={aid} />
+            <FilterButton f={rf} size={sel} given={p.givenRows[r] !== null} focus={focus.some((x) => x.row === r && x.column === -1)} onPress={() => set('r', r)} label={tr('Ligne {0}', [r + 1])} aid={aid} />
           </View>
           {st.colF.map((cf, c) => {
             const now = rf | cf, want = p.target[r * p.cols + c], ok = now === want, bad = focus.some((x) => x.row === r && x.column === c);
             if (!shows(p, r * p.cols + c)) return (
               // A frosted pane: the light passes, the model does not show.
-              <View key={c} accessible accessibilityLabel={`Vitre ligne ${r + 1}, colonne ${c + 1} : voilée, maintenant ${colorWord(now)}`}
+              <View key={c} accessible accessibilityLabel={tr('Vitre ligne {0}, colonne {1} : voilée, maintenant {2}', [r + 1, c + 1, colorWord(now)])}
                 style={{ width: pane, height: pane * 1.15, borderRadius: 10, overflow: 'hidden', backgroundColor: '#0a0c1e', borderWidth: 2, borderColor: '#3a3f6a', borderStyle: 'dashed' }}>
                 <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: GLASS[now], opacity: now ? 0.5 : 0.25 }} />
                 {aid ? <GlassMarks bits={now} size={pane * 1.15} /> : null}
@@ -213,7 +214,7 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
               </View>
             );
             return (
-              <View key={c} accessible accessibilityLabel={`Vitre ligne ${r + 1}, colonne ${c + 1} : modèle ${colorWord(want)}, maintenant ${colorWord(now)}`}
+              <View key={c} accessible accessibilityLabel={tr('Vitre ligne {0}, colonne {1} : modèle {2}, maintenant {3}', [r + 1, c + 1, colorWord(want), colorWord(now)])}
                 style={{ width: pane, height: pane * 1.15, borderRadius: 10, overflow: 'hidden', backgroundColor: '#0a0c1e', borderWidth: 2, borderColor: bad ? T.coral : ok ? '#c9a563' : '#3a3f6a' }}>
                 <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: GLASS[now], opacity: now ? 0.92 : 0.35 }} />
                 {aid ? <GlassMarks bits={now} size={pane * 1.15} /> : null}
@@ -241,7 +242,7 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
     </View>
   );
 }
-const colorWord = (c: number) => ({ 0: 'clair', 1: 'rouge', 2: 'jaune', 4: 'bleu', 3: 'orange', 5: 'violet', 6: 'vert', 7: 'brun' } as Record<number, string>)[c];
+const colorWord = (c: number) => tr(({ 0: 'clair', 1: 'rouge', 2: 'jaune', 4: 'bleu', 3: 'orange', 5: 'violet', 6: 'vert', 7: 'brun' } as Record<number, string>)[c]);
 
 // ---------------------------------------------------------------- Différences
 const SPOT_KEYS = ['key', 'feather', 'hourglass', 'bell', 'moon', 'orange', 'drop', 'fish', 'lantern', 'crown', 'mask', 'candle', 'compass', 'book', 'shell', 'flower'];
@@ -282,13 +283,13 @@ function Spot({ s, width, onPlay, tap }: BoardProps) {
   };
   return (
     <View style={[box, { padding: 14, gap: 8, alignItems: 'center' }]}>
-      <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600', alignSelf: 'flex-start' }}>AVANT</Text>
-      <SpotPicture items={p.items} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label="Première image. Toucher une différence." aid={aid} />
+      <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600', alignSelf: 'flex-start' }}>{tr('AVANT')}</Text>
+      <SpotPicture items={p.items} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label={tr('Première image. Toucher une différence.')} aid={aid} />
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', alignSelf: 'stretch' }}>
-        <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600' }}>MAINTENANT</Text>
+        <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600' }}>{tr('MAINTENANT')}</Text>
         <Text style={{ color: T.gold, fontSize: 14, fontWeight: '700' }} accessibilityLiveRegion="polite">{st.found.length} / {p.diffs.length}{miss ? '' : ''}</Text>
       </View>
-      <SpotPicture items={after} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label="Seconde image. Toucher une différence." aid={aid} />
+      <SpotPicture items={after} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label={tr('Seconde image. Toucher une différence.')} aid={aid} />
     </View>
   );
 }
@@ -298,15 +299,17 @@ const SHELF_ART = ['hourglass', 'teapot', 'book', 'candle', 'key', 'shell', 'lou
 const SHELF_COLORS = ['#FFD98E', '#E7A98B', '#8FB8F0', '#FFE6B0', '#D8B56A', '#F0C8B0', '#BFE6F0', '#9CCB8A', '#E8C07A', '#B79CE0'];
 
 export function shelfClueText(c: ShelfClue, p: ShelfPuzzle): string {
-  const n = (i: number) => SHELF_NAMES[p.items[i]];
+  const n = (i: number) => tr(SHELF_NAMES[p.items[i]]);
+  // « à gauche de le sablier » → « à gauche du sablier ».
+  const say = (fr: string, args: (string | number)[]) => cap(tr(fr, args).replace(/\bde le /g, 'du ').replace(/\bde les /g, 'des '));
   switch (c.k) {
-    case 'left': return `${cap(n(c.a))} est quelque part à gauche de ${n(c.b)}.`;
-    case 'next': return `${cap(n(c.a))} est juste à côté de ${n(c.b)}.`;
-    case 'notNext': return `${cap(n(c.a))} n’est pas à côté de ${n(c.b)}.`;
-    case 'end': return `${cap(n(c.a))} est à un bout de l’étagère.`;
-    case 'pos': return `${cap(n(c.a))} est à la place n° ${c.p + 1}, en partant de la gauche.`;
-    case 'notPos': return `${cap(n(c.a))} n’est pas à la place n° ${c.p + 1}.`;
-    case 'between': return `${cap(n(c.a))} est entre ${n(c.b)} et ${n(c.c)}.`;
+    case 'left': return say('{0} est quelque part à gauche de {1}.', [n(c.a), n(c.b)]);
+    case 'next': return say('{0} est juste à côté de {1}.', [n(c.a), n(c.b)]);
+    case 'notNext': return say('{0} n’est pas à côté de {1}.', [n(c.a), n(c.b)]);
+    case 'end': return say('{0} est à un bout de l’étagère.', [n(c.a)]);
+    case 'pos': return say('{0} est à la place n° {1}, en partant de la gauche.', [n(c.a), c.p + 1]);
+    case 'notPos': return say('{0} n’est pas à la place n° {1}.', [n(c.a), c.p + 1]);
+    case 'between': return say('{0} est entre {1} et {2}.', [n(c.a), n(c.b), n(c.c)]);
   }
 }
 
@@ -328,7 +331,7 @@ function Shelf({ s, width, onPlay, tap }: BoardProps) {
         {p.clues.map((c, i) => {
           const bad = focus.some((f) => f.row === i && f.column === -1), off = struck.includes(i);
           return (
-            <Pressable key={i} accessibilityRole="button" accessibilityLabel={`Indice ${i + 1} : ${shelfClueText(c, p)}${off ? ', barré' : ''}`} onPress={() => { tap(); setStruck((x) => (x.includes(i) ? x.filter((y) => y !== i) : [...x, i])); }}
+            <Pressable key={i} accessibilityRole="button" accessibilityLabel={tr('Indice {0} : {1}', [i + 1, shelfClueText(c, p)]) + (off ? tr(', barré') : '')} onPress={() => { tap(); setStruck((x) => (x.includes(i) ? x.filter((y) => y !== i) : [...x, i])); }}
               style={{ flexDirection: 'row', gap: 10, paddingVertical: 7, paddingHorizontal: 6, borderRadius: 10, borderWidth: 1, borderColor: bad ? (s.error ? T.coral : T.moon) : 'transparent' }}>
               <Text style={{ color: T.tx3, fontWeight: '700', width: 18 }}>{i + 1}.</Text>
               <Text style={{ color: off ? T.tx3 : T.tx, fontSize: 15, flex: 1, textDecorationLine: off ? 'line-through' : 'none' }}>{shelfClueText(c, p)}</Text>
@@ -341,12 +344,12 @@ function Shelf({ s, width, onPlay, tap }: BoardProps) {
           {st.order.map((item, i) => {
             const sel = picked === i, hint = focus.some((f) => f.row === -1 && f.column === i);
             return (
-              <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected: sel }} accessibilityLabel={`Place ${i + 1} : ${SHELF_NAMES[p.items[item]]}${sel ? ', choisi' : ''}`} onPress={() => choose(i)}
+              <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected: sel }} accessibilityLabel={tr('Place {0} : {1}', [i + 1, tr(SHELF_NAMES[p.items[item]])]) + (sel ? tr(', choisi') : '')} onPress={() => choose(i)}
                 style={{ width: slot, alignItems: 'center', gap: 4 }}>
                 <View style={{ width: slot, height: slot * 1.1, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: sel ? 'rgba(143,211,224,0.12)' : 'transparent', borderWidth: sel || hint ? 2 : 0, borderColor: hint ? T.gold : T.moon, transform: [{ translateY: sel ? -6 : 0 }] }}>
                   <Glyph k={SHELF_ART[p.items[item]]} size={slot * 0.72} color={SHELF_COLORS[p.items[item]]} sw={1.5} />
                 </View>
-                <Text style={{ color: T.tx2, fontSize: 10.5, textAlign: 'center' }} numberOfLines={2}>{SHELF_NAMES[p.items[item]].replace(/^(le |la |l’)/, '')}</Text>
+                <Text style={{ color: T.tx2, fontSize: 10.5, textAlign: 'center' }} numberOfLines={2}>{tr(SHELF_NAMES[p.items[item]]).replace(/^(le |la |l’|the )/, '')}</Text>
               </Pressable>
             );
           })}
@@ -356,7 +359,7 @@ function Shelf({ s, width, onPlay, tap }: BoardProps) {
           {st.order.map((_, i) => <Text key={i} style={{ width: slot, textAlign: 'center', color: T.tx3, fontSize: 11 }}>{i + 1}</Text>)}
         </View>
       </View>
-      <Text style={{ color: T.tx3, fontSize: 13, textAlign: 'center' }}>Touche deux objets pour les échanger. Touche un indice pour le barrer.</Text>
+      <Text style={{ color: T.tx3, fontSize: 13, textAlign: 'center' }}>{tr('Touche deux objets pour les échanger. Touche un indice pour le barrer.')}</Text>
     </View>
   );
 }
@@ -380,16 +383,16 @@ function Shadows({ s, width, onPlay, tap }: BoardProps) {
   return (
     <View style={{ gap: 12 }}>
       <View style={[box, { padding: 14, alignItems: 'center', flexDirection: 'row', gap: 14 }]}>
-        <View style={{ width: 110, height: 110, borderRadius: 16, backgroundColor: '#1d2140', alignItems: 'center', justifyContent: 'center' }} accessible accessibilityLabel={`L’objet : ${p.shape.length} carrés`}>
+        <View style={{ width: 110, height: 110, borderRadius: 16, backgroundColor: '#1d2140', alignItems: 'center', justifyContent: 'center' }} accessible accessibilityLabel={tr('L’objet : {0} carrés', [p.shape.length])}>
           <CellsArt cells={p.shape} size={92} color={T.amber} />
         </View>
-        <Text style={{ color: T.tx2, fontSize: 14, flex: 1, lineHeight: 20 }}>{p.reflection ? 'Voici l’objet. Dans le miroir, il est retourné, et il peut avoir tourné. Quel reflet est le sien ?' : 'Voici l’objet. Sous la lampe, son ombre peut avoir tourné. Laquelle est la sienne ?'}</Text>
+        <Text style={{ color: T.tx2, fontSize: 14, flex: 1, lineHeight: 20 }}>{p.reflection ? tr('Voici l’objet. Dans le miroir, il est retourné, et il peut avoir tourné. Quel reflet est le sien ?') : tr('Voici l’objet. Sous la lampe, son ombre peut avoir tourné. Laquelle est la sienne ?')}</Text>
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {p.options.map((o, i) => {
           const sel = st.selected === i, out = st.ruledOut.includes(i);
           return (
-            <Pressable key={i} disabled={out} accessibilityRole="button" accessibilityState={{ selected: sel, disabled: out }} accessibilityLabel={`${p.reflection ? 'Reflet' : 'Ombre'} ${i + 1}${out ? ', écarté' + (p.reflection ? '' : 'e') : ''}`}
+            <Pressable key={i} disabled={out} accessibilityRole="button" accessibilityState={{ selected: sel, disabled: out }} accessibilityLabel={tr(p.reflection ? 'Reflet {0}' : 'Ombre {0}', [i + 1]) + (out ? tr(p.reflection ? ', écarté' : ', écartée') : '')}
               onPress={() => { tap(); onPlay({ ...st, selected: i }); }}
               style={{ width: cell, height: cell * 0.8, borderRadius: 16, backgroundColor: p.reflection ? '#9FB6D6' : '#E8DCC0', opacity: out ? 0.3 : 1, alignItems: 'center', justifyContent: 'center', borderWidth: sel ? 3 : 0, borderColor: T.moon }}>
               <CellsArt cells={o} size={cell * 0.62} color={p.reflection ? '#F6E7C4' : '#1a1630'} shadow={!p.reflection} />
@@ -403,12 +406,12 @@ function Shadows({ s, width, onPlay, tap }: BoardProps) {
 }
 
 // ---------------------------------------------------------------- Sceau
-const RULE_TEXT: Record<SealPuzzle['rule'], string> = {
+const RULE_TEXT: Record<SealPuzzle['rule'], string> = translated({
   up: 'Le code : les chiffres des salles, de la Salle 1 à la dernière.',
   down: 'Le code : les chiffres des salles, de la dernière à la Salle 1.',
   sum: 'Le code : la somme de tous les chiffres des salles, en deux chiffres.',
   pairs: 'Le code : Salle 1 + Salle 2, puis Salle 3 + Salle 4. Pour chaque somme, garde le dernier chiffre.',
-};
+});
 export const sealRuleText = (p: SealPuzzle) => RULE_TEXT[p.rule];
 
 function Seal({ s, width, onPlay, tap, visitRoom }: BoardProps) {
@@ -435,16 +438,16 @@ function Seal({ s, width, onPlay, tap, visitRoom }: BoardProps) {
                 <Text style={{ color: T.tx2, fontSize: 13 }}>{at ? roomName(at.d, at.bi, at.ri) : ''} · un chiffre peint dans le décor</Text>
               </View>
               {visitRoom ? (
-                <Pressable accessibilityRole="button" accessibilityLabel={`Aller voir la Salle ${i + 1}`} onPress={() => { tap(); visitRoom(id); }}
+                <Pressable accessibilityRole="button" accessibilityLabel={tr('Aller voir la Salle {0}', [i + 1])} onPress={() => { tap(); visitRoom(id); }}
                   style={{ height: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, justifyContent: 'center' }}>
-                  <Text style={{ color: T.moon, fontSize: 14, fontWeight: '600' }}>Aller voir</Text>
+                  <Text style={{ color: T.moon, fontSize: 14, fontWeight: '600' }}>{tr('Aller voir')}</Text>
                 </Pressable>
               ) : null}
             </View>
           );
         })}
       </View>
-      <View style={{ flexDirection: 'row', gap: 14, justifyContent: 'center' }} accessibilityLabel="Molettes du sceau">
+      <View style={{ flexDirection: 'row', gap: 14, justifyContent: 'center' }} accessibilityLabel={tr('Molettes du sceau')}>
         {st.wheels.map((d, i) => (
           <View key={i} style={{ alignItems: 'center', gap: 4 }}>
             <Pressable accessibilityRole="button" accessibilityLabel={`Chiffre ${i + 1} : augmenter`} onPress={() => turn(i, 1)} style={{ width: wheelW, height: 36, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}><Icon name="up" size={18} color={T.tx2} sw={2} /></Pressable>

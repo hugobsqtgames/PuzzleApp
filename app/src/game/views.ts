@@ -5,6 +5,11 @@ import { Building, District, Lantern, Room, buildingLanterns, districtLanterns, 
 import { DistrictView } from '../ui/art';
 import { DISTRICT_BY_ID, DistrictId } from '../content/vesper';
 import { WORLD } from './catalog';
+import { lang, tr, trn } from '../i18n';
+
+export const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+/** « La Tour » → « la Tour », "The Tower" → "the Tower" (inside a sentence). */
+export const lowerArticle = (name: string) => name.replace(/^(La|Le|Les|L’|The) ?/, (m) => m.toLowerCase());
 
 export const districtById = (id: string) => WORLD.districts.find((d) => d.id === id)!;
 export const infoOf = (d: District) => DISTRICT_BY_ID[d.id as DistrictId];
@@ -27,8 +32,8 @@ export function locateRoom(id: string): { district: District; building: Building
 }
 
 export const buildingName = (d: District, bi: number) => infoOf(d).buildings[bi]?.name ?? '';
-export const roomName = (d: District, bi: number, ri: number) => infoOf(d).buildings[bi]?.rooms[ri]?.name ?? `Salle ${ri + 1}`;
-export const roomLabel = (d: District, bi: number, ri: number) => `Salle ${ri + 1} · ${roomName(d, bi, ri)}`;
+export const roomName = (d: District, bi: number, ri: number) => infoOf(d).buildings[bi]?.rooms[ri]?.name ?? tr('Salle {0}', [ri + 1]);
+export const roomLabel = (d: District, bi: number, ri: number) => `${tr('Salle {0}', [ri + 1])} · ${roomName(d, bi, ri)}`;
 
 /** Where "Continuer" leads, and the district the player is in. */
 export function current(p: Progression, s: GameState): { lantern: Lantern | null; district: District } {
@@ -51,7 +56,7 @@ export function districtViews(p: Progression, s: GameState): DistrictView[] {
     const need = d.unlock.kind === 'always' ? 0 : d.unlock.lights;
     return {
       id: d.id, hue: info.hue, state, lit: lit / all.length, name: info.short,
-      label: state === 'locked' ? `◌ ${need} lumières` : `${lit} / ${all.length}`,
+      label: state === 'locked' ? `◌ ${tr('{0} lumières', [need])}` : `${lit} / ${all.length}`,
       total, need,
     } as DistrictView & { total: number; need: number };
   });
@@ -59,17 +64,18 @@ export function districtViews(p: Progression, s: GameState): DistrictView[] {
 
 export function unlockText(d: District, total: number, letters: number): string {
   if (d.unlock.kind === 'always') return '';
-  if (d.unlock.kind === 'totalLights') return `S’ouvre à ${d.unlock.lights} lumières. Encore ${Math.max(0, d.unlock.lights - total)}.`;
+  if (d.unlock.kind === 'totalLights') return tr('S’ouvre à {0} lumières. Encore {1}.', [d.unlock.lights, Math.max(0, d.unlock.lights - total)]);
   const parts: string[] = [];
-  if (total < d.unlock.lights) parts.push(`${d.unlock.lights - total} lumières`);
-  if (letters < d.unlock.letters) parts.push(`${d.unlock.letters - letters} lettre${d.unlock.letters - letters > 1 ? 's' : ''} de l’Allumeur`);
-  return parts.length ? `Il manque encore ${parts.join(' et ')}.` : '';
+  if (total < d.unlock.lights) parts.push(tr('{0} lumières', [d.unlock.lights - total]));
+  if (letters < d.unlock.letters) parts.push(trn(d.unlock.letters - letters, '{0} lettre de l’Allumeur', '{0} lettres de l’Allumeur'));
+  return parts.length ? tr('Il manque encore {0}.', [parts.join(tr(' et '))]) : '';
 }
 
 const MASCULINE = new Set(['Scriptorium', 'Bassin aux Nénuphars', 'Palmarium', 'Pont des Épices', 'Quai des Lampions', 'Foyer']);
 const PLURAL = new Set(['Coulisses']);
 /** « à la Tour du Carillon », « au Foyer », « à l’Orangerie », « aux Coulisses ». */
 export function atPlace(name: string): string {
+  if (lang() === 'en') return `at ${lowerArticle(name)}`;
   if (/^(Le|La|Les|L’) /.test(name) || name.startsWith('L’')) return `à ${name.replace(/^Le /, 'le ').replace(/^La /, 'la ').replace(/^Les /, 'les ').replace(/^L’/, 'l’')}`.replace(/^à le /, 'au ').replace(/^à les /, 'aux ');
   if (/^[AEIOUÉÈHaeiouéè]/.test(name)) return `à l’${name}`;
   if (PLURAL.has(name)) return `aux ${name}`;
@@ -86,7 +92,7 @@ export function buildingRows(p: Progression, s: GameState, d: District): Buildin
     const prev = i > 0 ? buildingName(d, i - 1) : '';
     return {
       building: b, index: i, name: buildingName(d, i), open, lit, total: all.length, complete: lit === all.length,
-      lockText: !unlocked ? unlockText(d, p.totalLights(s), p.letters(s)) : open ? '' : `Allume ${p.rules.previousBuildingLights} lanternes ${atPlace(prev)}`,
+      lockText: !unlocked ? unlockText(d, p.totalLights(s), p.letters(s)) : open ? '' : tr('Allume {0} lanternes {1}', [p.rules.previousBuildingLights, atPlace(prev)]),
     };
   });
 }
@@ -100,14 +106,14 @@ export function roomRows(p: Progression, s: GameState, d: District, bi: number, 
     const isCurrent = !!currentLantern && r.lanterns.some((l) => l.puzzle === currentLantern.puzzle);
     const prev = ri > 0 ? b.rooms[ri - 1] : null;
     return {
-      room: r, index: ri, label: b.rooms.length === 1 ? roomName(d, bi, ri) : `Salle ${ri + 1}`, lit, total: r.lanterns.length, key: false,
+      room: r, index: ri, label: b.rooms.length === 1 ? roomName(d, bi, ri) : tr('Salle {0}', [ri + 1]), lit, total: r.lanterns.length, key: false,
       state: !open ? 'locked' : lit === r.lanterns.length ? 'done' : isCurrent ? 'current' : 'open',
-      lockText: open || !prev ? '' : `Allume ${lightsToOpenNextRoom(prev.lanterns.length, p.rules)} lanternes en Salle ${ri}`,
+      lockText: open || !prev ? '' : tr('Allume {0} lanternes en Salle {1}', [lightsToOpenNextRoom(prev.lanterns.length, p.rules), ri]),
     };
   });
   if (b.keystone) {
     const open = p.isKeystoneOpen(b, s), lit = s.solved.has(b.keystone.puzzle) ? 1 : 0;
-    rows.push({ room: null, index: rows.length, label: 'Lanterne-clé', lit, total: 1, key: true, state: !open ? 'locked' : lit ? 'done' : 'open', lockText: open ? '' : `Allume ${Math.min(p.rules.keystoneLights, regularLanterns(b).length)} lanternes dans le bâtiment` });
+    rows.push({ room: null, index: rows.length, label: tr('Lanterne-clé'), lit, total: 1, key: true, state: !open ? 'locked' : lit ? 'done' : 'open', lockText: open ? '' : tr('Allume {0} lanternes dans le bâtiment', [Math.min(p.rules.keystoneLights, regularLanterns(b).length)]) });
   }
   return rows;
 }

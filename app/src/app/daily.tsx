@@ -10,9 +10,10 @@ import { BackButton, Button, Card, GlyphCircle, Icon, IconButton, Pill, TierBars
 import { T, type } from '../ui/theme';
 import { FAMILIES, TIER_NAMES, dailyPuzzle } from '../game/catalog';
 import { addDays, daysBetween, dayKey } from '../core/game/dayKey';
-import { dailyLabel, dateOfDay, MONTHS_FR } from '../ui/dates';
+import { dailyLabel, dateOfDay, monthName } from '../ui/dates';
 import { STANDARD_STREAK } from '../core/game/daily';
 import { STANDARD_ECONOMY } from '../core/game/engine';
+import { tr } from '../i18n';
 
 export default function Daily() {
   const { state, today, openDaily, showToast } = useStore();
@@ -25,7 +26,7 @@ export default function Daily() {
   const missed = Array.from({ length: STANDARD_STREAK.catchUpWindowDays }, (_, i) => addDays(today, -(i + 1)))
     .filter((d) => !state.daily.completedDays.has(d) && !state.daily.catchUpDays.has(d) && dailyPuzzle(d));
 
-  const play = (day: string) => { if (openDaily(day)) router.push('/puzzle'); else showToast('Ce défi n’a pas pu être préparé.', 'info'); };
+  const play = (day: string) => { if (openDaily(day)) router.push('/puzzle'); else showToast(tr('Ce défi n’a pas pu être préparé.'), 'info'); };
 
   // Calendar: Monday first.
   const first = new Date(month.y, month.m - 1, 1);
@@ -36,8 +37,8 @@ export default function Daily() {
 
   return (
     <Screen scroll place="market">
-      <BackButton label="Accueil" onPress={() => goBack()} />
-      <Text style={type.title1}>Défi du soir</Text>
+      <BackButton label={tr('Accueil')} onPress={() => goBack()} />
+      <Text style={type.title1}>{tr('Défi du soir')}</Text>
 
       <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <View style={{ width: 64, alignItems: 'center' }}><Icon name="light" size={34} color={T.amber} /></View>
@@ -72,16 +73,16 @@ export default function Daily() {
               <Icon name="check" size={22} color={T.gold} sw={2} />
               <Text style={[type.callout, { flex: 1 }]}>Réussi.{tomorrow ? ` Demain : ${FAMILIES[tomorrow.code].name}, palier ${TIER_NAMES[tomorrow.tier]}.` : ''}</Text>
             </View>
-          ) : <Button title="Jouer le défi" onPress={() => play(today)} />}
-          <Text style={type.foot}>Même énigme pour tous les joueurs en français ce soir. Préparée à l’avance, jouable sans connexion.</Text>
+          ) : <Button title={tr('Jouer le défi')} onPress={() => play(today)} />}
+          <Text style={type.foot}>{tr('Même énigme pour tous les joueurs en français ce soir. Préparée à l’avance, jouable sans connexion.')}</Text>
         </Card>
       ) : null}
 
       <Card>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <IconButton name="back" label="Mois précédent" size={36} onPress={() => setMonth(({ y, m }) => (m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 }))} />
-          <Text style={type.headline}>{MONTHS_FR[month.m - 1]} {month.y}</Text>
-          <IconButton name="chev" label="Mois suivant" size={36} disabled={isCurrentMonth} onPress={() => setMonth(({ y, m }) => (m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 }))} />
+          <IconButton name="back" label={tr('Mois précédent')} size={36} onPress={() => setMonth(({ y, m }) => (m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 }))} />
+          <Text style={type.headline}>{monthName(month.m)} {month.y}</Text>
+          <IconButton name="chev" label={tr('Mois suivant')} size={36} disabled={isCurrentMonth} onPress={() => setMonth(({ y, m }) => (m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 }))} />
         </View>
         <View style={{ flexDirection: 'row' }}>
           {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => <Text key={i} style={[type.foot, { flex: 1, textAlign: 'center' }]}>{d}</Text>)}
@@ -93,7 +94,7 @@ export default function Daily() {
             const solved = state.daily.completedDays.has(key), caught = state.daily.catchUpDays.has(key);
             const isToday = key === today, future = daysBetween(key, today) > 0;
             return (
-              <View key={i} accessible accessibilityLabel={`${d} ${MONTHS_FR[month.m - 1]}${solved ? ', réussi' : caught ? ', rattrapé' : ''}`}
+              <View key={i} accessible accessibilityLabel={`${d} ${monthName(month.m)}${solved ? tr(', réussi') : caught ? tr(', rattrapé') : ''}`}
                 style={{ width: `${100 / 7}%`, height: 38, alignItems: 'center', justifyContent: 'center', borderRadius: 12, borderWidth: isToday ? 1.5 : 0, borderColor: T.amber, opacity: future ? 0.35 : 1 }}>
                 <Text style={{ fontSize: 13, color: T.tx, fontVariant: ['tabular-nums'] }}>{d}</Text>
                 {solved ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: T.amber, marginTop: 2 }} /> : caught ? <View style={{ width: 6, height: 6, borderRadius: 3, borderWidth: 1, borderColor: T.amber, marginTop: 2 }} /> : null}
@@ -105,15 +106,15 @@ export default function Daily() {
 
       {missed.length ? (
         <View>
-          <Text style={[type.cap, { marginBottom: 6 }]}>Rattrapage</Text>
+          <Text style={[type.cap, { marginBottom: 6 }]}>{tr('Rattrapage')}</Text>
           {missed.map((d) => (
             <Pressable key={d} accessibilityRole="button" onPress={() => { tap(); play(d); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.line }}>
               <Icon name="cal" size={20} color={T.tx2} />
-              <Text style={[type.body, { flex: 1 }]}>Rattraper le {dailyLabel(dateOfDay(d)).toLowerCase()}</Text>
+              <Text style={[type.body, { flex: 1 }]}>{tr('Rattraper le {0}', [dailyLabel(dateOfDay(d)).toLowerCase()])}</Text>
               <Icon name="chev" size={18} color={T.tx3} />
             </Pressable>
           ))}
-          <Text style={[type.foot, { marginTop: 6 }]}>Récompense de base. Un rattrapage ne compte pas pour la série.</Text>
+          <Text style={[type.foot, { marginTop: 6 }]}>{tr('Récompense de base. Un rattrapage ne compte pas pour la série.')}</Text>
         </View>
       ) : null}
     </Screen>

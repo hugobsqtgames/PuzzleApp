@@ -2,6 +2,7 @@
 // scene (rooms-*.ts): architecture, props, where its lanterns sit, where its
 // object hides and where the building's seal digit appears once lit.
 import { SVG_SERIF_ITALIC } from '../theme';
+import { tr } from '../../i18n';
 import { G, W, H, Anchor, makeG, r1 } from './kit';
 import { archXml, archAnchors, Arch, ArchOpts } from './arch';
 import { Prop, PO } from './props1';
@@ -190,7 +191,13 @@ export function sceneXml(roomId: string, n: number, o: SceneOpts): string {
   return s + '</svg>';
 }
 
-export const introOf = (roomId: string) => ROOM_SPECS[roomId]?.intro ?? '';
+export const introOf = (roomId: string) => tr(ROOM_SPECS[roomId]?.intro ?? '');
+
+/** A lantern place (« la table, en haut à gauche (2) ») in the current language, part by part. */
+export function slotText(label: string): string {
+  const m = /^(.*?)( \(\d+\))?$/.exec(label)!;
+  return m[1].split(', ').map((part) => tr(part)).join(', ') + (m[2] ?? '');
+}
 
 /** The nearest free spot to `want`: away from every lantern (and from `avoid`), inside the screen. */
 function freeSpot(want: [number, number], slots: Slot[], avoid?: [number, number]): [number, number] {

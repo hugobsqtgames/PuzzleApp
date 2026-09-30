@@ -14,6 +14,7 @@ import { FAMILIES, TIER_NAMES } from '../game/catalog';
 import { look } from '../game/rewards';
 import { askPermission } from '../game/reminders';
 import { TUTORIAL_LANTERN } from './welcome';
+import { tr, trn } from '../i18n';
 
 /** Slow rays of light behind the lantern. */
 function Rays() {
@@ -82,10 +83,10 @@ export default function Success() {
   const isTutorial = result?.session.id === TUTORIAL_LANTERN;
   useEffect(() => { if (isTutorial) completeOnboarding(); }, [isTutorial, completeOnboarding]);
   useEffect(() => {
-    if (result?.newAchievements.length) result.newAchievements.forEach((n, i) => setTimeout(() => showToast(`Succès : ${n}`, 'star'), 1400 + i * 3000));
+    if (result?.newAchievements.length) result.newAchievements.forEach((n, i) => setTimeout(() => showToast(tr('Succès : {0}', [n]), 'star'), 1400 + i * 3000));
   }, [result, showToast]);
 
-  if (!result) return <Screen><Button title="Accueil" onPress={() => router.replace('/')} /></Screen>;
+  if (!result) return <Screen><Button title={tr('Accueil')} onPress={() => router.replace('/')} /></Screen>;
   const s = result.session;
   const lit = result.celebrations.find((c) => c.kind === 'lanternLit');
   const daily = result.celebrations.find((c) => c.kind === 'dailyCompleted');
@@ -93,15 +94,15 @@ export default function Success() {
   const room = where?.room ?? null;
   const n = room ? engine.progression.lights(room.lanterns, state) : 0;
   const follow = followUps(result);
-  const title = result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée';
+  const title = tr(result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée');
 
   let dailyText = '';
   if (daily && daily.kind === 'dailyCompleted') {
     const r = daily.result;
-    if (r.kind === 'streakContinued') dailyText = r.nightlightsUsed ? `Une veilleuse a protégé ta série.${r.nightlightEarned ? ' Tu en gagnes une nouvelle.' : ''}` : r.nightlightEarned ? 'Tu gagnes une veilleuse : elle protégera ta série un soir d’absence.' : 'Ta flamme du soir continue.';
-    if (r.kind === 'streakRestarted') dailyText = 'Ta série repart à 1. Ce n’est pas grave : la flamme se rallume.';
-    if (r.kind === 'caughtUp') dailyText = 'Rattrapage : récompense de base, sans compter pour la série.';
-    if (r.kind === 'catchUpTooOld') dailyText = 'Ce défi est trop ancien pour être rattrapé.';
+    if (r.kind === 'streakContinued') dailyText = r.nightlightsUsed ? tr('Une veilleuse a protégé ta série.') + (r.nightlightEarned ? ' ' + tr('Tu en gagnes une nouvelle.') : '') : r.nightlightEarned ? tr('Tu gagnes une veilleuse : elle protégera ta série un soir d’absence.') : tr('Ta flamme du soir continue.');
+    if (r.kind === 'streakRestarted') dailyText = tr('Ta série repart à 1. Ce n’est pas grave : la flamme se rallume.');
+    if (r.kind === 'caughtUp') dailyText = tr('Rattrapage : récompense de base, sans compter pour la série.');
+    if (r.kind === 'catchUpTooOld') dailyText = tr('Ce défi est trop ancien pour être rattrapé.');
   }
 
   const next = () => {
@@ -111,7 +112,7 @@ export default function Success() {
       router.dismissTo('/');
       return;
     }
-    if (isTutorial) { showToast('Tu peux revenir ici quand tu veux.', 'light'); }
+    if (isTutorial) { showToast(tr('Tu peux revenir ici quand tu veux.'), 'light'); }
     const cur = engine.progression.recommended(state);
     if (!cur) { router.dismissTo('/'); return; }
     if (openLantern(cur.puzzle)) router.replace('/puzzle');
@@ -120,7 +121,7 @@ export default function Success() {
     setOffer(false);
     const granted = yes ? await askPermission() : false;
     setSettings({ reminderOffered: true, reminder: granted });
-    if (yes && !granted) showToast('Les notifications sont désactivées pour Lampion dans les réglages du téléphone.', 'bell');
+    if (yes && !granted) showToast(tr('Les notifications sont désactivées pour Lampion dans les réglages du téléphone.'), 'bell');
     router.dismissTo('/');
   };
 
@@ -140,7 +141,7 @@ export default function Success() {
         <Text style={[type.cap, { color: T.gold }]}>{FAMILIES[s.code].name} · {TIER_NAMES[s.tier]}</Text>
         <Text style={[type.title1, { textAlign: 'center' }]}>{title}</Text>
         {result.replay
-          ? <Text style={[type.sub, { textAlign: 'center' }]}>Bien joué. Les récompenses ne se gagnent qu’une fois.</Text>
+          ? <Text style={[type.sub, { textAlign: 'center' }]}>{tr('Bien joué. Les récompenses ne se gagnent qu’une fois.')}</Text>
           : (
             <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {s.kind === 'lantern' ? <LightPill n="+1" /> : null}
@@ -150,7 +151,7 @@ export default function Success() {
             </View>
           )}
         {s.code === 'IN' && result.minimalMoves && !s.usedSolution ? <Text style={type.foot}>Résolu en {s.state.moves} coup{s.state.moves > 1 ? 's' : ''} · minimum possible : {result.minimalMoves}</Text> : null}
-        {s.usedSolution ? <Text style={type.foot}>Solution consultée : la lumière est gagnée, sans bonus.</Text> : null}
+        {s.usedSolution ? <Text style={type.foot}>{tr('Solution consultée : la lumière est gagnée, sans bonus.')}</Text> : null}
       </Rise>
 
       {s.kind === 'daily' ? (
@@ -163,8 +164,8 @@ export default function Success() {
         </Card>
       ) : room ? (
         <Rise delay={750} style={{ alignSelf: 'stretch' }}>
-          <GaugeRow n={n} total={room.lanterns.length} label="Salle" from={result.replay ? undefined : n - 1} />
-          <Text style={[type.foot, { marginTop: 6, textAlign: 'center' }]}>{n === room.lanterns.length ? 'Salle entièrement éclairée !' : `Encore ${room.lanterns.length - n} lanterne${room.lanterns.length - n > 1 ? 's' : ''} avant l’objet caché`}</Text>
+          <GaugeRow n={n} total={room.lanterns.length} label={tr('Salle')} from={result.replay ? undefined : n - 1} />
+          <Text style={[type.foot, { marginTop: 6, textAlign: 'center' }]}>{n === room.lanterns.length ? tr('Salle entièrement éclairée !') : trn(room.lanterns.length - n, 'Encore {0} lanterne avant l’objet caché', 'Encore {0} lanternes avant l’objet caché')}</Text>
         </Rise>
       ) : null}
 
@@ -174,19 +175,19 @@ export default function Success() {
       </View>
       <View style={{ alignSelf: 'stretch', gap: 4 }}>
         <Button title={follow.length || s.kind === 'daily' || isTutorial ? 'Continuer' : 'Suivant'} onPress={next} />
-        {s.kind === 'lantern' && room && !follow.length ? <Button title="Retour à la salle" kind="ghost" onPress={() => router.dismissTo({ pathname: '/room/[id]', params: { id: room.id } })} /> : null}
-        {s.kind === 'lantern' && !isTutorial ? <Button title="Accueil" kind="ghost" onPress={() => router.dismissTo('/')} /> : null}
+        {s.kind === 'lantern' && room && !follow.length ? <Button title={tr('Retour à la salle')} kind="ghost" onPress={() => router.dismissTo({ pathname: '/room/[id]', params: { id: room.id } })} /> : null}
+        {s.kind === 'lantern' && !isTutorial ? <Button title={tr('Accueil')} kind="ghost" onPress={() => router.dismissTo('/')} /> : null}
       </View>
 
       <Sheet visible={offer} onClose={() => reminderAnswer(false)}>
         <View style={{ alignItems: 'center', gap: 10 }}>
           <Icon name="bell" size={34} color={T.amber} />
-          <Text style={[type.title2, { textAlign: 'center' }]}>Un rappel le soir ?</Text>
-          <Text style={[type.sub, { textAlign: 'center' }]}>Un rappel par soir, pas plus, seulement si le défi n’est pas fait. Tu peux l’arrêter à tout moment dans les Réglages.</Text>
+          <Text style={[type.title2, { textAlign: 'center' }]}>{tr('Un rappel le soir ?')}</Text>
+          <Text style={[type.sub, { textAlign: 'center' }]}>{tr('Un rappel par soir, pas plus, seulement si le défi n’est pas fait. Tu peux l’arrêter à tout moment dans les Réglages.')}</Text>
           <Text style={[type.foot, { textAlign: 'center' }]}>Heure : {String(settings.reminderHour).padStart(2, '0')} h {String(settings.reminderMinute).padStart(2, '0')} (modifiable dans les Réglages)</Text>
         </View>
-        <Button title="Oui, me le rappeler" onPress={() => reminderAnswer(true)} style={{ marginTop: 16 }} />
-        <Button title="Non merci" kind="ghost" onPress={() => reminderAnswer(false)} />
+        <Button title={tr('Oui, me le rappeler')} onPress={() => reminderAnswer(true)} style={{ marginTop: 16 }} />
+        <Button title={tr('Non merci')} kind="ghost" onPress={() => reminderAnswer(false)} />
       </Sheet>
     </Screen>
   );

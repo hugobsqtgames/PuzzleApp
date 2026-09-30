@@ -26,6 +26,7 @@ import type { SpotPuzzle } from '../core/families/spot';
 import type { ChimesPuzzle } from '../core/families/chimes';
 import type { ShadowsPuzzle } from '../core/families/shadows';
 import type { StainedPuzzle } from '../core/families/stained';
+import { tr, trn } from '../i18n';
 
 export interface BoardProps {
   s: Session;
@@ -61,7 +62,7 @@ function Switches({ s, width, onPlay, tap }: BoardProps) {
               <Pressable
                 key={c}
                 accessibilityRole="button"
-                accessibilityLabel={`Ligne ${r + 1}, colonne ${c + 1} : ${on ? 'allumée' : 'éteinte'}`}
+                accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${on ? tr('allumée') : tr('éteinte')}`}
                 onPress={() => { tap(); onPlay(e.press(i, st, p)); }}
                 style={[{
                   width: sz, height: sz, borderRadius: sz / 2, alignItems: 'center', justifyContent: 'center',
@@ -116,7 +117,7 @@ function Lamps({ s, width, onPlay, tap }: BoardProps) {
               <Pressable
                 key={c}
                 accessibilityRole="button"
-                accessibilityLabel={`Ligne ${r + 1}, colonne ${c + 1} : ${v === 1 ? `lampe${conf ? ', en conflit' : ''}` : v === 2 ? 'marquée vide' : lit ? 'éclairée' : 'sombre'}`}
+                accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${v === 1 ? tr('lampe') + (conf ? tr(', en conflit') : '') : tr(v === 2 ? 'marquée vide' : lit ? 'éclairée' : 'sombre')}`}
                 onPress={() => { tap(); cycle(i); }}
                 style={[{ width: sz, height: sz, borderRadius: 8, backgroundColor: lit ? '#3a3040' : '#1B1F3A', alignItems: 'center', justifyContent: 'center', borderWidth: conf ? 2 : 0, borderColor: T.coral }, outline(hasCell(focus, r, c))]}
               >
@@ -150,8 +151,8 @@ function Gears({ s, width, onPlay, tap }: BoardProps) {
               <Pressable
                 key={c}
                 accessibilityRole="button"
-                accessibilityLabel={`Ligne ${r + 1}, colonne ${c + 1} : ${src ? 'source' : ends === 1 ? 'lanterne' : 'conduit'}, ${lit ? 'éclairé' : 'dans le noir'}. Toucher pour tourner.`}
-                accessibilityActions={[{ name: 'activate', label: 'Tourner à droite' }, { name: 'longpress', label: 'Tourner à gauche' }]}
+                accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${tr(src ? 'source' : ends === 1 ? 'lanterne' : 'conduit')}, ${tr(lit ? 'éclairé' : 'dans le noir')}. ${tr('Toucher pour tourner.')}`}
+                accessibilityActions={[{ name: 'activate', label: tr('Tourner à droite') }, { name: 'longpress', label: tr('Tourner à gauche') }]}
                 onAccessibilityAction={(ev) => { tap(); onPlay(e.rotate(p, st, i, ev.nativeEvent.actionName === 'longpress' ? -1 : 1)); }}
                 onPress={() => { tap(); onPlay(e.rotate(p, st, i, 1)); }}
                 onLongPress={() => { tap(); onPlay(e.rotate(p, st, i, -1)); }}
@@ -174,8 +175,8 @@ function Peg({ kind }: { kind: 'full' | 'hollow' | 'none' }) {
 export const pegsText = (w: number, m: number) => {
   if (!w && !m) return 'aucun chiffre juste';
   const a: string[] = [];
-  if (w) a.push(`${w} bien placé${w > 1 ? 's' : ''}`);
-  if (m) a.push(`${m} mal placé${m > 1 ? 's' : ''}`);
+  if (w) a.push(trn(w, '{0} bien placé', '{0} bien placés'));
+  if (m) a.push(trn(m, '{0} mal placé', '{0} mal placés'));
   return a.join(' et ');
 };
 
@@ -213,11 +214,11 @@ function Lock({ s, width, onPlay, tap }: BoardProps) {
           );
         })}
         <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 8, paddingTop: 2 }}>
-          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><Peg kind="full" /><Text style={{ fontSize: 13, color: T.tx2 }}>bien placé</Text></View>
-          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><Peg kind="hollow" /><Text style={{ fontSize: 13, color: T.tx2 }}>mal placé</Text></View>
+          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><Peg kind="full" /><Text style={{ fontSize: 13, color: T.tx2 }}>{tr('bien placé')}</Text></View>
+          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}><Peg kind="hollow" /><Text style={{ fontSize: 13, color: T.tx2 }}>{tr('mal placé')}</Text></View>
         </View>
       </View>
-      <View style={{ flexDirection: 'row', gap: 14, justifyContent: 'center', marginTop: 10 }} accessibilityLabel="Molettes du cadenas">
+      <View style={{ flexDirection: 'row', gap: 14, justifyContent: 'center', marginTop: 10 }} accessibilityLabel={tr('Molettes du cadenas')}>
         {st.symbols.map((d, i) => (
           <View key={i} style={{ alignItems: 'center', gap: 4 }}>
             <Pressable accessibilityRole="button" accessibilityLabel={`Chiffre ${i + 1} : augmenter`} onPress={() => { tap(); turn(i, 1); }}
@@ -259,7 +260,7 @@ function Sequence({ s, width, onPlay, tap }: BoardProps) {
         {p.options.map((o, i) => {
           const wrong = st.ruledOut.includes(i), selected = st.selected === i;
           return (
-            <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected, disabled: wrong }} accessibilityLabel={wrong ? `${termText(p, o)}, écarté` : termText(p, o)} disabled={wrong}
+            <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected, disabled: wrong }} accessibilityLabel={wrong ? termText(p, o) + tr(', écarté') : termText(p, o)} disabled={wrong}
               onPress={() => { tap(); onPlay({ ...st, selected: i }, false); }}
               style={{ width: '48%', flexGrow: 1, height: 64, borderRadius: R.m, backgroundColor: T.s2, borderWidth: selected ? 2 : 1, borderColor: wrong ? T.coral : selected ? T.moon : T.line, alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ fontFamily: ROUND, fontSize: 26, fontWeight: '700', color: wrong ? T.coral : T.tx, textDecorationLine: wrong ? 'line-through' : 'none' }}>{termText(p, o)}</Text>
@@ -272,11 +273,11 @@ function Sequence({ s, width, onPlay, tap }: BoardProps) {
 }
 
 // ---------------------------------------------------------------- Balances
-const SHAPE_NAMES: Record<string, [string, string]> = { circle: ['cercle', 'cercles'], triangle: ['triangle', 'triangles'], square: ['carré', 'carrés'], diamond: ['losange', 'losanges'] };
+const SHAPE_NAMES: Record<string, [string, string]> = { circle: ['un cercle', '{0} cercles'], triangle: ['un triangle', '{0} triangles'], square: ['un carré', '{0} carrés'], diamond: ['un losange', '{0} losanges'] };
 function describeSide(p: ScalesPuzzle, items: ScalesPuzzle['balances'][number]['left']): string {
   const counts = new Map<string, number>();
-  for (const it of items) { const k = 'shape' in it ? p.shapes[it.shape] : `poids ${it.weight}`; counts.set(k, (counts.get(k) ?? 0) + 1); }
-  return [...counts].map(([k, n]) => (k.startsWith('poids') ? `un ${k}` : `${n === 1 ? 'un' : n} ${SHAPE_NAMES[k][n === 1 ? 0 : 1]}`)).join(' et ');
+  for (const it of items) { const k = 'shape' in it ? p.shapes[it.shape] : `#${it.weight}`; counts.set(k, (counts.get(k) ?? 0) + 1); }
+  return [...counts].map(([k, n]) => (k.startsWith('#') ? tr('un poids {0}', [k.slice(1)]) : trn(n, SHAPE_NAMES[k][0], SHAPE_NAMES[k][1]))).join(tr(' et '));
 }
 
 function Scales({ s, width, onPlay, tap }: BoardProps) {
@@ -291,7 +292,7 @@ function Scales({ s, width, onPlay, tap }: BoardProps) {
     <View>
       <View style={[box, { paddingVertical: 8, paddingHorizontal: 12 }]}>
         {p.balances.map((b, i) => (
-          <View key={i} accessible accessibilityLabel={`Balance ${i + 1} : ${describeSide(p, b.left)} pèsent autant que ${describeSide(p, b.right)}.`}>
+          <View key={i} accessible accessibilityLabel={tr('Balance {0} : {1} pèsent autant que {2}.', [i + 1, describeSide(p, b.left), describeSide(p, b.right)])}>
             <SvgXml xml={scalesBalanceXml(p, b, i + 1)} width={bw} height={bh} />
           </View>
         ))}
@@ -299,7 +300,7 @@ function Scales({ s, width, onPlay, tap }: BoardProps) {
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12, marginTop: 10 }}>
         <SvgXml xml={shapeXml(p.shapes[p.question], 14)} width={30} height={30} />
         <Text style={{ fontSize: 22, color: T.tx }}>=</Text>
-        <View accessible accessibilityLabel={`Réponse : ${st.entry || 'vide'}`} style={{ minWidth: 96, height: 52, borderRadius: 14, borderWidth: 1.5, borderColor: T.moon, alignItems: 'center', justifyContent: 'center' }}>
+        <View accessible accessibilityLabel={tr('Réponse : {0}', [st.entry || tr('vide')])} style={{ minWidth: 96, height: 52, borderRadius: 14, borderWidth: 1.5, borderColor: T.moon, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ fontFamily: ROUND, fontWeight: '800', fontSize: 28, color: T.tx }}>{st.entry || '?'}</Text>
         </View>
       </View>
@@ -333,20 +334,20 @@ export function Board(props: BoardProps) {
 export function ruleFor(s: Session): string {
   if (s.code === 'IN') {
     const pat = (s.data as SwitchesPuzzle).pattern;
-    if (pat === 'diagonal') return 'Chaque bouton inverse sa lanterne et ses voisines en diagonale. Allume tout.';
-    if (pat === 'ring') return 'Chaque bouton inverse sa lanterne et ses huit voisines. Allume tout.';
+    if (pat === 'diagonal') return tr('Chaque bouton inverse sa lanterne et ses voisines en diagonale. Allume tout.');
+    if (pat === 'ring') return tr('Chaque bouton inverse sa lanterne et ses huit voisines. Allume tout.');
   }
   if (s.code === 'CA') {
     const p = s.data as LocksPuzzle;
-    return `Trouve le code : ${p.length} chiffres${p.allowsRepeats ? ', qui peuvent se répéter' : ', tous différents'}.`;
+    return tr(p.allowsRepeats ? 'Trouve le code : {0} chiffres, qui peuvent se répéter.' : 'Trouve le code : {0} chiffres, tous différents.', [p.length]);
   }
   if (s.code === 'SC') return sealRuleText(s.data as SealPuzzle);
-  if (s.code === 'DI') return `Trouve les ${(s.data as SpotPuzzle).diffs.length} différences entre les deux images.`;
+  if (s.code === 'DI') return tr('Trouve les {0} différences entre les deux images.', [(s.data as SpotPuzzle).diffs.length]);
   // Variants say so first: the player must notice the rule has changed.
-  if (s.code === 'CR' && (s.data as ChimesPuzzle).reverse) return 'À rebours : écoute la mélodie, puis rejoue-la en partant de la dernière note.';
-  if (s.code === 'OM' && (s.data as ShadowsPuzzle).reflection) return 'Reflet : quel reflet appartient à l’objet ? Dans un miroir, l’objet est retourné, et il peut aussi être tourné.';
-  if (s.code === 'VI' && (s.data as StainedPuzzle).veiled?.length) return 'Vitres voilées : chaque ligne et chaque colonne a un filtre rouge, jaune, bleu, ou aucun. Certaines vitres sont voilées, les autres suffisent. Retrouve les filtres.';
-  if (s.code === 'SU' && (s.data as SequencesPuzzle).letters) return 'Trouve la lettre suivante.';
+  if (s.code === 'CR' && (s.data as ChimesPuzzle).reverse) return tr('À rebours : écoute la mélodie, puis rejoue-la en partant de la dernière note.');
+  if (s.code === 'OM' && (s.data as ShadowsPuzzle).reflection) return tr('Reflet : quel reflet appartient à l’objet ? Dans un miroir, l’objet est retourné, et il peut aussi être tourné.');
+  if (s.code === 'VI' && (s.data as StainedPuzzle).veiled?.length) return tr('Vitres voilées : chaque ligne et chaque colonne a un filtre rouge, jaune, bleu, ou aucun. Certaines vitres sont voilées, les autres suffisent. Retrouve les filtres.');
+  if (s.code === 'SU' && (s.data as SequencesPuzzle).letters) return tr('Trouve la lettre suivante.');
   return FAMILIES[s.code].rule;
 }
 

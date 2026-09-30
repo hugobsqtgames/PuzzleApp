@@ -15,12 +15,13 @@ import { useStore } from '../game/store';
 import { look } from '../game/rewards';
 
 import { ENDING_SEEN } from '../game/story';
+import { tr, translated } from '../i18n';
 
-const LINES = [
+const LINES = translated([
   'Vesper brille de nouveau, rue après rue.',
   'Au sommet du Phare, Nilo lève sa flamme.',
   'Et là-bas, de l’autre côté de la mer, une lumière répond.',
-];
+]);
 
 export default function Ending() {
   const { state, markSeen, enterPlace, play } = useStore();
@@ -57,7 +58,7 @@ export default function Ending() {
   const rotate = beam.interpolate({ inputRange: [0, 1], outputRange: ['-35deg', '14deg'] });
   return (
     <View style={{ flex: 1, backgroundColor: '#05060f', paddingTop: insets.top + 12, paddingBottom: insets.bottom + 16, alignItems: 'center' }}>
-      <View style={{ width: w, height: h }} accessible accessibilityLabel="Le Phare de Vesper dans la nuit. Son faisceau balaie la mer, et une lumière lui répond au loin.">
+      <View style={{ width: w, height: h }} accessible accessibilityLabel={tr('Le Phare de Vesper dans la nuit. Son faisceau balaie la mer, et une lumière lui répond au loin.')}>
         <Svg width={w} height={h} style={{ position: 'absolute' }}>
           <Defs>
             <LinearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><Stop offset="0" stopColor="#05060f" /><Stop offset="1" stopColor="#1b2146" /></LinearGradient>
@@ -97,12 +98,12 @@ export default function Ending() {
           </Animated.View>
         ))}
         <Animated.View style={{ opacity: outro, gap: 6, marginTop: 8 }}>
-          <Text style={[type.title2, { textAlign: 'center' }]}>Fin du premier chapitre</Text>
-          <Text style={[type.foot, { textAlign: 'center' }]}>Merci d’avoir rallumé Vesper. Le voyage de Nilo continuera de l’autre côté de la mer.</Text>
+          <Text style={[type.title2, { textAlign: 'center' }]}>{tr('Fin du premier chapitre')}</Text>
+          <Text style={[type.foot, { textAlign: 'center' }]}>{tr('Merci d’avoir rallumé Vesper. Le voyage de Nilo continuera de l’autre côté de la mer.')}</Text>
         </Animated.View>
       </View>
       <View style={{ width: '100%', maxWidth: 600, paddingHorizontal: 24 }}>
-        <Button title="Revenir à Vesper" disabled={!done} onPress={() => router.dismissTo('/')} />
+        <Button title={tr('Revenir à Vesper')} disabled={!done} onPress={() => router.dismissTo('/')} />
       </View>
     </View>
   );

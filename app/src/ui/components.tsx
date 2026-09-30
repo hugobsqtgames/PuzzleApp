@@ -10,6 +10,7 @@ import { iconXml, niloXml, Mood, Look } from './art';
 import { NiloLive } from './NiloLive';
 import { MAX_W } from './layout';
 import { TIER_NAMES as TIERS } from '../game/catalog';
+import { tr } from '../i18n';
 
 let hapticsOn = true;
 /** Follows the "Vibrations" setting. */
@@ -34,7 +35,7 @@ export function Icon({ name, size = 22, color = T.tx, sw = 1.6 }: { name: string
 export function Nilo({ size = 120, mood = 'neutral', look = {}, onPress, still = false }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void; still?: boolean }) {
   const xml = useMemo(() => (still ? niloXml(mood, look) : ''), [still, mood, look.flame, look.hat, look.scarf, look.comp]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!still) return <NiloLive size={size} mood={mood} look={look} onPress={onPress} />;
-  return <View accessible accessibilityLabel="Nilo"><SvgXml xml={xml} width={size} height={size * (120 / 132)} /></View>;
+  return <View accessible accessibilityLabel={tr('Nilo')}><SvgXml xml={xml} width={size} height={size * (120 / 132)} /></View>;
 }
 
 export function Pill({ icon, iconColor, children, color, borderColor }: { icon?: string; iconColor?: string; children: React.ReactNode; color?: string; borderColor?: string }) {
@@ -142,7 +143,7 @@ export function Rise({ children, delay = 0, style }: { children: React.ReactNode
 export function BackButton({ label, onPress }: { label: string; onPress: () => void }) {
   const once = useOnce(onPress);
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`Retour : ${label}`} onPress={() => { tap(); once(); }} style={({ pressed }) => [s.back, pressed ? { opacity: 0.6 } : null]} hitSlop={8}>
+    <Pressable accessibilityRole="button" accessibilityLabel={tr('Retour : {0}', [label])} onPress={() => { tap(); once(); }} style={({ pressed }) => [s.back, pressed ? { opacity: 0.6 } : null]} hitSlop={8}>
       <Icon name="back" size={20} color={T.amber} />
       <Text style={{ color: T.amber, fontSize: 17 }}>{label}</Text>
     </Pressable>
@@ -166,7 +167,7 @@ export function Gauge({ n, total, height = 8, from }: { n: number; total: number
 
 export function GaugeRow({ n, total, label, from }: { n: number; total: number; label: string; from?: number }) {
   return (
-    <View style={s.gaugeRow} accessible accessibilityLabel={`${label} ${n} sur ${total}`}>
+    <View style={s.gaugeRow} accessible accessibilityLabel={`${label} ${tr('{0} sur {1}', [n, total])}`}>
       <View style={{ flex: 1 }}><Gauge n={n} total={total} from={from} /></View>
       <Text style={s.gaugeText}>{n} / {total}</Text>
     </View>
@@ -218,7 +219,7 @@ export function Sheet({ visible, onClose, children }: { visible: boolean; onClos
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: v }]}>
-        <Pressable style={s.sheetBackdrop} onPress={closeFromBackdrop} accessibilityRole="button" accessibilityLabel="Fermer" />
+        <Pressable style={s.sheetBackdrop} onPress={closeFromBackdrop} accessibilityRole="button" accessibilityLabel={tr('Fermer')} />
       </Animated.View>
       <Animated.View style={[s.sheet, { left: side, right: side, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }] }]}>
         <View style={s.grab} />

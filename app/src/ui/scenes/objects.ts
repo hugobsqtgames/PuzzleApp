@@ -1,5 +1,6 @@
 // One drawing per found object (24-unit grid, 1.6 stroke, like the icons), so
 // the Carnet never shows the same picture for two different things.
+import { tr } from '../../i18n';
 const G: Record<string, string> = {
   key: '<circle cx="7" cy="12" r="4"/><path d="M11 12h10v3M18 12v3"/>',
   feather: '<path d="M20 4C10 6 6 12 5 20M20 4c-2 7-6 11-12 12M9 15l-3 5"/>',
@@ -123,11 +124,13 @@ const BY_NAME: Record<string, string> = {
   'Flamme de l’Allumeur': 'flame',
 };
 
-export const objectGlyph = (name: string) => G[BY_NAME[name] ?? 'sparkle'];
+/** The French name of an object shown in English (the pictures are keyed by the French names). */
+const frName = (name: string) => (name in BY_NAME ? name : Object.keys(BY_NAME).find((k) => tr(k) === name) ?? name);
+export const objectGlyph = (name: string) => G[BY_NAME[frName(name)] ?? 'sparkle'];
 /** A drawing by its key (puzzles use them as pictures). */
 export const glyphByKey = (key: string) => G[key] ?? G.sparkle;
 export const glyphKeys = () => Object.keys(G);
-export const glyphOf = (name: string) => BY_NAME[name];
+export const glyphOf = (name: string) => BY_NAME[frName(name)];
 
 /** SVG of an object, stroked in `color`. */
 export const objectSvg = (name: string, color: string, sw = 1.6) =>

@@ -18,17 +18,18 @@ import { allRooms, collectibleOf, districtViews, infoOf, roomName, unlockText } 
 import { LETTERS } from '../content/vesper';
 import { districtLanterns, worldLanterns } from '../core/game/world';
 import { isClairvoyant } from '../core/game/state';
+import { tr, trn, translated } from '../i18n';
 
 type Tab = 'objets' | 'succes' | 'stats' | 'vesper';
-const TABS: [Tab, string][] = [['objets', 'Objets'], ['succes', 'Succès'], ['stats', 'Statistiques'], ['vesper', 'Vesper']];
+const TABS: [Tab, string][] = translated([['objets', 'Objets'], ['succes', 'Succès'], ['stats', 'Statistiques'], ['vesper', 'Vesper']]);
 
 export default function Carnet() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState<Tab>((TABS.find(([k]) => k === params.tab)?.[0]) ?? 'objets');
   return (
     <Screen scroll place="library">
-      <BackButton label="Accueil" onPress={() => goBack()} />
-      <Text style={type.title1}>Carnet</Text>
+      <BackButton label={tr('Accueil')} onPress={() => goBack()} />
+      <Text style={type.title1}>{tr('Carnet')}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {TABS.map(([k, l]) => (
           <Pressable key={k} accessibilityRole="tab" accessibilityState={{ selected: k === tab }} onPress={() => { tap(); setTab(k); }}
@@ -64,8 +65,8 @@ function Objects() {
     return (
       <View style={{ alignItems: 'center', gap: 14, paddingVertical: 40 }}>
         <Nilo size={150} mood="sleep" look={look(state)} />
-        <Text style={type.title3}>Pas encore d’objet trouvé</Text>
-        <Text style={[type.sub, { maxWidth: 280, textAlign: 'center' }]}>Éclaire une salle entière : un objet de Vesper s’y révélera.</Text>
+        <Text style={type.title3}>{tr('Pas encore d’objet trouvé')}</Text>
+        <Text style={[type.sub, { maxWidth: 280, textAlign: 'center' }]}>{tr('Éclaire une salle entière : un objet de Vesper s’y révélera.')}</Text>
       </View>
     );
   }
@@ -76,11 +77,11 @@ function Objects() {
   const cardW = Math.floor((width - 32 - 20) / 3);
   return (
     <>
-      <Text style={type.sub}>{count} / {rooms.length} objets trouvés{waiting.some(Boolean) ? ` · ${waiting.filter(Boolean).length} à chercher dans leur salle` : ''}</Text>
+      <Text style={type.sub}>{tr('{0} / {1} objets trouvés', [count, rooms.length])}{waiting.some(Boolean) ? tr(' · {0} à chercher dans leur salle', [waiting.filter(Boolean).length]) : ''}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {visible.map(({ r, i }) => (
           <Pressable key={r.room.id} accessibilityRole={found[i] || waiting[i] ? 'button' : undefined} disabled={!found[i] && !waiting[i]}
-            accessibilityLabel={waiting[i] ? `Objet à chercher dans ${roomName(r.district, r.bi, r.ri)}` : undefined}
+            accessibilityLabel={waiting[i] ? tr('Objet à chercher dans {0}', [roomName(r.district, r.bi, r.ri)]) : undefined}
             onPress={() => (found[i] ? setOpen(i) : router.push({ pathname: '/room/[id]', params: { id: r.room.id, search: '1' } }))}
             style={{ width: cardW, minHeight: 120, borderRadius: 24, borderWidth: 1, borderColor: waiting[i] ? 'rgba(255,217,142,0.45)' : T.line, borderStyle: found[i] || waiting[i] ? 'solid' : 'dashed', backgroundColor: found[i] ? T.s1 : 'transparent', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8 }}>
             {found[i] ? (
@@ -107,7 +108,7 @@ function Objects() {
             <Icon name={l.owned ? 'letter' : 'lock'} size={20} color={l.owned ? T.amber : T.tx3} />
             <View style={{ flex: 1 }}>
               <Text style={[type.headline, !l.owned && { color: T.tx2 }]}>{l.title}</Text>
-              <Text style={type.foot} numberOfLines={1}>{l.owned ? `« ${l.text} »` : l.from === 'phare' ? 'Éclaire tout le Phare' : l.from === 'grenier' ? 'Éclaire le Grenier de l’Allumeur' : `Lanterne-clé de ${infoOf(WORLD.districts.find((d) => d.id === l.from)!).buildings[3].name}`}</Text>
+              <Text style={type.foot} numberOfLines={1}>{l.owned ? `« ${l.text} »` : l.from === 'phare' ? tr('Éclaire tout le Phare') : l.from === 'grenier' ? tr('Éclaire le Grenier de l’Allumeur') : tr('Lanterne-clé de {0}', [infoOf(WORLD.districts.find((d) => d.id === l.from)!).buildings[3].name])}</Text>
             </View>
           </Pressable>
         ))}
@@ -168,7 +169,7 @@ function Stats() {
   const clair = records.length ? Math.round((100 * records.filter(isClairvoyant).length) / records.length) : 0;
   const perFamily = CODES.map((c) => [c, lanterns.filter((l) => l.family === c).length] as const);
   const max = Math.max(1, ...perFamily.map(([, n]) => n));
-  const tiles: [string, string][] = [['Lanternes', String(engine.progression.totalLights(state))], ['Clairvoyance', `${clair} %`], ['Série record', `${state.daily.bestStreak} soir${state.daily.bestStreak > 1 ? 's' : ''}`], ['Murmures', String(profile.murmures)]];
+  const tiles: [string, string][] = [[tr('Lanternes'), String(engine.progression.totalLights(state))], [tr('Clairvoyance'), `${clair} %`], [tr('Série record'), trn(state.daily.bestStreak, '{0} soir', '{0} soirs')], [tr('Murmures'), String(profile.murmures)]];
   return (
     <>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
@@ -177,7 +178,7 @@ function Stats() {
         ))}
       </View>
       <Card style={{ gap: 10 }}>
-        <Text style={type.cap}>Lanternes par famille</Text>
+        <Text style={type.cap}>{tr('Lanternes par famille')}</Text>
         {perFamily.map(([c, n]) => (
           <View key={c} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
             <Icon name={c} size={18} color={T.tx2} />
@@ -190,7 +191,7 @@ function Stats() {
         ))}
       </Card>
       <Card>
-        <Text style={[type.cap, { marginBottom: 4 }]}>Temps médian par palier</Text>
+        <Text style={[type.cap, { marginBottom: 4 }]}>{tr('Temps médian par palier')}</Text>
         {TIER_NAMES.map((t, i) => {
           const m = median(profile.durations[i] ?? []);
           return (
@@ -202,7 +203,7 @@ function Stats() {
       </Card>
       <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
         <Icon name="shield" size={20} color={T.moon} />
-        <Text style={[type.foot, { flex: 1 }]}>Ces statistiques restent sur ton appareil. Rien n’est envoyé.</Text>
+        <Text style={[type.foot, { flex: 1 }]}>{tr('Ces statistiques restent sur ton appareil. Rien n’est envoyé.')}</Text>
       </View>
     </>
   );
@@ -218,11 +219,11 @@ function VesperTab() {
   return (
     <>
       <Card style={{ alignItems: 'center', gap: 4, padding: 20 }}>
-        <Text style={type.cap}>Vesper</Text>
+        <Text style={type.cap}>{tr('Vesper')}</Text>
         <Text style={type.display}>{p.totalLights(state)}<Text style={[type.title2, { color: T.tx2 }]}> / {formatCount(LANTERN_COUNT)}</Text></Text>
         <Text style={type.foot}>Lettres de l’Allumeur : {p.letters(state)} / 6</Text>
       </Card>
-      {state.seenDialogue.has(ENDING_SEEN) ? <Button title="Revoir la fin du premier chapitre" kind="ghost" icon="light" onPress={() => router.push('/ending')} /> : null}
+      {state.seenDialogue.has(ENDING_SEEN) ? <Button title={tr('Revoir la fin du premier chapitre')} kind="ghost" icon="light" onPress={() => router.push('/ending')} /> : null}
       <Card style={{ paddingVertical: 4 }}>
         {views.map((v) => {
           const d = WORLD.districts.find((x) => x.id === v.id)!;
@@ -240,7 +241,7 @@ function VesperTab() {
         })}
       </Card>
       <Card>
-        <Text style={[type.cap, { marginBottom: 10 }]}>Par palier</Text>
+        <Text style={[type.cap, { marginBottom: 10 }]}>{tr('Par palier')}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10, height: 110 }}>
           {TIER_NAMES.map((t, i) => (
             <View key={t} style={{ flex: 1, alignItems: 'center', gap: 4 }}>

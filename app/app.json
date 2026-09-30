@@ -46,7 +46,8 @@
           "imageWidth": 160
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-localization"
     ],
     "scheme": "lampion",
     "backgroundColor": "#0D0F1E"

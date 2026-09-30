@@ -13,6 +13,7 @@ import { PANORAMA, districtXml } from '../../ui/art';
 import { T, type } from '../../ui/theme';
 import { BuildingRow, buildingRows, current, districtById, infoOf, unlockText } from '../../game/views';
 import { districtLanterns } from '../../core/game/world';
+import { tr } from '../../i18n';
 
 export default function DistrictScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +22,8 @@ export default function DistrictScreen() {
   const p = engine.progression;
   const d = districtById(id ?? 'phare');
   const info = infoOf(d);
+  // French agrees the keeper's words with her or him (L’Horlogère, La Marchande…).
+  const keeperFeminine = !!info.keeper && (info.keeper.name.startsWith('La ') || info.keeper.name === 'L’Horlogère');
   // The Grenier de l'Allumeur is at the top of the Phare: shown with it.
   const grenier = d.id === 'phare' ? districtById('grenier') : null;
   const rows = buildingRows(p, state, d);
@@ -46,7 +49,7 @@ export default function DistrictScreen() {
     if (!grenier) return;
     if (!p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state))) {
       tap('error'); play('locked');
-      showToast(`Grenier de l’Allumeur : ${unlockText(grenier, p.totalLights(state), p.letters(state))}`, 'lock');
+      showToast(tr('Grenier de l’Allumeur : {0}', [unlockText(grenier, p.totalLights(state), p.letters(state))]), 'lock');
       return;
     }
     router.push({ pathname: '/building/[id]', params: { id: grenier.buildings[0].id } });
@@ -54,10 +57,10 @@ export default function DistrictScreen() {
 
   return (
     <Screen scroll place={info.sound}>
-      <BackButton label="Vesper" onPress={() => goBack()} />
-      <Crumb parent="Vesper" current={info.short} />
+      <BackButton label={tr('Vesper')} onPress={() => goBack()} />
+      <Crumb parent={tr('Vesper')} current={info.short} />
       <Text style={type.title1}>{info.name}</Text>
-      <GaugeRow n={lit} total={all.length} label="Lanternes du quartier" />
+      <GaugeRow n={lit} total={all.length} label={tr('Lanternes du quartier')} />
       <View style={{ borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: T.line, height: 250 }}>
         <SvgXml xml={xml} width={artW} height={250} />
         {buildings.map((b, i) => {
@@ -77,7 +80,7 @@ export default function DistrictScreen() {
               : <Icon name="lock" size={20} color={T.tx3} />}
             <View style={{ flex: 1 }}>
               <Text style={[type.headline, !r.open && { color: T.tx2 }]}>{r.name}</Text>
-              <Text style={type.foot}>{r.open ? `${r.lit} / ${r.total} lanternes${r.complete ? ' · habitant réveillé' : ''}` : r.lockText}</Text>
+              <Text style={type.foot}>{r.open ? tr('{0} / {1} lanternes', [r.lit, r.total]) + (r.complete ? tr(' · habitant réveillé') : '') : r.lockText}</Text>
             </View>
             <Icon name="chev" size={18} color={T.tx3} />
           </Pressable>
@@ -86,8 +89,8 @@ export default function DistrictScreen() {
           <Pressable accessibilityRole="button" onPress={openGrenier} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, minHeight: 52 }}>
             <Icon name={p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state)) ? 'star' : 'lock'} size={20} color={T.gold} />
             <View style={{ flex: 1 }}>
-              <Text style={type.headline}>Le Grenier de l’Allumeur</Text>
-              <Text style={type.foot}>{p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state)) ? `${p.lights(districtLanterns(grenier), state)} / 16 lanternes` : `590 lumières et 4 lettres de l’Allumeur · ${p.letters(state)} / 6 lettres`}</Text>
+              <Text style={type.headline}>{tr('Le Grenier de l’Allumeur')}</Text>
+              <Text style={type.foot}>{p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state)) ? tr('{0} / {1} lanternes', [p.lights(districtLanterns(grenier), state), 16]) : tr('590 lumières et 4 lettres de l’Allumeur · {0} / 6 lettres', [p.letters(state)])}</Text>
             </View>
             <Icon name="chev" size={18} color={T.tx3} />
           </Pressable>
@@ -97,7 +100,7 @@ export default function DistrictScreen() {
         <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
           <Icon name="moonI" size={18} color={T.tx2} />
           <Text style={[type.foot, { flex: 1 }]}>
-            {complete ? `${info.keeper.name} est réveillé${info.keeper.name.startsWith('La') || info.keeper.name === 'L’Horlogère' ? 'e' : ''}. ${info.keeper.line}` : `${info.keeper.name} dort. Éclaire tout le quartier pour ${info.keeper.name === 'L’Horlogère' || info.keeper.name.startsWith('La') ? 'la' : 'le'} réveiller.`}
+            {complete ? `${tr(keeperFeminine ? '{0} est réveillée.' : '{0} est réveillé.', [info.keeper.name])} ${info.keeper.line}` : tr(keeperFeminine ? '{0} dort. Éclaire tout le quartier pour la réveiller.' : '{0} dort. Éclaire tout le quartier pour le réveiller.', [info.keeper.name])}
           </Text>
         </View>
       ) : null}

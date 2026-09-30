@@ -1,5 +1,6 @@
 // French texts of the puzzle engine (hints, errors, deduction steps). The
 // engine never writes text itself: it returns a key and arguments.
+import { tr } from '../i18n';
 import type { LocalizedTemplate } from '../core/puzzlekit/types';
 
 import { CHARACTERS } from '../core/families/liars';
@@ -313,15 +314,17 @@ const CAPITALISED: Record<string, string> = {
   'scales.shape.circle': 'Le cercle', 'scales.shape.triangle': 'Le triangle', 'scales.shape.square': 'Le carré', 'scales.shape.diamond': 'Le losange',
 };
 
+/** A text of the engine (hints, errors), in the current language. */
 export function t(tp: LocalizedTemplate | string): string {
   const key = typeof tp === 'string' ? tp : tp.key;
   const args = typeof tp === 'string' ? [] : tp.args;
-  const text = FR[key] ?? key;
+  const text = tr(FR[key] ?? key);
   return text.replace(/\{(\d+)\}/g, (_, i) => {
     const a = args[Number(i)] ?? '';
     if (a in FR) {
-      if (!text.startsWith(`{${i}}`)) return FR[a];
-      return CAPITALISED[a] ?? FR[a].charAt(0).toUpperCase() + FR[a].slice(1);
+      const word = tr(FR[a]);
+      if (!text.startsWith(`{${i}}`)) return word;
+      return tr(CAPITALISED[a] ?? '') || word.charAt(0).toUpperCase() + word.slice(1);
     }
     return a;
   });

@@ -7,6 +7,7 @@
  */
 import { SeededRNG } from '../puzzlekit/rng';
 import { CORRECT, Hint, HintLevel, INCOMPLETE, PuzzleFamily, SolveReport, TierThresholds, ValidationResult, cell, clampScore, tpl } from '../puzzlekit/types';
+import { tr } from '../../i18n';
 
 export type Statement =
   | { kind: 'liar'; j: number }
@@ -179,14 +180,15 @@ export class LiarsFamily implements PuzzleFamily<LiarsPuzzle, LiarsState, LiarsP
 /** The statement as the character says it (French). `name(i)` gives "la Loutre" etc. */
 export function statementText(st: Statement, name: (i: number) => string, n: number): string {
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const who = (i: number) => tr(name(i));
   switch (st.kind) {
-    case 'liar': return `${cap(name(st.j))} ment.`;
-    case 'honest': return `${cap(name(st.j))} dit la vérité.`;
-    case 'atLeastOneLiar': return 'Au moins l’un d’entre nous ment.';
-    case 'allLiars': return n === 2 ? 'Nous mentons tous les deux.' : 'Nous mentons tous.';
-    case 'exactlyLiars': return st.k === 1 ? 'Un seul d’entre nous ment.' : `Exactement ${st.k} d’entre nous mentent.`;
-    case 'same': return `${cap(name(st.j))} et moi sommes du même camp.`;
-    case 'different': return `${cap(name(st.j))} et ${name(st.k)} ne sont pas du même camp.`;
-    case 'ifThen': return `Si ${name(st.j)} ment, alors ${name(st.k)} dit la vérité.`;
+    case 'liar': return tr('{0} ment.', [cap(who(st.j))]);
+    case 'honest': return tr('{0} dit la vérité.', [cap(who(st.j))]);
+    case 'atLeastOneLiar': return tr('Au moins l’un d’entre nous ment.');
+    case 'allLiars': return n === 2 ? tr('Nous mentons tous les deux.') : tr('Nous mentons tous.');
+    case 'exactlyLiars': return st.k === 1 ? tr('Un seul d’entre nous ment.') : tr('Exactement {0} d’entre nous mentent.', [st.k]);
+    case 'same': return tr('{0} et moi sommes du même camp.', [cap(who(st.j))]);
+    case 'different': return tr('{0} et {1} ne sont pas du même camp.', [cap(who(st.j)), who(st.k)]);
+    case 'ifThen': return tr('Si {0} ment, alors {1} dit la vérité.', [who(st.j), who(st.k)]);
   }
 }

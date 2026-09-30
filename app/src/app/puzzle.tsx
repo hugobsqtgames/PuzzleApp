@@ -18,8 +18,9 @@ import { t } from '../content/strings';
 import { look } from '../game/rewards';
 import { buildingName, infoOf, locateRoom } from '../game/views';
 import { dailyLabel, dateOfDay } from '../ui/dates';
-import { roomSlotsOf } from '../ui/scenes';
+import { roomSlotsOf, slotText } from '../ui/scenes';
 import { HintLevel } from '../core/puzzlekit/types';
+import { tr, translated } from '../i18n';
 
 const HINT_NAMES = ['Murmure', 'Piste', 'Éclairage', 'Solution'];
 const HINT_ICONS = ['whisper', 'hint', 'light', 'star'];
@@ -47,16 +48,16 @@ export default function PuzzleScreen() {
     return () => clearInterval(id);
   }, [session]);
 
-  if (!session) return <Screen><BackButton label="Accueil" onPress={() => router.replace('/')} /></Screen>;
+  if (!session) return <Screen><BackButton label={tr('Accueil')} onPress={() => router.replace('/')} /></Screen>;
   const s = session;
   const fam = FAMILIES[s.code];
   const where = s.kind === 'lantern' ? engine.progression.locate(s.id) : null;
   const info = where ? infoOf(where.district) : null;
   const roomAt = where?.room ? locateRoom(where.room.id) : null;
-  const backLabel = s.kind === 'daily' ? 'Défi du soir' : where?.room ? `Salle ${roomAt ? roomAt.index + 1 : ''}` : where ? buildingName(where.district, where.district.buildings.indexOf(where.building)) : 'Accueil';
+  const backLabel = s.kind === 'daily' ? tr('Défi du soir') : where?.room ? tr('Salle {0}', [roomAt ? roomAt.index + 1 : '']) : where ? buildingName(where.district, where.district.buildings.indexOf(where.building)) : tr('Accueil');
   const subtitle = s.kind === 'daily'
     ? dailyLabel(dateOfDay(s.id.slice(6)))
-    : where?.room && roomAt ? `Lanterne ${where.room.lanterns.findIndex((l) => l.puzzle === s.id) + 1} · ${roomSlotsOf(where.room.id, where.room.lanterns.length)[where.room.lanterns.findIndex((l) => l.puzzle === s.id)]?.label ?? ''}` : 'Lanterne-clé';
+    : where?.room && roomAt ? tr('Lanterne {0} · {1}', [where.room.lanterns.findIndex((l) => l.puzzle === s.id) + 1, slotText(roomSlotsOf(where.room.id, where.room.lanterns.length)[where.room.lanterns.findIndex((l) => l.puzzle === s.id)]?.label ?? '')]) : tr('Lanterne-clé');
   // On iPad the board is drawn at its phone size, then scaled up: taps scale with it.
   const boardScale = wide ? Math.min(1.5, (wideWidth - 56 - SIDE_W - 32) / BOARD_BASE) : 1;
   const boardWidth = wide ? BOARD_BASE : Math.min(width, 600) - 32;
@@ -93,7 +94,7 @@ export default function PuzzleScreen() {
     Animated.sequence([6, -6, 4, -4, 0].map((x) => Animated.timing(shake, { toValue: x, duration: 60, useNativeDriver: true }))).start();
     if (r.session.wrongAnswers >= 2 && !offered) {
       setOffered(true);
-      later(() => showToast('Besoin d’un coup de pouce ? Le Murmure est gratuit.', 'whisper'), 1200);
+      later(() => showToast(tr('Besoin d’un coup de pouce ? Le Murmure est gratuit.'), 'whisper'), 1200);
     }
   };
 
@@ -126,18 +127,18 @@ export default function PuzzleScreen() {
   if (s.error) feedback = <Message tone="error" text={s.error.text} />;
   else if (live && live.kind === 'invalid' && live.issues[0]) feedback = <Message tone="error" text={t(live.issues[0].message)} />;
   else if (s.hint.texts.length && !s.hint.stale) feedback = <Message tone="hint" icon={HINT_ICONS[s.hint.level - 1]} title={HINT_NAMES[s.hint.level - 1]} text={s.hint.texts[s.hint.texts.length - 1]} />;
-  else if (s.id === 'phare.b1.r1.1') feedback = <Message tone="hint" icon="whisper" text="Touche la lanterne éteinte en haut à gauche." />;
+  else if (s.id === 'phare.b1.r1.1') feedback = <Message tone="hint" icon="whisper" text={tr('Touche la lanterne éteinte en haut à gauche.')} />;
   else if (s.code === 'IN') feedback = <Text style={[type.foot, { textAlign: 'center' }]}>{s.moves} coup{s.moves > 1 ? 's' : ''}</Text>;
   const oops = !!s.error || (live?.kind === 'invalid');
   const mood = celebrating ? 'joy' : oops ? 'oops' : s.hint.level > 0 && !s.hint.stale ? 'hint' : 'think';
-  const hintButton = <IconButton name="hint" label="Indices" size={52} color={T.moon} borderColor="#3d4f7a" onPress={() => setSheet('hints')} />;
+  const hintButton = <IconButton name="hint" label={tr('Indices')} size={52} color={T.moon} borderColor="#3d4f7a" onPress={() => setSheet('hints')} />;
 
   const topBar = (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <BackButton label={backLabel} onPress={leave} />
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
         <ShardPill n={state.wallet.balance} />
-        <IconButton name="pause" label="Pause" onPress={() => setSheet('pause')} />
+        <IconButton name="pause" label={tr('Pause')} onPress={() => setSheet('pause')} />
       </View>
     </View>
   );
@@ -156,8 +157,8 @@ export default function PuzzleScreen() {
   );
   const rule = (
     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
-      <Text style={[type.body, { flex: 1 }]}>{s.id === 'phare.b1.r1.1' ? 'Chaque lanterne inverse ses voisines. Allume les quatre.' : ruleFor(s)}</Text>
-      <IconButton name="info" label="Règle complète" onPress={() => setSheet('rule')} />
+      <Text style={[type.body, { flex: 1 }]}>{s.id === 'phare.b1.r1.1' ? tr('Chaque lanterne inverse ses voisines. Allume les quatre.') : ruleFor(s)}</Text>
+      <IconButton name="info" label={tr('Règle complète')} onPress={() => setSheet('rule')} />
     </View>
   );
   const board = (
@@ -169,13 +170,13 @@ export default function PuzzleScreen() {
   const controls = fam.answer ? (
     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
       {hintButton}
-      <View style={{ flex: 1 }}><Button title="Valider" disabled={!canSubmit(s)} onPress={onSubmit} /></View>
+      <View style={{ flex: 1 }}><Button title={tr('Valider')} disabled={!canSubmit(s)} onPress={onSubmit} /></View>
     </View>
   ) : (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        <IconButton name="undo" label="Annuler" disabled={!s.history.length} onPress={() => updateSession(undo(s))} />
-        <IconButton name="redo" label="Rétablir" disabled={!s.future.length} onPress={() => { const q = redo(s); updateSession(q); if (isComplete(q)) end(q, 0); }} />
+        <IconButton name="undo" label={tr('Annuler')} disabled={!s.history.length} onPress={() => updateSession(undo(s))} />
+        <IconButton name="redo" label={tr('Rétablir')} disabled={!s.future.length} onPress={() => { const q = redo(s); updateSession(q); if (isComplete(q)) end(q, 0); }} />
       </View>
       <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
         <Nilo size={64} mood={mood} look={look(state)} />
@@ -215,7 +216,7 @@ export default function PuzzleScreen() {
 
       <Sheet visible={sheet === 'hints'} onClose={() => setSheet(null)}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={type.title2}>Indices</Text>
+          <Text style={type.title2}>{tr('Indices')}</Text>
           <ShardPill n={state.wallet.balance} />
         </View>
         {HINT_NAMES.map((name, i) => {
@@ -241,23 +242,23 @@ export default function PuzzleScreen() {
               </View>
               {reached && s.hint.texts[i] && i < 3 ? <Text style={[type.callout, { marginTop: 8 }]}>{s.hint.texts[i]}</Text> : null}
               {isNext && !afford ? <Text style={[type.foot, { marginTop: 6 }]}>Il te manque {cost - state.wallet.balance} Éclats. Le Murmure reste gratuit, et tu peux jouer une autre lanterne.</Text> : null}
-              {isNext && i === 3 ? <Text style={[type.foot, { marginTop: 6 }]}>La lumière est gagnée, sans le bonus Clairvoyance.</Text> : null}
+              {isNext && i === 3 ? <Text style={[type.foot, { marginTop: 6 }]}>{tr('La lumière est gagnée, sans le bonus Clairvoyance.')}</Text> : null}
             </View>
           );
         })}
-        {s.hint.stale && s.hint.texts.length ? <Text style={[type.foot, { marginTop: 8 }]}>Tu as avancé : le prochain indice part de ta nouvelle position.</Text> : null}
-        <Button title="Revenir au puzzle" kind="ghost" onPress={() => setSheet(null)} style={{ marginTop: 8 }} />
+        {s.hint.stale && s.hint.texts.length ? <Text style={[type.foot, { marginTop: 8 }]}>{tr('Tu as avancé : le prochain indice part de ta nouvelle position.')}</Text> : null}
+        <Button title={tr('Revenir au puzzle')} kind="ghost" onPress={() => setSheet(null)} style={{ marginTop: 8 }} />
       </Sheet>
 
       <Sheet visible={sheet === 'pause'} onClose={() => setSheet(null)}>
-        <Text style={[type.title2, { marginBottom: 10 }]}>Pause</Text>
-        <Button title="Reprendre" onPress={() => setSheet(null)} />
-        <Row icon="info" label="Revoir la règle" onPress={() => setSheet('rule')} />
-        <Row icon="undo" label="Recommencer ce puzzle" onPress={restart} />
-        <ToggleRow icon="music" label="Musique" value={settings.music} onChange={(v) => setSettings({ music: v })} />
-        <ToggleRow icon="sound" label="Effets sonores" value={settings.effects} onChange={(v) => setSettings({ effects: v })} />
-        <Button title={s.kind === 'daily' ? 'Retour au défi' : 'Retour à la salle'} kind="secondary" onPress={() => { setSheet(null); leave(); }} style={{ marginTop: 12 }} />
-        <Text style={[type.foot, { marginTop: 10, textAlign: 'center' }]}>{s.kind === 'daily' ? 'Le défi reste jouable toute la soirée.' : 'Ta progression dans ce puzzle est gardée.'}</Text>
+        <Text style={[type.title2, { marginBottom: 10 }]}>{tr('Pause')}</Text>
+        <Button title={tr('Reprendre')} onPress={() => setSheet(null)} />
+        <Row icon="info" label={tr('Revoir la règle')} onPress={() => setSheet('rule')} />
+        <Row icon="undo" label={tr('Recommencer ce puzzle')} onPress={restart} />
+        <ToggleRow icon="music" label={tr('Musique')} value={settings.music} onChange={(v) => setSettings({ music: v })} />
+        <ToggleRow icon="sound" label={tr('Effets sonores')} value={settings.effects} onChange={(v) => setSettings({ effects: v })} />
+        <Button title={s.kind === 'daily' ? tr('Retour au défi') : tr('Retour à la salle')} kind="secondary" onPress={() => { setSheet(null); leave(); }} style={{ marginTop: 12 }} />
+        <Text style={[type.foot, { marginTop: 10, textAlign: 'center' }]}>{s.kind === 'daily' ? tr('Le défi reste jouable toute la soirée.') : tr('Ta progression dans ce puzzle est gardée.')}</Text>
       </Sheet>
 
       <Sheet visible={sheet === 'rule'} onClose={() => setSheet(null)}>
@@ -267,13 +268,13 @@ export default function PuzzleScreen() {
         </View>
         <Text style={[type.body, { marginBottom: 10 }]}>{ruleFor(s)}</Text>
         <Text style={[type.sub, { marginBottom: 14 }]}>{RULE_DETAILS[s.code]}</Text>
-        <Button title="Compris" onPress={() => setSheet(null)} />
+        <Button title={tr('Compris')} onPress={() => setSheet(null)} />
       </Sheet>
     </Screen>
   );
 }
 
-const RULE_DETAILS: Record<string, string> = {
+const RULE_DETAILS_FR: Record<string, string> = {
   IN: 'Touche un bouton : il change d’état, avec ses voisins. Le compteur montre tes coups ; le nombre minimal s’affiche une fois la lanterne allumée.',
   CA: 'Chaque ligne est un essai. ● : un chiffre juste à la bonne place. ○ : un chiffre juste à la mauvaise place. Tourne les molettes, puis Valider.',
   LA: 'Touche une case : une lampe. Touche encore : un point (« pas de lampe ici »), pour t’aider. Une lampe éclaire sa ligne et sa colonne jusqu’au premier mur.',
@@ -301,6 +302,7 @@ const RULE_DETAILS: Record<string, string> = {
   LU: 'Chaque lanterne a sa luciole juste à côté : au-dessus, en dessous, à gauche ou à droite. Deux lucioles ne se touchent jamais, même par un coin. Les nombres comptent les lucioles de chaque ligne et colonne. Touche une case : luciole, puis herbe, puis libre.',
   PA: 'Relie les îlots par des passerelles droites, une ou deux entre deux îlots, qui ne se croisent jamais. Le nombre d’un îlot est son nombre de passerelles. À la fin, tous les îlots doivent être reliés ensemble. Touche un îlot, puis un autre en face.',
 };
+const RULE_DETAILS = translated(RULE_DETAILS_FR);
 
 function Row({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
   return (

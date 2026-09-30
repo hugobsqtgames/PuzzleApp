@@ -1,6 +1,7 @@
 // The city of Vesper: places, names and texts (GAME_DESIGN §§ 2, 10, 12).
 // The structure (which lantern is where, which family, which tier) comes
 // from the generated content pack; this file only names things.
+import { translated } from '../i18n';
 
 export type DistrictId = 'phare' | 'biblio' | 'horlo' | 'serre' | 'marche' | 'theatre' | 'obs' | 'grenier';
 
@@ -20,7 +21,7 @@ export interface DistrictInfo {
 
 const R = (name: string, object: string, story: string): RoomInfo => ({ name, object: { name: object, story } });
 
-export const DISTRICT_INFO: DistrictInfo[] = [
+const DISTRICT_INFO_FR: DistrictInfo[] = [
   {
     id: 'phare', name: 'Le Phare', short: 'Phare', hue: '#F4B45E', tagline: 'Là où tout recommence.', sound: 'lighthouse',
     buildings: [{
@@ -222,7 +223,9 @@ export const DISTRICT_INFO: DistrictInfo[] = [
   },
 ];
 
-export const DISTRICT_BY_ID = Object.fromEntries(DISTRICT_INFO.map((d) => [d.id, d])) as Record<DistrictId, DistrictInfo>;
+/** The districts, read in the current language. */
+export const DISTRICT_INFO: DistrictInfo[] = translated(DISTRICT_INFO_FR);
+export const DISTRICT_BY_ID = translated(Object.fromEntries(DISTRICT_INFO_FR.map((d) => [d.id, d])) as Record<DistrictId, DistrictInfo>);
 
 /**
  * Letters of the Lamplighter (GAME_DESIGN § 12.3). The Phare letter is found
@@ -232,7 +235,7 @@ export const DISTRICT_BY_ID = Object.fromEntries(DISTRICT_INFO.map((d) => [d.id,
  * Design fix: the arc listed 7 letters but 6 districts give one, and the
  * Observatoire had none; it now has its own.
  */
-export const LETTERS: { from: DistrictId; title: string; text: string }[] = [
+const LETTERS_FR: { from: DistrictId; title: string; text: string }[] = [
   { from: 'phare', title: 'Première lettre', text: 'Si tu lis ceci, c’est que ta flamme tient bon. Je savais que quelqu’un finirait par monter l’escalier. Rallume la ville, doucement. Elle t’attendra.' },
   { from: 'biblio', title: 'Deuxième lettre', text: 'J’ai cherché dans toute la Bibliothèque un livre qui n’existe pas : la carte de ce qu’il y a au-delà du brouillard. Je ne l’ai pas trouvé. Alors j’ai décidé de l’écrire moi-même.' },
   { from: 'horlo', title: 'Troisième lettre', text: 'J’ai arrêté les horloges. Pas pour toujours : juste le temps que la ville m’attende. Quand tu les entendras repartir, c’est que tu seras presque arrivé.' },
@@ -242,3 +245,5 @@ export const LETTERS: { from: DistrictId; title: string; text: string }[] = [
   { from: 'obs', title: 'Septième lettre', text: 'Depuis la Coupole, j’ai vu une lumière de l’autre côté de la mer. Elle clignote, comme si elle cherchait quelqu’un. Je crois qu’elle me cherche. Je crois qu’un jour, elle te cherchera aussi.' },
   { from: 'grenier', title: 'Dernière lettre', text: 'Je savais que tu y arriverais. Monte au sommet du Phare, et laisse ta flamme faire le reste. Regarde la mer. Quelqu’un va te répondre.' },
 ];
+
+export const LETTERS = translated(LETTERS_FR);

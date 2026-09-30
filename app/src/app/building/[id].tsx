@@ -13,6 +13,7 @@ import { coupeRects, coupeXml, RoomCell } from '../../ui/art';
 import { T, type } from '../../ui/theme';
 import { RoomRow, buildingName, current, infoOf, locateBuilding, roomName, roomRows } from '../../game/views';
 import { buildingLanterns } from '../../core/game/world';
+import { tr } from '../../i18n';
 
 export default function BuildingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,7 +23,7 @@ export default function BuildingScreen() {
   const at = locateBuilding(id ?? '');
   const here = current(p, state).lantern;
   const rows = useMemo(() => (at ? roomRows(p, state, at.district, at.index, here) : []), [p, state, at, here]);
-  if (!at) return <Screen><BackButton label="Vesper" onPress={() => goBack()} /></Screen>;
+  if (!at) return <Screen><BackButton label={tr('Vesper')} onPress={() => goBack()} /></Screen>;
   const { district: d, building: b, index: bi } = at;
   const info = infoOf(d);
   const all = buildingLanterns(b), lit = p.lights(all, state);
@@ -30,13 +31,13 @@ export default function BuildingScreen() {
   const w = Math.min(width, 600) - 32, k = w / 360;
   const rects = coupeRects(b.rooms.length, !!b.keystone);
   const cells: RoomCell[] = rows.map((r) => ({
-    label: r.key ? 'Lanterne-clé' : r.label, key: r.key, lit: r.lit, total: r.total, state: r.state,
-    sub: r.state === 'locked' ? 'Verrouillée' : r.key ? (r.lit ? 'Allumée' : 'Ouverte') : r.state === 'done' ? 'Complète' : `${r.lit} / ${r.total}`,
+    label: r.key ? tr('Lanterne-clé') : r.label, key: r.key, lit: r.lit, total: r.total, state: r.state,
+    sub: r.state === 'locked' ? tr('Verrouillée') : r.key ? (r.lit ? tr('Allumée') : tr('Ouverte')) : r.state === 'done' ? tr('Complète') : `${r.lit} / ${r.total}`,
   }));
   const xml = coupeXml(info.hue, cells, rects);
 
   const openRow = (r: RoomRow) => {
-    if (r.state === 'locked') { tap('error'); play('locked'); showToast(`Salle verrouillée. ${r.lockText}.`, 'lock'); return; }
+    if (r.state === 'locked') { tap('error'); play('locked'); showToast(tr('Salle verrouillée. {0}.', [r.lockText]), 'lock'); return; }
     tap();
     if (r.key && b.keystone) { if (openLantern(b.keystone.puzzle)) router.push('/puzzle'); return; }
     if (r.room) router.push({ pathname: '/room/[id]', params: { id: r.room.id } });
@@ -48,14 +49,14 @@ export default function BuildingScreen() {
       <BackButton label={d.id === 'grenier' ? 'Le Phare' : info.short} onPress={() => goBack()} />
       <Crumb parent={info.short} current={buildingName(d, bi)} />
       <Text style={type.title1}>{buildingName(d, bi)}</Text>
-      <GaugeRow n={lit} total={all.length} label="Lanternes du bâtiment" />
+      <GaugeRow n={lit} total={all.length} label={tr('Lanternes du bâtiment')} />
       <View style={{ width: w, height: 440 * k }}>
         <SvgXml xml={xml} width={w} height={440 * k} />
         {rows.map((r, i) => {
           const rc = rects[i];
           if (!rc) return null;
           return (
-            <Pressable key={i} accessibilityRole="button" accessibilityLabel={`${r.key ? 'Lanterne-clé' : roomName(d, bi, r.index)}, ${r.state === 'locked' ? 'verrouillée' : `${r.lit} sur ${r.total}`}`}
+            <Pressable key={i} accessibilityRole="button" accessibilityLabel={`${r.key ? tr('Lanterne-clé') : roomName(d, bi, r.index)}, ${r.state === 'locked' ? tr('verrouillée') : tr('{0} sur {1}', [r.lit, r.total])}`}
               onPress={() => openRow(r)} style={{ position: 'absolute', left: rc.x * k, top: rc.y * k, width: rc.w * k, height: rc.h * k }} />
           );
         })}
@@ -66,7 +67,7 @@ export default function BuildingScreen() {
       </View>
       {target ? (
         <Button
-          title={target.key ? 'Lanterne-clé' : `${target.label} · ${roomName(d, bi, target.index)} · ${target.lit} / ${target.total}`}
+          title={target.key ? tr('Lanterne-clé') : `${target.label} · ${roomName(d, bi, target.index)} · ${target.lit} / ${target.total}`}
           onPress={() => openRow(target)}
         />
       ) : null}

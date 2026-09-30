@@ -15,6 +15,7 @@ import { InquiriesPuzzle, InquiriesState, OBJECTS, PEOPLE, PLACES, clueText } fr
 import { MarquetryFamily, MarquetryPuzzle, MarquetryState, orientation, orientations } from '../core/families/marquetry';
 import { FAMILIES } from '../game/catalog';
 import type { BoardProps } from './boards';
+import { lang, tr } from '../i18n';
 
 const box = { backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: R.l } as const;
 const hasCell = (cells: CellRef[], r: number, c: number) => cells.some((x) => x.row === r && x.column === c);
@@ -51,9 +52,16 @@ export function PatternGlyph({ c, size, id }: { c: PatternCell; size: number; id
 }
 
 const PATTERN_WORDS = {
-  shape: ['cercle', 'triangle', 'carré', 'losange'], fill: ['plein', 'rayé', 'vide'], size: ['petit', 'moyen', 'grand'],
+  fr: { shape: ['cercle', 'triangle', 'carré', 'losange'], fill: ['plein', 'rayé', 'vide'], size: ['petit', 'moyen', 'grand'] },
+  en: { shape: ['circle', 'triangle', 'square', 'diamond'], fill: ['filled', 'striped', 'empty'], size: ['small', 'medium', 'large'] },
 };
-export const describePattern = (c: PatternCell) => `${c.count + 1} ${PATTERN_WORDS.shape[c.shape]}${c.count ? 's' : ''} ${PATTERN_WORDS.size[c.size]}${c.count ? 's' : ''}, ${PATTERN_WORDS.fill[c.fill]}${c.count ? 's' : ''}`;
+/** « 2 cercles petits, pleins » / "2 small circles, filled". */
+export const describePattern = (c: PatternCell) => {
+  const w = PATTERN_WORDS[lang()], s = c.count ? 's' : '';
+  return lang() === 'en'
+    ? `${c.count + 1} ${w.size[c.size]} ${w.shape[c.shape]}${s}, ${w.fill[c.fill]}`
+    : `${c.count + 1} ${w.shape[c.shape]}${s} ${w.size[c.size]}${s}, ${w.fill[c.fill]}${s}`;
+};
 
 function Patterns({ s, width, onPlay, tap }: BoardProps) {
   const p = s.data as PatternsPuzzle, st = s.state as PatternsState;
@@ -86,7 +94,7 @@ function Patterns({ s, width, onPlay, tap }: BoardProps) {
         {p.options.map((o, i) => {
           const wrong = st.ruledOut.includes(i), selected = st.selected === i;
           return (
-            <Pressable key={i} disabled={wrong} accessibilityRole="button" accessibilityState={{ selected, disabled: wrong }} accessibilityLabel={`${describePattern(o)}${wrong ? ', écarté' : ''}`}
+            <Pressable key={i} disabled={wrong} accessibilityRole="button" accessibilityState={{ selected, disabled: wrong }} accessibilityLabel={describePattern(o) + (wrong ? tr(', écarté') : '')}
               onPress={() => { tap(); onPlay({ ...st, selected: i }, false); }}
               style={{ width: optW, height: optW * 0.8, borderRadius: R.m, backgroundColor: T.s2, borderWidth: selected ? 2 : 1, borderColor: wrong ? T.coral : selected ? T.moon : T.line, alignItems: 'center', justifyContent: 'center', opacity: wrong ? 0.35 : 1 }}>
               <PatternGlyph c={o} size={optW * 0.7} id={`o${i}`} />
@@ -104,7 +112,7 @@ const CREATURE_COLORS = ['#EE8A6B', '#8FB8F0', '#C39BD3', '#7FC8A9', '#D8B56A', 
 function Liars({ s, onPlay, tap }: BoardProps) {
   const p = s.data as LiarsPuzzle, st = s.state as LiarsState;
   const focus = focusOf(s);
-  const name = (i: number) => CHARACTERS[p.names[i]];
+  const name = (i: number) => tr(CHARACTERS[p.names[i]]);
   const cycle = (i: number) => {
     const marks = st.marks.slice();
     marks[i] = marks[i] === null ? true : marks[i] === true ? false : null;
@@ -124,10 +132,10 @@ function Liars({ s, onPlay, tap }: BoardProps) {
               <Text style={{ color: T.tx2, fontSize: 13, fontWeight: '600' }}>{cap(name(i))}</Text>
               <Text style={{ color: T.tx, fontSize: 16, lineHeight: 21, fontStyle: 'italic' }}>« {statementText(stmt, name, p.statements.length)} »</Text>
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel={`${cap(name(i))} : ${m === null ? 'inconnu' : m ? 'dit vrai' : 'ment'}. Toucher pour changer.`}
+            <Pressable accessibilityRole="button" accessibilityLabel={`${cap(name(i))} : ${m === null ? tr('inconnu') : m ? tr('dit vrai') : tr('ment')}. ${tr('Toucher pour changer.')}`}
               onPress={() => { tap(); cycle(i); }}
               style={{ width: 74, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: m === null ? T.s2 : m ? 'rgba(143,211,224,0.15)' : 'rgba(232,138,138,0.15)', borderWidth: 1.5, borderColor: m === null ? T.line : m ? T.moon : T.coral }}>
-              <Text style={{ color: m === null ? T.tx2 : m ? T.moon : T.coral, fontWeight: '700', fontSize: 14 }}>{m === null ? '?' : m ? 'Vrai' : 'Ment'}</Text>
+              <Text style={{ color: m === null ? T.tx2 : m ? T.moon : T.coral, fontWeight: '700', fontSize: 14 }}>{m === null ? '?' : m ? tr('Vrai') : tr('Ment')}</Text>
             </Pressable>
           </View>
         );
@@ -173,7 +181,7 @@ function Threads({ s, width, onPlay, tap }: BoardProps) {
         </Svg>
         {Array.from({ length: p.rows * p.columns }, (_, i) => (
           <Pressable key={i} accessibilityRole="button"
-            accessibilityLabel={`Ligne ${Math.floor(i / p.columns) + 1}, colonne ${(i % p.columns) + 1}${i === p.start ? ', départ' : i === p.end ? ', arrivée' : ''}${onPath.has(i) ? ', sur le fil' : ''}`}
+            accessibilityLabel={tr('Ligne {0}, colonne {1}', [Math.floor(i / p.columns) + 1, (i % p.columns) + 1]) + (i === p.start ? tr(', départ') : i === p.end ? tr(', arrivée') : '') + (onPath.has(i) ? tr(', sur le fil') : '')}
             onPress={() => { tap(); onPlay(e.touch(p, st, i)); }}
             style={{ position: 'absolute', left: (i % p.columns) * cellW, top: Math.floor(i / p.columns) * cellW, width: cellW, height: cellW }} />
         ))}
@@ -189,18 +197,18 @@ function Mirrors({ s, width, onPlay, tap }: BoardProps) {
   const cellW = Math.min(52, (width - 40) / (p.columns + 1));
   const pad = cellW * 0.6;
   const W = cellW * p.columns + pad * 2, H = cellW * p.rows + pad * 2;
-  const tr = trace(p, st.marks);
+  const ray = trace(p, st.marks);
   const focus = focusOf(s);
   const center = (i: number) => [pad + (i % p.columns + 0.5) * cellW, pad + (Math.floor(i / p.columns) + 0.5) * cellW];
   const [sx, sy] = center(p.source.cell);
   const DR = [-1, 0, 1, 0], DC = [0, 1, 0, -1];
   const from = [sx - DC[p.source.dir] * cellW * 0.9, sy - DR[p.source.dir] * cellW * 0.9];
-  const pts = [from, ...tr.cells.map(center)];
-  if (tr.ends === 'out' && tr.cells.length) {
+  const pts = [from, ...ray.cells.map(center)];
+  if (ray.ends === 'out' && ray.cells.length) {
     // Extend the ray to the edge it leaves by.
-    const last = tr.cells[tr.cells.length - 1];
+    const last = ray.cells[ray.cells.length - 1];
     let d = p.source.dir;
-    { let i = p.source.cell; for (const c of tr.cells) { i = c; const m = st.marks[i]; d = m === 1 ? [1, 0, 3, 2][d] : m === 2 ? [3, 2, 1, 0][d] : d; } }
+    { let i = p.source.cell; for (const c of ray.cells) { i = c; const m = st.marks[i]; d = m === 1 ? [1, 0, 3, 2][d] : m === 2 ? [3, 2, 1, 0][d] : d; } }
     const [lx, ly] = center(last);
     pts.push([lx + DC[d] * cellW * 0.8, ly + DR[d] * cellW * 0.8]);
   }
@@ -216,7 +224,7 @@ function Mirrors({ s, width, onPlay, tap }: BoardProps) {
             return (
               <G key={i}>
                 <Rect x={x - cellW / 2 + 1.5} y={y - cellW / 2 + 1.5} width={cellW - 3} height={cellW - 3} rx={6} fill={ch === '#' ? '#080914' : T.dark2} stroke={hi ? T.moon : 'none'} strokeWidth={2} />
-                {ch === 'T' ? <Circle cx={x} cy={y} r={cellW * 0.22} fill={tr.hits.has(i) ? T.amber : '#141833'} stroke={tr.hits.has(i) ? '#FFE6B0' : '#5a62a8'} strokeWidth={2} /> : null}
+                {ch === 'T' ? <Circle cx={x} cy={y} r={cellW * 0.22} fill={ray.hits.has(i) ? T.amber : '#141833'} stroke={ray.hits.has(i) ? '#FFE6B0' : '#5a62a8'} strokeWidth={2} /> : null}
               </G>
             );
           })}
@@ -230,7 +238,7 @@ function Mirrors({ s, width, onPlay, tap }: BoardProps) {
         </Svg>
         {Array.from({ length: p.rows * p.columns }, (_, i) => (
           <Pressable key={i} disabled={p.cells[i] !== '.'} accessibilityRole="button"
-            accessibilityLabel={`Ligne ${Math.floor(i / p.columns) + 1}, colonne ${(i % p.columns) + 1} : ${p.cells[i] === '#' ? 'obstacle' : p.cells[i] === 'T' ? (tr.hits.has(i) ? 'cible éclairée' : 'cible') : st.marks[i] === 1 ? 'miroir /' : st.marks[i] === 2 ? 'miroir \\' : 'vide'}`}
+            accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [Math.floor(i / p.columns) + 1, (i % p.columns) + 1])} : ${tr(p.cells[i] === '#' ? 'obstacle' : p.cells[i] === 'T' ? (ray.hits.has(i) ? 'cible éclairée' : 'cible') : st.marks[i] === 1 ? 'miroir /' : st.marks[i] === 2 ? 'miroir \\' : 'vide')}`}
             onPress={() => { tap(); onPlay(e.touch(p, st, i)); }}
             style={{ position: 'absolute', left: pad + (i % p.columns) * cellW, top: pad + Math.floor(i / p.columns) * cellW, width: cellW, height: cellW }} />
         ))}
@@ -256,7 +264,7 @@ function Inquiries({ s, onPlay, tap }: BoardProps) {
         {p.clues.map((c, i) => {
           const crossed = st.crossed.includes(i), hi = hasCell(focus, i, 0);
           return (
-            <Pressable key={i} accessibilityRole="button" accessibilityLabel={`Indice ${i + 1} : ${clueText(c, p)}${crossed ? ', barré' : ''}`} onPress={() => { tap(); strike(i); }}
+            <Pressable key={i} accessibilityRole="button" accessibilityLabel={tr('Indice {0} : {1}', [i + 1, clueText(c, p)]) + (crossed ? tr(', barré') : '')} onPress={() => { tap(); strike(i); }}
               style={{ flexDirection: 'row', gap: 8, paddingVertical: 6, paddingHorizontal: 6, borderRadius: 10, borderWidth: 1, borderColor: hi ? (s.error ? T.coral : T.moon) : 'transparent' }}>
               <Text style={{ color: T.tx3, width: 20, fontWeight: '700' }}>{i + 1}.</Text>
               <Text style={{ flex: 1, color: crossed ? T.tx3 : T.tx, fontSize: 15, lineHeight: 20, textDecorationLine: crossed ? 'line-through' : 'none' }}>{clueText(c, p)}</Text>
@@ -267,13 +275,13 @@ function Inquiries({ s, onPlay, tap }: BoardProps) {
       <View style={[box, { padding: 10, gap: 8 }]}>
         {p.people.map((who, i) => (
           <View key={i} style={{ gap: 6 }}>
-            <Text style={{ color: T.tx, fontWeight: '700', fontSize: 15 }}>{cap(PEOPLE[who])}</Text>
+            <Text style={{ color: T.tx, fontWeight: '700', fontSize: 15 }}>{cap(tr(PEOPLE[who]))}</Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {(['object', 'place'] as const).map((kind) => {
                 const v = st[kind][i];
-                const label = v === null ? (kind === 'object' ? 'Objet ?' : 'Lieu ?') : kind === 'object' ? cap(OBJECTS[p.objects[v]]) : cap(PLACES[p.places[v]]);
+                const label = v === null ? (kind === 'object' ? tr('Objet ?') : tr('Lieu ?')) : kind === 'object' ? cap(tr(OBJECTS[p.objects[v]])) : cap(tr(PLACES[p.places[v]]));
                 return (
-                  <Pressable key={kind} accessibilityRole="button" accessibilityLabel={`${cap(PEOPLE[who])}, ${kind === 'object' ? 'objet' : 'lieu'} : ${v === null ? 'non choisi' : label}. Toucher pour changer.`}
+                  <Pressable key={kind} accessibilityRole="button" accessibilityLabel={`${cap(tr(PEOPLE[who]))}, ${kind === 'object' ? tr('objet') : tr('lieu')} : ${v === null ? tr('non choisi') : label}. ${tr('Toucher pour changer.')}`}
                     onPress={() => { tap(); cycle(kind, i); }}
                     style={{ flex: 1, height: 40, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: v === null ? T.line : T.moon, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 }}>
                     <Text numberOfLines={1} adjustsFontSizeToFit style={{ color: v === null ? T.tx2 : T.tx, fontSize: 14 }}>{label}</Text>
@@ -354,7 +362,7 @@ function Marquetry({ s, width, onPlay, tap }: BoardProps) {
         {p.pieces.map((shape, i) => {
           const placed = !!st.placed[i];
           return (
-            <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected: sel === i }} accessibilityLabel={`Pièce ${i + 1}${placed ? ', posée' : ''}`} onPress={() => choose(i)}
+            <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected: sel === i }} accessibilityLabel={tr('Pièce {0}', [i + 1]) + (placed ? tr(', posée') : '')} onPress={() => choose(i)}
               style={{ minWidth: 58, height: 58, padding: 6, borderRadius: 12, backgroundColor: T.s1, borderWidth: sel === i ? 2 : 1, borderColor: sel === i ? T.moon : T.line, alignItems: 'center', justifyContent: 'center', opacity: placed && sel !== i ? 0.35 : 1 }}>
               <PieceIcon shape={sel === i ? orientation(shape, rot) : shape} color={PIECE_COLORS[i % PIECE_COLORS.length]} size={40} />
             </Pressable>

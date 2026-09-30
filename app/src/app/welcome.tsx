@@ -17,13 +17,14 @@ import { T, type } from '../ui/theme';
 import { WORLD } from '../game/catalog';
 import { infoOf } from '../game/views';
 import { look } from '../game/rewards';
+import { tr, translated } from '../i18n';
 
-const TEXTS = ['Vesper s’est éteinte.', 'Chaque énigme rallume une lumière.', 'Nilo t’accompagne.'];
-const SUBS = [
+const TEXTS = translated(['Vesper s’est éteinte.', 'Chaque énigme rallume une lumière.', 'Nilo t’accompagne.']);
+const SUBS = translated([
   'Une ville suspendue entre deux crépuscules. Son Allumeur a disparu.',
   'Résous un casse-tête : une lanterne s’allume, la ville se souvient.',
   'Il porte la dernière flamme de Vesper. Il t’aidera, sans jamais te presser.',
-];
+]);
 export const TUTORIAL_LANTERN = 'phare.b1.r1.1';
 
 function views(mode: 'dark' | 'phare'): DistrictView[] {
@@ -56,13 +57,13 @@ export default function Welcome() {
 
   if (page === -1) {
     return (
-      <Pressable style={{ flex: 1, backgroundColor: '#05060f', alignItems: 'center', justifyContent: 'center', gap: 18 }} onPress={() => setPage(0)} accessibilityLabel="Toucher pour continuer">
+      <Pressable style={{ flex: 1, backgroundColor: '#05060f', alignItems: 'center', justifyContent: 'center', gap: 18 }} onPress={() => setPage(0)} accessibilityLabel={tr('Toucher pour continuer')}>
         <Animated.View style={{ opacity: fade, alignItems: 'center', gap: 18 }}>
           <Nilo size={180} look={look(state)} />
-          <Text style={[type.display, { fontSize: 48, lineHeight: 52 }]}>Lampion</Text>
-          <Text style={[type.dialogue, { color: T.gold }]}>Chaque énigme rallume une lumière.</Text>
+          <Text style={[type.display, { fontSize: 48, lineHeight: 52 }]}>{tr('Lampion')}</Text>
+          <Text style={[type.dialogue, { color: T.gold }]}>{tr('Chaque énigme rallume une lumière.')}</Text>
         </Animated.View>
-        <Text style={[type.foot, { position: 'absolute', bottom: 36, opacity: 0.6 }]}>Touchez pour continuer</Text>
+        <Text style={[type.foot, { position: 'absolute', bottom: 36, opacity: 0.6 }]}>{tr('Touchez pour continuer')}</Text>
       </Pressable>
     );
   }
@@ -81,8 +82,8 @@ export default function Welcome() {
         <View style={{ flexDirection: 'row', gap: 6, marginVertical: 6 }}>
           {[0, 1, 2].map((k) => <View key={k} style={{ width: k === page ? 22 : 8, height: 8, borderRadius: 4, backgroundColor: k === page ? T.amber : T.line }} />)}
         </View>
-        {page < 2 ? <Button title="Continuer" onPress={() => setPage(page + 1)} /> : <Button title="Allumer la première lanterne" onPress={start} />}
-        <Button title="Passer" kind="ghost" onPress={start} />
+        {page < 2 ? <Button title={tr('Continuer')} onPress={() => setPage(page + 1)} /> : <Button title={tr('Allumer la première lanterne')} onPress={start} />}
+        <Button title={tr('Passer')} kind="ghost" onPress={start} />
       </View>
     </Screen>
   );

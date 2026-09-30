@@ -19,6 +19,7 @@ import { achievementContext, COSMETICS, look } from '../game/rewards';
 import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoom, roomName } from '../game/views';
 import { WORLD } from '../game/catalog';
 import { followUps } from './success';
+import { tr } from '../i18n';
 
 const kindOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step ?? 0))] ?? '').split(':')[0];
 const idOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step ?? 0))] ?? '').split(':')[1] ?? '';
@@ -50,14 +51,14 @@ export default function Found() {
   };
 
   let body: React.ReactNode = null;
-  let buttons: React.ReactNode = <Button title="Continuer" onPress={next} />;
+  let buttons: React.ReactNode = <Button title={tr('Continuer')} onPress={next} />;
 
   if (kind === 'object') {
     const at = locateRoom(id);
     if (at) {
       const info = infoOf(at.district);
       const obj = info.buildings[at.buildingIndex].rooms[at.index].object;
-      const where = at.room.lanterns.length === 16 ? 'Le Grenier' : `Salle ${at.index + 1} · ${roomName(at.district, at.buildingIndex, at.index)}`;
+      const where = at.room.lanterns.length === 16 ? tr('Le Grenier') : tr('Salle {0} · {1}', [at.index + 1, roomName(at.district, at.buildingIndex, at.index)]);
       if (!pickedHere) {
         // The room is lit: its object glints somewhere in the scenery. The player finds it.
         body = (
@@ -67,14 +68,14 @@ export default function Found() {
               <Icon name="star" size={56} color={T.gold} sw={1.2} />
             </View>
             <Text style={[type.cap, { color: T.gold }]}>{where}</Text>
-            <Text style={[type.title1, { textAlign: 'center' }]}>La salle est éclairée</Text>
-            <Text style={[type.sub, { maxWidth: 320, textAlign: 'center' }]}>Maintenant que tout est allumé, quelque chose brille dans le décor. Retrouve l’objet caché.</Text>
+            <Text style={[type.title1, { textAlign: 'center' }]}>{tr('La salle est éclairée')}</Text>
+            <Text style={[type.sub, { maxWidth: 320, textAlign: 'center' }]}>{tr('Maintenant que tout est allumé, quelque chose brille dans le décor. Retrouve l’objet caché.')}</Text>
           </>
         );
         buttons = (
           <>
-            <Button title="Chercher l’objet" icon="star" onPress={() => router.replace({ pathname: '/room/[id]', params: { id, search: '1', step: String(i) } })} />
-            <Button title="Plus tard" kind="ghost" onPress={next} />
+            <Button title={tr('Chercher l’objet')} icon="star" onPress={() => router.replace({ pathname: '/room/[id]', params: { id, search: '1', step: String(i) } })} />
+            <Button title={tr('Plus tard')} kind="ghost" onPress={next} />
           </>
         );
       } else {
@@ -86,7 +87,7 @@ export default function Found() {
               <SvgXml xml={objectSvg(obj.name, T.gold, 1.4)} width={96} height={96} />
             </View>
             <Text style={[type.cap, { color: T.gold }]}>{where}</Text>
-            <Text style={type.title1}>Objet trouvé</Text>
+            <Text style={type.title1}>{tr('Objet trouvé')}</Text>
             <Text style={[type.title3, { textAlign: 'center' }]}>{obj.name}</Text>
             <Text style={[type.dialogue, { maxWidth: 320, textAlign: 'center', color: T.tx2 }]}>{obj.story}</Text>
             <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}><ShardPill n="+20" /><Pill icon="book">Carnet · {profile.picked.length} / {allRooms().length}</Pill></View>
@@ -104,7 +105,7 @@ export default function Found() {
       body = (
         <>
           <Nilo size={150} mood="wonder" look={look(state)} />
-          <Text style={[type.cap, { color: T.gold }]}>Bâtiment entièrement éclairé</Text>
+          <Text style={[type.cap, { color: T.gold }]}>{tr('Bâtiment entièrement éclairé')}</Text>
           <Text style={[type.title1, { textAlign: 'center' }]}>{buildingName(at.district, at.index)}</Text>
           <Text style={[type.dialogue, { textAlign: 'center' }]}>{infoOf(at.district).buildings[at.index].residentAwake}</Text>
           <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -113,7 +114,7 @@ export default function Found() {
           </View>
         </>
       );
-      if (reward) buttons = (<><Button title={`Porter : ${reward.name}`} onPress={() => { equip(reward.slot, reward.id); next(); }} /><Button title="Plus tard" kind="ghost" onPress={next} /></>);
+      if (reward) buttons = (<><Button title={`Porter : ${reward.name}`} onPress={() => { equip(reward.slot, reward.id); next(); }} /><Button title={tr('Plus tard')} kind="ghost" onPress={next} /></>);
     }
   }
 
@@ -125,7 +126,7 @@ export default function Found() {
         <View style={{ width: width - 32, height: 200, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: true, lit: 1 })), true)} width={width - 32} height={200} />
         </View>
-        <Text style={[type.cap, { color: info.hue }]}>Quartier entièrement éclairé</Text>
+        <Text style={[type.cap, { color: info.hue }]}>{tr('Quartier entièrement éclairé')}</Text>
         <Text style={[type.title1, { textAlign: 'center' }]}>{info.name}</Text>
         {info.keeper ? <Text style={[type.dialogue, { textAlign: 'center' }]}>{info.keeper.name} se réveille. {info.keeper.line}</Text> : null}
         <ShardPill n="+100" />
@@ -139,12 +140,12 @@ export default function Found() {
     if (letter) body = (
       <>
         <SvgXml xml={letterArtXml()} width={200} height={150} />
-        <Text style={[type.cap, { color: T.gold }]}>Lettre de l’Allumeur</Text>
+        <Text style={[type.cap, { color: T.gold }]}>{tr('Lettre de l’Allumeur')}</Text>
         <Text style={type.title1}>{letter.title}</Text>
         <Text style={[type.dialogue, { textAlign: 'center', maxWidth: 340 }]}>« {letter.text} »</Text>
       </>
     );
-    if (steps[i + 1]?.startsWith('ending')) buttons = <Button title="Monter au sommet du Phare" icon="light" onPress={next} />;
+    if (steps[i + 1]?.startsWith('ending')) buttons = <Button title={tr('Monter au sommet du Phare')} icon="light" onPress={next} />;
   }
 
   if (kind === 'district') {
@@ -156,7 +157,7 @@ export default function Found() {
         <View style={{ width: width - 32, height: 220, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: bi === 0, lit: 0.15 })), false)} width={width - 32} height={220} />
         </View>
-        <Text style={[type.cap, { color: info.hue }]}>Nouveau quartier</Text>
+        <Text style={[type.cap, { color: info.hue }]}>{tr('Nouveau quartier')}</Text>
         <Text style={[type.display, { fontSize: 34, lineHeight: 40, textAlign: 'center' }]}>{info.name}</Text>
         <Text style={[type.dialogue, { color: T.tx2 }]}>{info.tagline}</Text>
         <Text style={[type.sub, { textAlign: 'center' }]}>{families.length} familles de casse-têtes t’y attendent.</Text>
@@ -164,8 +165,8 @@ export default function Found() {
     );
     buttons = (
       <>
-        <Button title="Entrer" onPress={() => { router.dismissTo('/'); router.push({ pathname: '/district/[id]', params: { id: d.id === 'grenier' ? 'phare' : d.id } }); }} />
-        {i + 1 < steps.length ? <Button title="Continuer" kind="ghost" onPress={next} /> : <Button title="Plus tard" kind="ghost" onPress={() => router.dismissTo('/')} />}
+        <Button title={tr('Entrer')} onPress={() => { router.dismissTo('/'); router.push({ pathname: '/district/[id]', params: { id: d.id === 'grenier' ? 'phare' : d.id } }); }} />
+        {i + 1 < steps.length ? <Button title={tr('Continuer')} kind="ghost" onPress={next} /> : <Button title={tr('Plus tard')} kind="ghost" onPress={() => router.dismissTo('/')} />}
       </>
     );
   }

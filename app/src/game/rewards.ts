@@ -1,6 +1,7 @@
 // Achievements (GAME_DESIGN § 9) and cosmetics (§ 11), computed from the
 // real game state. Nothing here is stored twice: an achievement is "done"
 // because the state says so; its shards are credited once (transaction id).
+import { translated } from '../i18n';
 import { GameState, isClairvoyant } from '../core/game/state';
 import { Progression } from '../core/game/progression';
 import { buildingLanterns, districtLanterns, Lantern } from '../core/game/world';
@@ -42,7 +43,7 @@ const districtDone = (id: string, name: string, title: string): Achievement => (
   progress: ({ s, p }) => { const d = WORLD.districts.find((x) => x.id === id)!; const all = districtLanterns(d); return [p.lights(all, s), all.length]; },
 });
 
-export const ACHIEVEMENTS: Achievement[] = [
+const ACHIEVEMENTS_FR: Achievement[] = [
   // Exploration
   { id: 'first', name: 'Première lueur', description: 'Allume ta première lanterne.', reward: 10, progress: ({ s }) => [Math.min(1, solvedLanterns(s).length), 1] },
   districtDone('phare', 'le Phare', 'Gardien du Phare'),
@@ -94,6 +95,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'clumsy', name: 'Maladroit', description: 'Un succès caché. On dit qu’il a un chapeau.', reward: 15, hidden: true, progress: ({ profile }) => [Math.min(1, profile.hatDrops), 1] },
   { id: 'melomane', name: 'Mélomane', description: 'Écoute l’ambiance de 5 lieux de Vesper.', reward: 15, progress: ({ profile }) => [Math.min(5, profile.themes.length), 5] },
 ];
+/** Achievements, read in the current language. */
+export const ACHIEVEMENTS = translated(ACHIEVEMENTS_FR);
 
 export function achievementContext(s: GameState, p: Progression, profile: Profile): Ctx {
   const solvedByFamily: Record<string, Lantern[]> = {};
@@ -114,7 +117,7 @@ const lit = (district: string) => ({ s, p }: Ctx) => { const d = WORLD.districts
 const building = (id: string) => ({ s, p }: Ctx) => { for (const d of WORLD.districts) for (const b of d.buildings) if (b.id === id) { const all = buildingLanterns(b); return p.lights(all, s) === all.length; } return false; };
 const ach = (id: string) => (c: Ctx) => { const a = ACHIEVEMENTS.find((x) => x.id === id)!; const [n, t] = a.progress(c); return n >= t; };
 
-export const COSMETICS: Cosmetic[] = [
+const COSMETICS_FR: Cosmetic[] = [
   { id: 'flame.amber', slot: 'flame', name: 'Ambre', price: 0, color: '#F4B45E' },
   { id: 'flame.moon', slot: 'flame', name: 'Clair de lune', price: 0, color: '#BFE6F0' },
   { id: 'flame.ember', slot: 'flame', name: 'Braise', price: 0, color: '#E8744A' },
@@ -157,8 +160,10 @@ export const COSMETICS: Cosmetic[] = [
   { id: 'comp.moth', slot: 'comp', name: 'Papillon de nuit', earn: { text: 'Succès « Clairvoyant »', when: ach('clairvoyant') } },
   { id: 'comp.comet', slot: 'comp', name: 'Comète miniature', earn: { text: 'Succès « Astronome » : 10 Astres', when: ach('astronomer') } },
 ];
+/** Nilo's wardrobe, read in the current language. */
+export const COSMETICS = translated(COSMETICS_FR);
 
-export const SLOT_NAMES: Record<Slot, string> = { flame: 'Flamme', hat: 'Tête', scarf: 'Écharpe', comp: 'Compagnon' };
+export const SLOT_NAMES: Record<Slot, string> = translated({ flame: 'Flamme', hat: 'Tête', scarf: 'Écharpe', comp: 'Compagnon' });
 export const DEFAULT_LOOK: Record<Slot, string> = { flame: 'flame.amber', hat: 'hat.none', scarf: 'scarf.none', comp: 'comp.none' };
 
 export function owns(c: Cosmetic, s: GameState, ctx: Ctx): boolean {

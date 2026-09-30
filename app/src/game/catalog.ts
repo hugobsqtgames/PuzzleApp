@@ -1,5 +1,6 @@
 // The game's content: the generated pack (world + puzzles + daily puzzles)
 // and the six playable families, bound to their core engines.
+import { translateFields, translated } from '../i18n';
 import pack from '../content/generated/pack.json';
 import { PuzzleFamily, Tier } from '../core/puzzlekit/types';
 import { SeededRNG } from '../core/puzzlekit/rng';
@@ -79,8 +80,10 @@ export const FAMILIES: Record<Code, FamilyInfo> = {
   PA: { code: 'PA', name: 'Passerelles', answer: false, rule: 'Relie les îlots par des passerelles qui ne se croisent pas. Chaque nombre dit combien en partent.', engine: new BridgesFamily(), achievement: 'Pontonnier' },
   SC: { code: 'SC', name: 'Sceau', answer: true, rule: 'Chaque salle éclairée cache un chiffre dans son décor. Retrouve-les pour ouvrir le sceau.', engine: new SealFamily(), achievement: 'Gardien des sceaux' },
 };
+// Names, rules and achievements read in the current language.
+for (const f of Object.values(FAMILIES)) translateFields(f, ['name', 'rule', 'achievement']);
 
-export const TIER_NAMES = ['Étincelle', 'Lueur', 'Flamme', 'Brasier', 'Fanal', 'Astre'] as const;
+export const TIER_NAMES: readonly string[] = translated(['Étincelle', 'Lueur', 'Flamme', 'Brasier', 'Fanal', 'Astre']);
 /** Shards for a first light, by tier (the economy's own table). */
 export const REWARDS = STANDARD_ECONOMY.tierRewards;
 

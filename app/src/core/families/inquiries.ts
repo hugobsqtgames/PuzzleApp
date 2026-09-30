@@ -6,6 +6,7 @@
  */
 import { SeededRNG } from '../puzzlekit/rng';
 import { CORRECT, Hint, HintLevel, INCOMPLETE, PuzzleFamily, SolveReport, TierThresholds, ValidationResult, cell, clampScore, tpl } from '../puzzlekit/types';
+import { tr } from '../../i18n';
 
 export type Clue =
   | { kind: 'has'; p: number; o: number }
@@ -186,14 +187,14 @@ export class InquiriesFamily implements PuzzleFamily<InquiriesPuzzle, InquiriesS
 /** A clue as a sentence (French). */
 export function clueText(c: Clue, p: InquiriesPuzzle): string {
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const who = (i: number) => PEOPLE[p.people[i]], what = (i: number) => OBJECTS[p.objects[i]], where = (i: number) => PLACES[p.places[i]];
+  const who = (i: number) => tr(PEOPLE[p.people[i]]), what = (i: number) => tr(OBJECTS[p.objects[i]]), where = (i: number) => tr(PLACES[p.places[i]]);
   switch (c.kind) {
-    case 'has': return `${cap(who(c.p))} a ${what(c.o)}.`;
-    case 'hasNot': return `${cap(who(c.p))} n’a pas ${what(c.o)}.`;
-    case 'at': return `${cap(who(c.p))} est ${where(c.l)}.`;
-    case 'notAt': return `${cap(who(c.p))} n’est pas ${where(c.l)}.`;
-    case 'objectAt': return `Qui a ${what(c.o)} est ${where(c.l)}.`;
-    case 'objectNotAt': return `Qui a ${what(c.o)} n’est pas ${where(c.l)}.`;
-    case 'either': return `${cap(who(c.p))} a ${what(c.o)} ou ${what(c.o2)}.`;
+    case 'has': return tr('{0} a {1}.', [cap(who(c.p)), what(c.o)]);
+    case 'hasNot': return tr('{0} n’a pas {1}.', [cap(who(c.p)), what(c.o)]);
+    case 'at': return tr('{0} est {1}.', [cap(who(c.p)), where(c.l)]);
+    case 'notAt': return tr('{0} n’est pas {1}.', [cap(who(c.p)), where(c.l)]);
+    case 'objectAt': return tr('Qui a {0} est {1}.', [what(c.o), where(c.l)]);
+    case 'objectNotAt': return tr('Qui a {0} n’est pas {1}.', [what(c.o), where(c.l)]);
+    case 'either': return tr('{0} a {1} ou {2}.', [cap(who(c.p)), what(c.o), what(c.o2)]);
   }
 }
