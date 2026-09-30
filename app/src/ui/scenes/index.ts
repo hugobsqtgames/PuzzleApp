@@ -1,6 +1,7 @@
 // Room scenes: composition. Each room of Vesper has its own hand-placed
 // scene (rooms-*.ts): architecture, props, where its lanterns sit, where its
 // object hides and where the building's seal digit appears once lit.
+import { SVG_SERIF_ITALIC } from '../theme';
 import { G, W, H, Anchor, makeG, r1 } from './kit';
 import { archXml, archAnchors, Arch, ArchOpts } from './arch';
 import { Prop, PO } from './props1';
@@ -180,7 +181,7 @@ export function sceneXml(roomId: string, n: number, o: SceneOpts): string {
   const sp = spotsOf(roomId, n);
   if (o.object && !o.objectFound) s += objectInScene(o.object, sp.hide[0], sp.hide[1], 18, glow === '#F4B45E' ? '#FFD98E' : '#FFE6B0', o.complete ? 0.55 : 0.12);
   if (o.digit != null) {
-    s += `<g opacity=".85"><circle cx="${sp.secret[0]}" cy="${sp.secret[1]}" r="15" fill="#FFD98E" opacity=".12"/><text x="${sp.secret[0]}" y="${r1(sp.secret[1] + 7)}" text-anchor="middle" font-family="Georgia,serif" font-size="21" font-style="italic" fill="#FFD98E">${o.digit}</text></g>`;
+    s += `<g opacity=".85"><circle cx="${sp.secret[0]}" cy="${sp.secret[1]}" r="15" fill="#FFD98E" opacity=".12"/><text x="${sp.secret[0]}" y="${r1(sp.secret[1] + 7)}" text-anchor="middle" font-family="${SVG_SERIF_ITALIC}" font-size="21" fill="#FFD98E">${o.digit}</text></g>`;
   }
   for (const [p, x, y, sc, po] of spec.front ?? []) s += p(g, x, y, sc, po).s;
   s += `<rect width="${W}" height="${H}" fill="url(#${vid})"/>`;

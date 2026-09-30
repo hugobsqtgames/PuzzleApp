@@ -2,7 +2,7 @@
 // for react-native-svg's SvgXml. Shapes, colours and numbers are the
 // prototype's; the Horlogerie drawings are generalised to every district
 // (roof styles, colour, sleeping keeper) and every building and room.
-import { T } from './theme';
+import { T, SVG_SERIF_BOLD, SVG_SERIF_ITALIC } from './theme';
 import { COSMETICS } from '../game/rewards';
 
 import { hex2rgb, mix, rng } from './color';
@@ -118,7 +118,7 @@ export function niloParts(mood: Mood = 'neutral', look: Look = {}): NiloParts {
   }
   const sparkle = mood === 'joy' || mood === 'wonder'
     ? `<g fill="${T.gold}"><path d="M120 14l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z"/><path d="M90 12l.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z"/><path d="M124 44l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></g>` : '';
-  const zz = mood === 'sleep' ? `<text x="84" y="40" fill="${T.tx2}" font-family="Georgia,serif" font-style="italic" font-size="12">z</text><text x="92" y="30" fill="${T.tx2}" font-family="Georgia,serif" font-style="italic" font-size="9">z</text>` : '';
+  const zz = mood === 'sleep' ? `<text x="84" y="40" fill="${T.tx2}" font-family="${SVG_SERIF_ITALIC}" font-size="12">z</text><text x="92" y="30" fill="${T.tx2}" font-family="${SVG_SERIF_ITALIC}" font-size="9">z</text>` : '';
   const fs = M.fs;
   const svg = (inner: string) => `<svg viewBox="0 0 132 120">${inner}</svg>`;
   return {
@@ -254,7 +254,7 @@ export function mapXml(districts: DistrictView[]): string {
     if (d.state === 'current') s += `<circle cx="${cx}" cy="${cy - 40 * sc}" r="${70 * sc}" fill="none" stroke="#F4B45E" stroke-width="1.5" opacity=".6"/>`;
     s += `<g transform="translate(${cx},${cy + 26})">
         <rect x="-86" y="-15" width="172" height="44" rx="14" fill="${d.state === 'locked' ? '#11142a' : '#171A2E'}" stroke="${d.state === 'current' ? '#F4B45E' : '#2E3360'}" opacity=".94"/>
-        <text x="0" y="1" text-anchor="middle" fill="${d.state === 'locked' ? '#9CA2C6' : '#EFE8D8'}" font-family="Georgia,serif" font-size="14.5" font-weight="600">${esc(d.name)}</text>
+        <text x="0" y="1" text-anchor="middle" fill="${d.state === 'locked' ? '#9CA2C6' : '#EFE8D8'}" font-family="${SVG_SERIF_BOLD}" font-size="14.5">${esc(d.name)}</text>
         <text x="0" y="19" text-anchor="middle" fill="${d.state === 'locked' ? '#7A80A8' : d.hue}" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="600">${esc(d.label)}</text>
       </g>`;
   }
@@ -279,7 +279,7 @@ export const PANORAMA: Record<string, [number, number, number, Roof][]> = {
 /** Sleeping (or awake) keeper of the district, at the foot of the buildings. */
 function keeperArt(district: string, awake: boolean, hue: string): string {
   const eyes = awake ? `<circle cx="1" cy="15" r="1.6" fill="#FFE6B0"/>` : `<path d="M-1 15q2 2 4 0" stroke="#9CA2C6" stroke-width="1.2" fill="none"/>`;
-  const zz = awake ? '' : `<text x="30" y="2" fill="#9CA2C6" font-style="italic" font-family="Georgia,serif" font-size="11">z</text><text x="37" y="-6" fill="#9CA2C6" font-style="italic" font-family="Georgia,serif" font-size="8">z</text>`;
+  const zz = awake ? '' : `<text x="30" y="2" fill="#9CA2C6" font-family="${SVG_SERIF_ITALIC}" font-size="11">z</text><text x="37" y="-6" fill="#9CA2C6" font-family="${SVG_SERIF_ITALIC}" font-size="8">z</text>`;
   const bodies: Record<string, string> = {
     // Heron with glasses
     biblio: `<ellipse cx="18" cy="22" rx="16" ry="10" fill="#5a6488"/><path d="M8 18q-6-16 2-20" stroke="#5a6488" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="8" cy="-2" r="5" fill="#6b76a0"/><path d="M4 -2l-10 3" stroke="#D8B56A" stroke-width="2"/><circle cx="9" cy="-2" r="2.5" fill="none" stroke="#D8B56A" stroke-width="1"/>`,
@@ -348,7 +348,7 @@ export function coupeXml(hue: string, cells: RoomCell[], rects: CoupeRect[]): st
         if (on) s += `<circle cx="${cx}" cy="${cy}" r="8" fill="#F4B45E" opacity=".18"/>`;
       }
     }
-    s += `<text x="${r.x + 16}" y="${r.y + 28}" fill="${c.state === 'locked' ? '#7A80A8' : '#EFE8D8'}" font-family="Georgia,serif" font-size="16" font-weight="600">${esc(c.label)}</text>
+    s += `<text x="${r.x + 16}" y="${r.y + 28}" fill="${c.state === 'locked' ? '#7A80A8' : '#EFE8D8'}" font-family="${SVG_SERIF_BOLD}" font-size="16">${esc(c.label)}</text>
       <text x="${r.x + 16}" y="${r.y + 47}" fill="${c.state === 'locked' ? '#7A80A8' : '#9CA2C6'}" font-family="Helvetica,Arial,sans-serif" font-size="12.5" font-weight="600">${esc(c.sub)}</text>`;
     if (c.state === 'locked') s += `<g transform="translate(${r.x + r.w - 40},${r.y + 18})" stroke="#7A80A8" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M7 10V8a4 4 0 0 1 8 0v2"/><rect x="4.5" y="10" width="13" height="10" rx="3"/></g>`;
     if (c.key && c.state !== 'locked') s += `<g transform="translate(${r.x + r.w - 44},${r.y + 50})"><circle cx="12" cy="12" r="16" fill="#F4B45E" opacity=".15"/><path d="M8.5 8.5a3.5 3.5 0 1 1 5.2 3.1c-1 .6-1.7 1.3-1.7 2.6v.8M12 19h.01" stroke="#F4B45E" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>`;

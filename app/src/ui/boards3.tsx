@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, GestureResponderEvent, Pressable, Text, View } from 'react-native';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
-import { T, R, ROUND, SERIF } from './theme';
+import { T, R, ROUND, SERIF_ITALIC } from './theme';
 import { Icon } from './components';
 import { glyphByKey } from './scenes/objects';
 import { CellRef } from '../core/puzzlekit/types';
@@ -393,7 +393,7 @@ function Seal({ s, width, onPlay, tap, visitRoom }: BoardProps) {
           return (
             <View key={id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, paddingHorizontal: 6 }}>
               <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,217,142,0.1)', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontFamily: SERIF, fontStyle: 'italic', fontSize: 18, color: T.gold }}>?</Text>
+                <Text style={{ fontFamily: SERIF_ITALIC, fontSize: 18, color: T.gold }}>?</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>Salle {i + 1}</Text>

@@ -1,18 +1,21 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { Stack } from 'expo-router';
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { GameProvider, useStore } from '../game/store';
 import { setHapticsEnabled } from '../ui/components';
-import { T } from '../ui/theme';
+import { FONTS, T } from '../ui/theme';
 
 function Navigator() {
   const { ready, settings } = useStore();
+  // The title font is bundled; if it ever fails to load, the system serif stands in.
+  const [fontsLoaded, fontError] = useFonts(FONTS);
   useEffect(() => { setHapticsEnabled(settings.haptics); }, [settings.haptics]);
-  // Until the save is read, only the night: no flash of an empty game.
-  if (!ready) return <View style={{ flex: 1, backgroundColor: '#05060f' }} />;
+  // Until the save and the font are read, only the night: no flash of an empty game.
+  if (!ready || (!fontsLoaded && !fontError)) return <View style={{ flex: 1, backgroundColor: '#05060f' }} />;
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: T.bg }, animation: 'slide_from_right', animationDuration: 320 }}>
       <Stack.Screen name="index" options={{ animation: 'fade' }} />

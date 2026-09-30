@@ -45,7 +45,8 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 160
         }
-      ]
+      ],
+      "expo-font"
     ],
     "scheme": "lampion",
     "backgroundColor": "#0D0F1E"

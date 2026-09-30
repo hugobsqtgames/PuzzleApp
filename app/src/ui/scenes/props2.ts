@@ -1,4 +1,5 @@
 // Scene props, part 2: glasshouse, pond, floating market.
+import { SVG_SERIF } from '../theme';
 import { m, acc, flame, r1 } from './kit';
 import { Prop, mk } from './props1';
 
@@ -129,7 +130,7 @@ export const bigScale: Prop = (g, x, y, s = 1, o) => mk(x, y, s, o, `<path d="M0
 
 export const lamppost: Prop = (g, x, y, s = 1, o) => mk(x, y, s, o, `<path d="M0 0v-200M-14 0h28" stroke="${m(g, 'iron')}" stroke-width="6"/><path d="M0 -200q0 -20 30 -20" stroke="${m(g, 'iron')}" stroke-width="5" fill="none"/><path d="M20 -220h20l-4 30h-12z" fill="${m(g, 'ironL')}"/>`, [[30, -190, 'le réverbère']]);
 
-export const booth: Prop = (g, x, y, s = 1, o) => mk(x, y, s, o, `<rect x="-40" y="-140" width="80" height="140" fill="${m(g, 'wood')}"/><path d="M-50 -140l50 -30 50 30z" fill="${m(g, 'velvet')}"/><rect x="-26" y="-110" width="52" height="40" fill="#0a0c1e"/><rect x="-30" y="-70" width="60" height="6" fill="${m(g, 'woodL')}"/><text y="-148" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="${g.c('#262B52', '#FFD98E')}">BILLETS</text>`, [[0, -186, 'la guérite'], [20, -84, 'le guichet']]);
+export const booth: Prop = (g, x, y, s = 1, o) => mk(x, y, s, o, `<rect x="-40" y="-140" width="80" height="140" fill="${m(g, 'wood')}"/><path d="M-50 -140l50 -30 50 30z" fill="${m(g, 'velvet')}"/><rect x="-26" y="-110" width="52" height="40" fill="#0a0c1e"/><rect x="-30" y="-70" width="60" height="6" fill="${m(g, 'woodL')}"/><text y="-148" text-anchor="middle" font-family="${SVG_SERIF}" font-size="10" fill="${g.c('#262B52', '#FFD98E')}">BILLETS</text>`, [[0, -186, 'la guérite'], [20, -84, 'le guichet']]);
 
 export const fishCrate: Prop = (g, x, y, s = 1, o) => mk(x, y, s, o, `<rect x="-40" y="-30" width="80" height="30" fill="${m(g, 'woodL')}"/><path d="M-40 -15h80" stroke="${m(g, 'wood')}" stroke-width="2"/>${[-24, 0, 24].map((dx, i) => `<path d="M${dx - 12} -32q12 -10 24 0q-12 10 -24 0z" fill="${acc(g, i + 3)}"/>`).join('')}`, [[0, -52, 'la caisse de poissons']]);
 

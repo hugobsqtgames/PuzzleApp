@@ -1,6 +1,7 @@
 // Scene props, part 1: home, lighthouse, library, clockworks.
 // Every prop is drawn around a base point (feet on the floor, or centre for
 // wall pieces) and returns the places where a lantern can sit on it.
+import { SVG_SERIF } from '../theme';
 import { G, Drawn, at, m, acc, flame, r1, W } from './kit';
 
 export interface PO {
@@ -209,7 +210,7 @@ export const bigPendulum: Prop = (g, x, y, s = 1, o) => mk(x, y, s, o, `<path d=
 export const clockFace: Prop = (g, x, y, s = 1, o) => {
   let t = '';
   const R = ['XII', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
-  for (let i = 0; i < 12; i++) { const a = (i * Math.PI) / 6 - Math.PI / 2; t += `<text x="${r1(Math.cos(a) * 92)}" y="${r1(Math.sin(a) * 92 + 5)}" text-anchor="middle" font-family="Georgia,serif" font-size="15" fill="${g.c('#262B52', '#3a2a1e')}">${R[i]}</text>`; }
+  for (let i = 0; i < 12; i++) { const a = (i * Math.PI) / 6 - Math.PI / 2; t += `<text x="${r1(Math.cos(a) * 92)}" y="${r1(Math.sin(a) * 92 + 5)}" text-anchor="middle" font-family="${SVG_SERIF}" font-size="15" fill="${g.c('#262B52', '#3a2a1e')}">${R[i]}</text>`; }
   return mk(x, y, s, o, `<circle r="120" fill="${m(g, 'brass')}"/><circle r="110" fill="${m(g, 'paper')}"/>${t}<path d="M0 0L-40 -56M0 0L70 20" stroke="#1B1F3A" stroke-width="6" stroke-linecap="round"/><circle r="8" fill="#1B1F3A"/>`, [[-86, -78, 'le cadran, en haut à gauche'], [0, -140, 'le haut du cadran'], [86, 70, 'le cadran, en bas à droite']]);
 };
 
