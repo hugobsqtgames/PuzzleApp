@@ -19,6 +19,8 @@ npx expo start      # puis scanner le QR code avec Expo Go sur le téléphone
 Contenu de l'app :
 
 - **17 familles de puzzles** pour les lanternes : Interrupteurs, Cadenas, Lampes, Engrenages, Suites, Balances, Motifs, Menteurs, Fil, Miroirs, Enquêtes, Marqueterie, Carillon (mélodie à rejouer), Vitraux (filtres de couleur à déduire), Différences, Étagère (rangement par indices), Ombres (rotation sans retournement). Plus le **Sceau** des lanternes-clés : un code fait des chiffres cachés dans le décor des salles du bâtiment.
+- **Variantes** qui changent la façon de réfléchir : Carillon à rebours, Ombres « Reflet » (l'image dans un miroir), Vitraux voilés, Suites de lettres, Interrupteurs en diagonale ou à huit voisines.
+- **Répartition** vérifiée par les tests : jamais deux fois le même type de suite, au plus 4 du même type sur 20 lanternes, 8 types dès le Phare, chaque type entre 36 et 74 lanternes.
 - **101 salles, toutes dessinées différemment** (`app/src/ui/scenes/`) : 23 architectures, une centaine d'accessoires, une courte histoire par salle ; le décor s'éclaire à mesure que ses lanternes s'allument, puis révèle un chiffre et un objet caché à chercher soi-même.
 - Les 7 quartiers de Vesper et le Grenier : 1000 lanternes générées et vérifiées à l'avance par `tools/forge`, le défi du soir jusqu'à fin 2028 (puis généré sur l'appareil).
 - **Nilo vivant** : calques animés (respiration, clignements, regards, oreilles, queue, flamme), humeurs et réactions au jeu et au toucher ; respecte « Réduire les animations ».
@@ -27,7 +29,7 @@ Contenu de l'app :
 
 Images App Store : `store/iphone-6.9/` et `store/ipad-13/`, régénérables avec [`tools/store`](tools/store/README.md).
 
-Qualité : `npm test` (226 tests : puzzles, solution unique, progression, sauvegarde, scènes sans zones tactiles qui se chevauchent), `npm run typecheck`, `npx expo lint`, `npx expo-doctor`.
+Qualité : `npm test` (265 tests : puzzles et variantes, solution unique, indice « Solution » vérifié sur chacun des 1853 puzzles livrés, répartition des types, progression, sauvegarde, scènes sans zones tactiles qui se chevauchent), `npm run typecheck`, `npx expo lint`, `npx expo-doctor`.
 
 Limites actuelles : français seulement ; la police des titres est Georgia (système) ; l'identifiant `app.lampion.game` est à remplacer par le vôtre avant publication ; l'app a été testée sur le build web et par export natif, **pas encore sur un vrai iPhone**.
 

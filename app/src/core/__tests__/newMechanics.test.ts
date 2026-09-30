@@ -1,11 +1,13 @@
 import { CandidatePipeline } from '../puzzlekit/pipeline';
 import { HintLevel, PuzzleFamily } from '../puzzlekit/types';
-import { ChimesFamily } from '../families/chimes';
-import { StainedFamily, assignments } from '../families/stained';
+import { ChimesFamily, toPlay } from '../families/chimes';
+import { StainedFamily, assignments, shows } from '../families/stained';
 import { SpotFamily, changed, diffAt } from '../families/spot';
 import { ShelfFamily, holds, orders } from '../families/shelf';
 import { ShadowsFamily, mirror, sameTurned } from '../families/shadows';
 import { SealFamily, sealCode, sealDigit } from '../families/seal';
+import { SequencesFamily, termText } from '../families/sequences';
+import { SwitchesFamily } from '../families/switches';
 
 /** Common contract: accepted puzzles are valid, hints reach a solved state, bad data is refused. */
 function contract<P, S>(name: string, family: PuzzleFamily<P, S, any, any>, params: unknown, count: number, attempts: number) {
@@ -59,6 +61,65 @@ contract('shelf 5', new ShelfFamily(), { n: 5 }, 10, 2000);
 contract('shelf 6', new ShelfFamily(), { n: 6 }, 5, 3000);
 contract('shadows', new ShadowsFamily(), { cells: [5, 6], options: 4 }, 10, 3000);
 contract('shadows (near misses)', new ShadowsFamily(), { cells: [6, 7], options: 6, nearMisses: true }, 6, 6000);
+
+// Variants: the same contract holds.
+contract('chimes à rebours', new ChimesFamily(), { bells: 4, length: [4, 6], reverse: true }, 8, 100);
+contract('shadows reflet', new ShadowsFamily(), { cells: [6, 6], options: 5, nearMisses: true, reflection: true }, 6, 6000);
+contract('stained voilé', new StainedFamily(), { rows: 4, cols: 4, veiled: 3 }, 5, 4000);
+contract('suites de lettres', new SequencesFamily(), { complexity: 1, letters: true }, 8, 4000);
+contract('suites de lettres (k = 3)', new SequencesFamily(), { complexity: 3, letters: true }, 6, 4000);
+contract('interrupteurs (huit voisines)', new SwitchesFamily(), { rows: 4, columns: 4, pattern: 'ring', presses: [4, 7] }, 6, 400);
+
+describe('variants', () => {
+  test('à rebours: the melody is played from its last note', () => {
+    const f = new ChimesFamily();
+    const p = { bells: 4, melody: [0, 1, 2, 3], reverse: true };
+    expect(toPlay(p)).toEqual([3, 2, 1, 0]);
+    expect(f.validate(p, { played: [3, 2, 1, 0] }).kind).toBe('correct');
+    expect(f.validate(p, { played: [0] }).kind).toBe('invalid');
+    expect(f.fingerprint(p)).not.toBe(f.fingerprint({ bells: 4, melody: [0, 1, 2, 3] }));
+  });
+
+  test('reflet: the right option is the mirror image, a plain turn is the trap', () => {
+    const f = new ShadowsFamily();
+    const { accepted } = new CandidatePipeline(f).generate(4, { cells: [5, 6], options: 4, reflection: true }, 5n, undefined, 3000);
+    for (const a of accepted) {
+      const p = a.puzzle;
+      expect(sameTurned(mirror(p.shape), p.options[p.answer])).toBe(true);
+      p.options.forEach((o, i) => { if (i !== p.answer) expect(sameTurned(mirror(p.shape), o)).toBe(false); });
+      const trap = p.options.findIndex((o) => sameTurned(p.shape, o));
+      if (trap >= 0) {
+        const v = f.validate(p, { selected: trap, ruledOut: [] });
+        expect(v.kind === 'invalid' && v.issues[0].message.key).toBe('shadows.wrong.unflipped');
+      }
+    }
+  });
+
+  test('vitres voilées: frosted panes never decide, and the answer stays unique', () => {
+    const f = new StainedFamily();
+    const { accepted } = new CandidatePipeline(f).generate(4, { rows: 4, cols: 4, veiled: 3 }, 9n, undefined, 4000);
+    expect(accepted.length).toBe(4);
+    for (const a of accepted) {
+      const p = a.puzzle;
+      expect(p.veiled).toHaveLength(3);
+      expect(assignments(p, 2)).toHaveLength(1);
+      // Without the veils the same filters still answer: the veils only hide.
+      expect(assignments({ ...p, veiled: undefined }, 2)).toHaveLength(1);
+      expect(p.veiled!.every((i) => !shows(p, i))).toBe(true);
+    }
+  });
+
+  test('suites de lettres: terms stay between A and Z and read as letters', () => {
+    const f = new SequencesFamily();
+    const { accepted } = new CandidatePipeline(f).generate(6, { complexity: 2, letters: true }, 3n, undefined, 6000);
+    for (const a of accepted) {
+      expect([...a.puzzle.terms, ...a.puzzle.options].every((v) => v >= 1 && v <= 26)).toBe(true);
+      expect(a.puzzle.terms.map((v) => termText(a.puzzle, v)).join('')).toMatch(/^[A-Z]+$/);
+    }
+    expect(termText({ letters: true }, 1)).toBe('A');
+    expect(termText({}, 26)).toBe('26');
+  });
+});
 
 describe('rules of the new families', () => {
   test('chimes: a wrong note is reported at its place, the right prefix is incomplete', () => {

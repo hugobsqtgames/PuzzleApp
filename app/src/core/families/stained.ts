@@ -4,18 +4,22 @@
  * row and its column: red + yellow = orange, yellow + blue = green,
  * red + blue = violet. Find every filter from the colours of the panes.
  * Some filters are set in lead (given) so that one answer only is possible.
+ * Variant « vitres voilées »: some panes are frosted and show no colour; the
+ * others still leave one answer only.
  */
 import { SeededRNG } from '../puzzlekit/rng';
 import { CORRECT, Hint, HintLevel, INCOMPLETE, PuzzleFamily, SolveReport, TierThresholds, ValidationResult, cell, clampScore, tpl } from '../puzzlekit/types';
 
 export const FILTERS = [0, 1, 2, 4] as const; // none, red, yellow, blue
 
-export interface StainedPuzzle { rows: number; cols: number; target: number[]; givenRows: (number | null)[]; givenCols: (number | null)[] }
+export interface StainedPuzzle { rows: number; cols: number; target: number[]; givenRows: (number | null)[]; givenCols: (number | null)[]; veiled?: number[] }
 export interface StainedState { rowF: number[]; colF: number[] }
-export interface StainedParams { rows: number; cols: number; nonePercent?: number }
+export interface StainedParams { rows: number; cols: number; nonePercent?: number; veiled?: number }
 interface Sol { rowF: number[]; colF: number[] }
 
 const isFilter = (v: unknown): v is number => typeof v === 'number' && (FILTERS as readonly number[]).includes(v);
+/** Whether the pane at index i shows its colour. */
+export const shows = (p: StainedPuzzle, i: number) => !p.veiled?.includes(i);
 
 /** Every filter assignment matching the target (rows enumerated, columns deduced), up to `limit`. */
 export function assignments(p: StainedPuzzle, limit: number): Sol[] {
@@ -27,7 +31,7 @@ export function assignments(p: StainedPuzzle, limit: number): Sol[] {
       // For each column, the filters compatible with every pane of the column.
       const choices: number[][] = [];
       for (let c = 0; c < p.cols; c++) {
-        const opts = (p.givenCols[c] !== null ? [p.givenCols[c] as number] : [...FILTERS]).filter((f) => rowF.every((rf, rr) => (rf | f) === p.target[rr * p.cols + c]));
+        const opts = (p.givenCols[c] !== null ? [p.givenCols[c] as number] : [...FILTERS]).filter((f) => rowF.every((rf, rr) => !shows(p, rr * p.cols + c) || (rf | f) === p.target[rr * p.cols + c]));
         if (!opts.length) return;
         choices.push(opts);
       }
@@ -43,7 +47,7 @@ export function assignments(p: StainedPuzzle, limit: number): Sol[] {
     const opts = p.givenRows[r] !== null ? [p.givenRows[r] as number] : [...FILTERS];
     for (const f of opts) {
       // A row filter can only bring colours that every pane of the row has.
-      if (![...Array(p.cols).keys()].every((c) => (p.target[r * p.cols + c] & f) === f)) continue;
+      if (![...Array(p.cols).keys()].every((c) => !shows(p, r * p.cols + c) || (p.target[r * p.cols + c] & f) === f)) continue;
       rowF[r] = f; rec(r + 1);
     }
   };
@@ -83,6 +87,17 @@ export class StainedFamily implements PuzzleFamily<StainedPuzzle, StainedState, 
     }
     const given = p.givenRows.filter((x) => x !== null).length + p.givenCols.filter((x) => x !== null).length;
     if (given > Math.ceil((rows + cols) / 2)) return null;
+    if (params.veiled) {
+      // Frost panes one by one, as long as the window still has one answer only.
+      const veiled: number[] = [];
+      for (const i of rng.shuffled([...Array(rows * cols).keys()])) {
+        if (veiled.length === params.veiled) break;
+        p.veiled = [...veiled, i];
+        if (assignments(p, 2).length === 1) veiled.push(i);
+      }
+      if (veiled.length < params.veiled) return null;
+      p.veiled = veiled.sort((a, b) => a - b);
+    }
     return p;
   }
   solve(p: StainedPuzzle, limit: number): SolveReport<Sol> {
@@ -97,6 +112,8 @@ export class StainedFamily implements PuzzleFamily<StainedPuzzle, StainedState, 
     const wrong: { row: number; column: number }[] = [];
     let done = true;
     for (let r = 0; r < p.rows; r++) for (let c = 0; c < p.cols; c++) {
+      // A frosted pane says nothing: the window is right when every clear pane is.
+      if (!shows(p, r * p.cols + c)) continue;
       const now = s.rowF[r] | s.colF[c], want = p.target[r * p.cols + c];
       if (now !== want) done = false;
       if ((now & ~want) !== 0) wrong.push(cell(r, c));
@@ -107,7 +124,7 @@ export class StainedFamily implements PuzzleFamily<StainedPuzzle, StainedState, 
   }
   rate(p: StainedPuzzle): number {
     const given = p.givenRows.filter((x) => x !== null).length + p.givenCols.filter((x) => x !== null).length;
-    return clampScore(p.rows * p.cols * 3 + (p.rows + p.cols - given) * 3 - 20);
+    return clampScore(p.rows * p.cols * 3 + (p.rows + p.cols - given) * 3 + (p.veiled?.length ?? 0) * 4 - 20);
   }
   /** First line (rows first) whose filter is not the solution's. */
   private firstWrong(p: StainedPuzzle, s: StainedState) {
@@ -130,7 +147,7 @@ export class StainedFamily implements PuzzleFamily<StainedPuzzle, StainedState, 
     }
     return { level, text: tpl('stained.hint.solution'), focus: [], resultingState: { rowF: w.sol.rowF.slice(), colF: w.sol.colF.slice() } };
   }
-  fingerprint(p: StainedPuzzle): string { return `stained:${p.rows}x${p.cols}:${p.target.join('')}:${p.givenRows.map((g) => g ?? '-').join('')}:${p.givenCols.map((g) => g ?? '-').join('')}`; }
+  fingerprint(p: StainedPuzzle): string { return `stained:${p.rows}x${p.cols}:${p.target.join('')}:${p.givenRows.map((g) => g ?? '-').join('')}:${p.givenCols.map((g) => g ?? '-').join('')}${p.veiled?.length ? ':v' + p.veiled.join('.') : ''}`; }
   parse(raw: unknown): StainedPuzzle | null {
     const o = raw as Partial<StainedPuzzle> | null;
     if (!o || !Number.isInteger(o.rows) || !Number.isInteger(o.cols)) return null;
@@ -139,7 +156,12 @@ export class StainedFamily implements PuzzleFamily<StainedPuzzle, StainedState, 
     if (!Array.isArray(o.target) || o.target.length !== rows * cols || !o.target.every((v) => Number.isInteger(v) && v >= 0 && v <= 7)) return null;
     const giv = (a: unknown, n: number) => Array.isArray(a) && a.length === n && a.every((v) => v === null || isFilter(v));
     if (!giv(o.givenRows, rows) || !giv(o.givenCols, cols)) return null;
-    return { rows, cols, target: o.target.slice(), givenRows: (o.givenRows as (number | null)[]).slice(), givenCols: (o.givenCols as (number | null)[]).slice() };
+    const p: StainedPuzzle = { rows, cols, target: o.target.slice(), givenRows: (o.givenRows as (number | null)[]).slice(), givenCols: (o.givenCols as (number | null)[]).slice() };
+    if (o.veiled !== undefined) {
+      if (!Array.isArray(o.veiled) || !o.veiled.every((i) => Number.isInteger(i) && i >= 0 && i < rows * cols) || new Set(o.veiled).size !== o.veiled.length) return null;
+      if (o.veiled.length) p.veiled = o.veiled.slice();
+    }
+    return p;
   }
   equals(a: StainedPuzzle, b: StainedPuzzle): boolean { return this.fingerprint(a) === this.fingerprint(b); }
 }

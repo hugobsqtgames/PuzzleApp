@@ -7,9 +7,10 @@ import { SvgXml } from 'react-native-svg';
 
 import { roomLanternXml } from './art';
 import { HIT_H as HIT_HEIGHT, HIT_W as HIT_WIDTH, SCENE_H, SCENE_W, Slot, hideOf, placeOnScreen, roomSlotsOf, sceneFit, sceneXml } from './scenes';
-export { sceneFit };
 import { T } from './theme';
 import { useReducedMotion, useAnimatedValue } from './motion';
+
+export { sceneFit };
 
 /** Scale and offset that show the scene as large as possible without cutting a lantern. */
 function PulseRing({ size, color = T.amber }: { size: number; color?: string }) {

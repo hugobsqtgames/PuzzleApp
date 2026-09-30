@@ -19,9 +19,16 @@ export interface SequencesPuzzle {
   /** Index of the right option. */
   answer: number;
   rule: { kind: RuleKind; a: number; b: number };
+  /** Variant: the terms are letters of the alphabet (1 = A … 26 = Z). */
+  letters?: boolean;
 }
 export interface SequencesState { selected: number | null; ruledOut: number[] }
-export interface SequencesParams { complexity: 1 | 2 | 3; length?: number; maxValue?: number }
+export interface SequencesParams { complexity: 1 | 2 | 3; length?: number; maxValue?: number; letters?: boolean }
+
+/** Rules that read well with letters: steps through the alphabet, not products. */
+const LETTER_KINDS: RuleKind[] = ['add', 'addGrowing', 'alternate', 'interleaved'];
+/** How a term is shown: a number, or its letter. */
+export const termText = (p: { letters?: boolean }, v: number) => (p.letters ? String.fromCharCode(64 + v) : String(v));
 
 export const RULE_COMPLEXITY: Record<RuleKind, number> = {
   add: 1, multiply: 1, addGrowing: 2, addDoubling: 2, fibonacci: 2, squares: 2,
@@ -121,14 +128,14 @@ export class SequencesFamily implements PuzzleFamily<SequencesPuzzle, SequencesS
   readonly thresholds = TierThresholds.standard;
 
   generate(params: SequencesParams, rng: SeededRNG): SequencesPuzzle | null {
-    const kinds = SAME_FAMILY_ORDER.filter((k) => RULE_COMPLEXITY[k] === params.complexity);
+    const kinds = SAME_FAMILY_ORDER.filter((k) => RULE_COMPLEXITY[k] === params.complexity && (!params.letters || LETTER_KINDS.includes(k)));
     const kind = rng.pick(kinds);
     const length = params.length ?? (kind === 'interleaved' ? 6 : 5);
     const built = build(kind, rng, length + 1);
     if (!built) return null;
     const answer = built.terms[length], terms = built.terms.slice(0, length);
-    const max = params.maxValue ?? 999;
-    if (built.terms.some((v) => v < 0 || v > max)) return null;
+    const max = params.letters ? 26 : params.maxValue ?? 999;
+    if (built.terms.some((v) => v < (params.letters ? 1 : 0) || v > max)) return null;
     if (EXPLAINERS[kind](terms) !== answer) return null; // rule must be recognisable from the visible terms
     const explained = predictions(terms, params.complexity + 1);
     // Several rules may explain the same terms; they must all agree on the answer.
@@ -136,11 +143,12 @@ export class SequencesFamily implements PuzzleFamily<SequencesPuzzle, SequencesS
     // Plausible distractors: typical slips (wrong step, off by one gap, wrong operation).
     const g = gaps(terms), last = terms[terms.length - 1], lastGap = g[g.length - 1];
     const pool = [answer + 1, answer - 1, last + lastGap, answer + lastGap, answer - lastGap, answer + 2, answer - 2, last * 2, answer + 10, answer - 10, last + g[0]]
-      .filter((v) => v > 0 && v !== answer && v <= max * 2 && !explained.has(v));
+      .filter((v) => v > 0 && v !== answer && v <= (params.letters ? 26 : max * 2) && !explained.has(v));
     const distractors = rng.shuffled([...new Set(pool)]).slice(0, 3);
     if (distractors.length < 3) return null;
     const options = rng.shuffled([answer, ...distractors]);
-    return { terms, options, answer: options.indexOf(answer), rule: { kind, a: built.a, b: built.b } };
+    const p: SequencesPuzzle = { terms, options, answer: options.indexOf(answer), rule: { kind, a: built.a, b: built.b } };
+    return params.letters ? { ...p, letters: true } : p;
   }
 
   solve(p: SequencesPuzzle, limit: number): SolveReport<number> {
@@ -168,23 +176,26 @@ export class SequencesFamily implements PuzzleFamily<SequencesPuzzle, SequencesS
     if (s.selected === p.answer) return null;
     const g = gaps(p.terms).join(', ');
     const { kind, a, b } = p.rule;
-    const key = `sequences.hint.${kind}`;
+    const key = p.letters ? `sequences.letters.${kind}` : `sequences.hint.${kind}`;
     switch (level) {
       case HintLevel.Whisper: return { level, text: tpl(`${key}.whisper`), focus: [] };
       case HintLevel.Lead: return { level, text: tpl(`${key}.lead`, [g, String(a), String(b)]), focus: [] };
       case HintLevel.Insight: return { level, text: tpl(`${key}.insight`, [g, String(a), String(b), String(p.options[p.answer] - p.terms[p.terms.length - 1])]), focus: [] };
-      case HintLevel.Solution: return { level, text: tpl('sequences.hint.solution', [String(p.options[p.answer])]), focus: [], resultingState: { selected: p.answer, ruledOut: s.ruledOut } };
+      case HintLevel.Solution: return { level, text: tpl('sequences.hint.solution', [termText(p, p.options[p.answer])]), focus: [], resultingState: { selected: p.answer, ruledOut: s.ruledOut } };
     }
   }
 
-  fingerprint(p: SequencesPuzzle): string { return `${p.terms.join(',')}|${[...p.options].sort((x, y) => x - y).join(',')}`; }
+  fingerprint(p: SequencesPuzzle): string { return `${p.letters ? 'L|' : ''}${p.terms.join(',')}|${[...p.options].sort((x, y) => x - y).join(',')}`; }
 
   parse(raw: unknown): SequencesPuzzle | null {
     const o = raw as Partial<SequencesPuzzle> | null;
     if (!o || !Array.isArray(o.terms) || !Array.isArray(o.options) || typeof o.answer !== 'number' || !o.rule || !(o.rule.kind in RULE_COMPLEXITY)) return null;
     if (o.options.length < 2 || o.answer < 0 || o.answer >= o.options.length || o.terms.length < 3) return null;
     if (![...o.terms, ...o.options].every((v) => Number.isSafeInteger(v))) return null;
-    return { terms: o.terms.slice(), options: o.options.slice(), answer: o.answer, rule: { kind: o.rule.kind, a: Number(o.rule.a) || 0, b: Number(o.rule.b) || 0 } };
+    if (o.letters !== undefined && typeof o.letters !== 'boolean') return null;
+    if (o.letters && ![...o.terms, ...o.options].every((v) => v >= 1 && v <= 26)) return null;
+    const p: SequencesPuzzle = { terms: o.terms.slice(), options: o.options.slice(), answer: o.answer, rule: { kind: o.rule.kind, a: Number(o.rule.a) || 0, b: Number(o.rule.b) || 0 } };
+    return o.letters ? { ...p, letters: true } : p;
   }
 
   equals(a: SequencesPuzzle, b: SequencesPuzzle): boolean { return this.fingerprint(a) === this.fingerprint(b) && a.answer === b.answer; }

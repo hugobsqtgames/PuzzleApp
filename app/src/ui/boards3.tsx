@@ -8,7 +8,7 @@ import { Icon } from './components';
 import { glyphByKey } from './scenes/objects';
 import { CellRef } from '../core/puzzlekit/types';
 import { ChimesPuzzle, ChimesState, goodPrefix } from '../core/families/chimes';
-import { StainedPuzzle, StainedState } from '../core/families/stained';
+import { StainedPuzzle, StainedState, shows } from '../core/families/stained';
 import { SPOT_H, SPOT_W, SpotItem, SpotPuzzle, SpotState, changed, diffAt } from '../core/families/spot';
 import { ShelfClue, ShelfPuzzle, ShelfState } from '../core/families/shelf';
 import { Cells, ShadowsPuzzle, ShadowsState } from '../core/families/shadows';
@@ -118,6 +118,12 @@ function Chimes({ s, width, onPlay, tap, note }: BoardProps) {
           </View>
         ))}
       </View>
+      {p.reverse ? (
+        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', paddingHorizontal: 12, height: 28, borderRadius: 14, backgroundColor: 'rgba(143,184,240,0.14)' }}>
+          <Icon name="undo" size={14} color={T.moon} />
+          <Text style={{ color: T.moon, fontSize: 13, fontWeight: '700' }}>À rebours : de la dernière note à la première</Text>
+        </View>
+      ) : null}
       <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }} accessible accessibilityLabel={`${k} note${k > 1 ? 's' : ''} sur ${p.melody.length}`}>
         {p.melody.map((_, i) => (
           <View key={i} style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: i < k ? T.amber : wrong && i === k ? T.coral : 'transparent', borderWidth: 1.5, borderColor: i < k ? T.amber : wrong && i === k ? T.coral : T.tx3 }} />
@@ -173,6 +179,16 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
           </View>
           {st.colF.map((cf, c) => {
             const now = rf | cf, want = p.target[r * p.cols + c], ok = now === want, bad = focus.some((x) => x.row === r && x.column === c);
+            if (!shows(p, r * p.cols + c)) return (
+              // A frosted pane: the light passes, the model does not show.
+              <View key={c} accessible accessibilityLabel={`Vitre ligne ${r + 1}, colonne ${c + 1} : voilée, maintenant ${colorWord(now)}`}
+                style={{ width: pane, height: pane * 1.15, borderRadius: 10, overflow: 'hidden', backgroundColor: '#0a0c1e', borderWidth: 2, borderColor: '#3a3f6a', borderStyle: 'dashed' }}>
+                <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: GLASS[now], opacity: now ? 0.5 : 0.25 }} />
+                <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(220,226,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: pane * 0.34, fontWeight: '800' }}>?</Text>
+                </View>
+              </View>
+            );
             return (
               <View key={c} accessible accessibilityLabel={`Vitre ligne ${r + 1}, colonne ${c + 1} : modèle ${colorWord(want)}, maintenant ${colorWord(now)}`}
                 style={{ width: pane, height: pane * 1.15, borderRadius: 10, overflow: 'hidden', backgroundColor: '#0a0c1e', borderWidth: 2, borderColor: bad ? T.coral : ok ? '#c9a563' : '#3a3f6a' }}>
@@ -332,16 +348,16 @@ function Shadows({ s, width, onPlay, tap }: BoardProps) {
         <View style={{ width: 110, height: 110, borderRadius: 16, backgroundColor: '#1d2140', alignItems: 'center', justifyContent: 'center' }} accessible accessibilityLabel={`L’objet : ${p.shape.length} carrés`}>
           <CellsArt cells={p.shape} size={92} color={T.amber} />
         </View>
-        <Text style={{ color: T.tx2, fontSize: 14, flex: 1, lineHeight: 20 }}>Voici l’objet. Sous la lampe, son ombre peut avoir tourné. Laquelle est la sienne ?</Text>
+        <Text style={{ color: T.tx2, fontSize: 14, flex: 1, lineHeight: 20 }}>{p.reflection ? 'Voici l’objet. Dans le miroir, il est retourné, et il peut avoir tourné. Quel reflet est le sien ?' : 'Voici l’objet. Sous la lampe, son ombre peut avoir tourné. Laquelle est la sienne ?'}</Text>
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {p.options.map((o, i) => {
           const sel = st.selected === i, out = st.ruledOut.includes(i);
           return (
-            <Pressable key={i} disabled={out} accessibilityRole="button" accessibilityState={{ selected: sel, disabled: out }} accessibilityLabel={`Ombre ${i + 1}${out ? ', écartée' : ''}`}
+            <Pressable key={i} disabled={out} accessibilityRole="button" accessibilityState={{ selected: sel, disabled: out }} accessibilityLabel={`${p.reflection ? 'Reflet' : 'Ombre'} ${i + 1}${out ? ', écarté' + (p.reflection ? '' : 'e') : ''}`}
               onPress={() => { tap(); onPlay({ ...st, selected: i }); }}
-              style={{ width: cell, height: cell * 0.8, borderRadius: 16, backgroundColor: '#E8DCC0', opacity: out ? 0.3 : 1, alignItems: 'center', justifyContent: 'center', borderWidth: sel ? 3 : 0, borderColor: T.moon }}>
-              <CellsArt cells={o} size={cell * 0.62} color="#1a1630" shadow />
+              style={{ width: cell, height: cell * 0.8, borderRadius: 16, backgroundColor: p.reflection ? '#9FB6D6' : '#E8DCC0', opacity: out ? 0.3 : 1, alignItems: 'center', justifyContent: 'center', borderWidth: sel ? 3 : 0, borderColor: T.moon }}>
+              <CellsArt cells={o} size={cell * 0.62} color={p.reflection ? '#F6E7C4' : '#1a1630'} shadow={!p.reflection} />
               {out ? <View style={{ position: 'absolute', right: 8, top: 8 }}><Icon name="x" size={18} color="#1a1630" sw={2} /></View> : null}
             </Pressable>
           );

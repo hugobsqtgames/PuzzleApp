@@ -40,7 +40,7 @@ import { Fixed, PROTOTYPE_DAILY, PROTOTYPE_ROOM, TUTORIAL } from './fixed';
 
 export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA' | 'CR' | 'VI' | 'DI' | 'ET' | 'OM' | 'SC';
 const ALL: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI', 'CR', 'VI', 'DI', 'ET', 'OM'];
-export const FORGE_VERSION = 3;
+export const FORGE_VERSION = 4;
 
 // ---------------------------------------------------------------- families
 
@@ -98,11 +98,11 @@ const EQ_ALL = ['has', 'hasNot', 'at', 'notAt', 'objectAt', 'objectNotAt', 'eith
 const PARAMS: Record<Code, unknown[][]> = {
   IN: [
     [{ rows: 3, columns: 3, presses: [2, 3] }, { rows: 2, columns: 2, presses: [1, 2] }],
-    [{ rows: 3, columns: 3, presses: [3, 5] }, { rows: 4, columns: 4, presses: [4, 7] }],
-    [{ rows: 3, columns: 3, presses: [4, 6] }, { rows: 4, columns: 4, presses: [5, 8] }, { rows: 5, columns: 5, presses: [6, 10] }],
-    [{ rows: 5, columns: 5, presses: [6, 10] }, { rows: 5, columns: 5, pattern: 'diagonal', presses: [8, 12] }],
-    [{ rows: 5, columns: 5, presses: [9, 13] }, { rows: 5, columns: 5, pattern: 'diagonal', presses: [10, 14] }],
-    [{ rows: 6, columns: 6, presses: [10, 14] }, { rows: 5, columns: 5, presses: [11, 14] }],
+    [{ rows: 3, columns: 3, presses: [3, 5] }, { rows: 4, columns: 4, presses: [4, 7] }, { rows: 3, columns: 3, pattern: 'diagonal', presses: [2, 4] }],
+    [{ rows: 3, columns: 3, presses: [4, 6] }, { rows: 4, columns: 4, pattern: 'diagonal', presses: [4, 7] }, { rows: 4, columns: 4, presses: [5, 8] }, { rows: 3, columns: 3, pattern: 'ring', presses: [2, 4] }, { rows: 5, columns: 5, presses: [6, 10] }],
+    [{ rows: 5, columns: 5, presses: [6, 10] }, { rows: 5, columns: 5, pattern: 'diagonal', presses: [8, 12] }, { rows: 4, columns: 4, pattern: 'ring', presses: [4, 7] }],
+    [{ rows: 5, columns: 5, presses: [9, 13] }, { rows: 5, columns: 5, pattern: 'diagonal', presses: [10, 14] }, { rows: 5, columns: 5, pattern: 'ring', presses: [6, 10] }],
+    [{ rows: 6, columns: 6, presses: [10, 14] }, { rows: 5, columns: 5, pattern: 'ring', presses: [8, 12] }, { rows: 6, columns: 6, pattern: 'diagonal', presses: [10, 14] }],
   ],
   CA: [
     [{ length: 3, clueCount: [3, 5] }],
@@ -129,7 +129,7 @@ const PARAMS: Record<Code, unknown[][]> = {
     [{ rows: 7, columns: 7 }],
   ],
   SU: [
-    [{ complexity: 1 }], [{ complexity: 1 }], [{ complexity: 2 }, { complexity: 3 }], [{ complexity: 3 }], [], [],
+    [{ complexity: 1 }], [{ complexity: 1 }, { complexity: 1, letters: true }], [{ complexity: 2 }, { complexity: 3 }, { complexity: 2, letters: true }], [{ complexity: 3 }, { complexity: 3, letters: true }], [], [],
   ],
   MO: [[{ active: 1 }], [{ active: 1 }, { active: 2 }], [{ active: 2 }, { active: 2, distribution: true }], [{ active: 2, distribution: true }, { active: 3, distribution: true }], [{ active: 3, distribution: true }], []],
   ME: [
@@ -150,16 +150,22 @@ const PARAMS: Record<Code, unknown[][]> = {
     [{ silhouettes: SMALL_SIL, pieceSize: [3, 4] }], [{ silhouettes: SIL, pieceSize: [3, 4] }, { silhouettes: SIL, pieceSize: [4, 5] }],
     [{ silhouettes: SIL, pieceSize: [3, 5], flips: true }, { silhouettes: SIL, pieceSize: [3, 4] }], [{ silhouettes: SIL, pieceSize: [3, 5], flips: true }, { silhouettes: SIL, pieceSize: [4, 5], flips: true }], [], [],
   ],
-  CR: [[{ bells: 3, length: [3, 3] }], [{ bells: 4, length: [4, 4] }], [{ bells: 4, length: [5, 6] }], [{ bells: 5, length: [6, 7] }], [{ bells: 5, length: [8, 8] }], [{ bells: 6, length: [9, 10] }]],
-  VI: [[{ rows: 2, cols: 3 }], [{ rows: 3, cols: 4 }, { rows: 3, cols: 3 }], [{ rows: 4, cols: 4 }], [{ rows: 4, cols: 4 }], [{ rows: 4, cols: 5 }], [{ rows: 5, cols: 5 }]],
+  CR: [
+    [{ bells: 3, length: [3, 3] }], [{ bells: 4, length: [4, 4] }, { bells: 3, length: [3, 3], reverse: true }], [{ bells: 4, length: [5, 6] }, { bells: 4, length: [4, 4], reverse: true }],
+    [{ bells: 5, length: [6, 7] }, { bells: 4, length: [5, 6], reverse: true }], [{ bells: 5, length: [8, 8] }, { bells: 5, length: [6, 7], reverse: true }], [{ bells: 6, length: [9, 10] }, { bells: 5, length: [8, 8], reverse: true }],
+  ],
+  VI: [
+    [{ rows: 2, cols: 3 }], [{ rows: 3, cols: 4 }, { rows: 3, cols: 3 }, { rows: 3, cols: 3, veiled: 1 }], [{ rows: 4, cols: 4 }, { rows: 3, cols: 4, veiled: 2 }],
+    [{ rows: 4, cols: 4 }, { rows: 4, cols: 4, veiled: 3 }], [{ rows: 4, cols: 5 }, { rows: 4, cols: 5, veiled: 3 }], [{ rows: 5, cols: 5 }, { rows: 5, cols: 5, veiled: 4 }],
+  ],
   DI: [
     [{ items: [8, 9], diffs: 3, kinds: ['missing', 'glyph'] }], [{ items: [10, 11], diffs: 4, kinds: ['missing', 'glyph', 'color'] }], [{ items: [12, 13], diffs: 5 }],
     [{ items: [12, 13], diffs: 5 }, { items: [13, 15], diffs: 6 }], [{ items: [13, 15], diffs: 6 }, { items: [15, 17], diffs: 7 }], [{ items: [15, 17], diffs: 7 }, { items: [17, 18], diffs: 8, kinds: ['color', 'turn', 'size', 'glyph'] }],
   ],
   ET: [[{ n: 3 }, { n: 4 }], [{ n: 4 }, { n: 5 }], [{ n: 5 }, { n: 6 }], [{ n: 6 }, { n: 5 }], [{ n: 7 }, { n: 6 }], [{ n: 7 }]],
   OM: [
-    [{ cells: [4, 5], options: 3 }], [{ cells: [5, 6], options: 4 }], [{ cells: [6, 6], options: 4, nearMisses: true }],
-    [{ cells: [7, 7], options: 6, nearMisses: true }, { cells: [6, 7], options: 5, nearMisses: true }], [{ cells: [7, 7], options: 6, nearMisses: true }], [{ cells: [8, 9], options: 6, nearMisses: true }],
+    [{ cells: [4, 5], options: 3 }], [{ cells: [5, 6], options: 4 }, { cells: [4, 5], options: 4, reflection: true }], [{ cells: [6, 6], options: 4, nearMisses: true }, { cells: [5, 6], options: 4, reflection: true }],
+    [{ cells: [7, 7], options: 6, nearMisses: true }, { cells: [6, 7], options: 5, nearMisses: true }, { cells: [6, 6], options: 5, nearMisses: true, reflection: true }], [{ cells: [7, 7], options: 6, nearMisses: true }, { cells: [7, 7], options: 6, nearMisses: true, reflection: true }], [{ cells: [8, 9], options: 6, nearMisses: true }, { cells: [8, 8], options: 6, nearMisses: true, reflection: true }],
   ],
   SC: [[], [], [], [], [], []],
   BA: [
@@ -182,7 +188,10 @@ export function forgePuzzle(code: Code, tier: Tier, id: string, maxAttempts = 40
   // Target tier first, then neighbours (closest first).
   const tiers = [tier, tier - 1, tier + 1, tier - 2, tier + 2].filter((t) => t >= 0 && t <= MAX_TIER[code]) as Tier[];
   for (const t of tiers) {
-    const candidates = PARAMS[code][t] ?? [];
+    const list = PARAMS[code][t] ?? [];
+    // Each lantern starts at another candidate: sizes and variants take turns.
+    const shift = list.length ? Number(base % BigInt(list.length)) : 0;
+    const candidates = [...list.slice(shift), ...list.slice(0, shift)];
     for (let i = 0; i < candidates.length; i++) {
       const { accepted } = pipe.generate(1, candidates[i], base + BigInt(i * 100_000 + t * 1_000_000), [t, t], maxAttempts);
       const a = accepted.find((x) => !seen[code].has(x.fingerprint));
@@ -198,13 +207,13 @@ interface DistrictPlan { id: string; main: Code[]; guests: Code[]; tiers: number
 
 /** Tier distribution per district, in % (GAME_DESIGN § 4.2). */
 const PLAN: DistrictPlan[] = [
-  { id: 'phare', main: ['IN', 'LA', 'SU', 'DI', 'CR'], guests: [], tiers: [70, 30, 0, 0, 0, 0], buildings: 1, rooms: [6, 6, 6, 6], unlock: { kind: 'always' }, lettersFromKeystone4: false },
-  { id: 'biblio', main: ['SU', 'MO'], guests: ['IN', 'LA', 'CA', 'ET', 'DI', 'OM'], tiers: [25, 45, 25, 5, 0, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 14 }, lettersFromKeystone4: true },
-  { id: 'horlo', main: ['EN', 'CA', 'CR'], guests: ['SU', 'MO', 'LA', 'IN', 'ET', 'VI'], tiers: [10, 35, 35, 15, 5, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 110 }, lettersFromKeystone4: true },
-  { id: 'serre', main: ['FI', 'MA', 'DI'], guests: ['EN', 'LA', 'MO', 'VI', 'OM', 'CR'], tiers: [5, 25, 40, 20, 10, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 206 }, lettersFromKeystone4: true },
-  { id: 'marche', main: ['BA', 'CA', 'ET'], guests: ['MA', 'FI', 'SU', 'EN', 'DI', 'CR'], tiers: [0, 15, 35, 30, 15, 5], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 302 }, lettersFromKeystone4: true },
-  { id: 'theatre', main: ['ME', 'EQ', 'OM'], guests: ['BA', 'MO', 'FI', 'CR', 'VI', 'DI'], tiers: [0, 10, 30, 30, 20, 10], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 398 }, lettersFromKeystone4: true },
-  { id: 'obs', main: ['MI', 'MO', 'VI'], guests: ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'FI', 'IN', 'OM', 'DI', 'ET', 'CR'], tiers: [0, 0, 25, 30, 30, 15], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 494 }, lettersFromKeystone4: true },
+  { id: 'phare', main: ['IN', 'LA', 'SU', 'DI', 'CR', 'OM', 'ET', 'CA'], guests: [], tiers: [70, 30, 0, 0, 0, 0], buildings: 1, rooms: [6, 6, 6, 6], unlock: { kind: 'always' }, lettersFromKeystone4: false },
+  { id: 'biblio', main: ['SU', 'MO', 'ET'], guests: ['IN', 'LA', 'CA', 'DI', 'OM', 'CR', 'BA'], tiers: [25, 45, 25, 5, 0, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 14 }, lettersFromKeystone4: true },
+  { id: 'horlo', main: ['EN', 'CA', 'CR'], guests: ['SU', 'MO', 'LA', 'IN', 'ET', 'VI', 'ME', 'EQ'], tiers: [10, 35, 35, 15, 5, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 110 }, lettersFromKeystone4: true },
+  { id: 'serre', main: ['FI', 'MA', 'DI'], guests: ['EN', 'LA', 'MO', 'VI', 'OM', 'CR', 'IN', 'SU', 'MI'], tiers: [5, 25, 40, 20, 10, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 206 }, lettersFromKeystone4: true },
+  { id: 'marche', main: ['BA', 'CA', 'ET'], guests: ['MA', 'FI', 'SU', 'EN', 'DI', 'CR', 'IN', 'LA', 'MI', 'EQ', 'ME'], tiers: [0, 15, 35, 30, 15, 5], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 302 }, lettersFromKeystone4: true },
+  { id: 'theatre', main: ['ME', 'EQ', 'OM'], guests: ['BA', 'MO', 'FI', 'CR', 'VI', 'DI', 'IN', 'LA', 'MI'], tiers: [0, 10, 30, 30, 20, 10], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 398 }, lettersFromKeystone4: true },
+  { id: 'obs', main: ['MI', 'VI', 'LA'], guests: ['SU', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'FI', 'IN', 'OM', 'DI', 'ET', 'CR', 'MO'], tiers: [0, 0, 25, 30, 30, 15], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 494 }, lettersFromKeystone4: true },
   { id: 'grenier', main: ['EN', 'LA', 'CA', 'IN', 'BA', 'MI', 'ME', 'EQ', 'FI', 'MO', 'VI', 'ET', 'OM', 'DI', 'CR', 'SU'], guests: [], tiers: [0, 0, 0, 25, 45, 30], buildings: 1, rooms: [16], unlock: { kind: 'totalLightsAndLetters', lights: 590, letters: 4 }, lettersFromKeystone4: false },
 ];
 
@@ -238,9 +247,71 @@ export interface RoomOut { id: string; lanterns: LanternOut[] }
 export interface BuildingOut { id: string; rooms: RoomOut[]; keystone?: LanternOut; keystoneGivesLetter?: boolean }
 export interface DistrictOut { id: string; unlock: unknown; buildings: BuildingOut[] }
 
+/** Hand-placed lanterns keep their family and tier. */
+const FIXED: Record<string, Fixed> = { ...TUTORIAL, ...PROTOTYPE_ROOM };
+
+/**
+ * Chooses the family of each lantern in play order, so that the player never
+ * sees the same kind of puzzle over and over:
+ * - never twice in a row, at most CAP of one family in any WINDOW lanterns;
+ * - within a district, each family tends to its share (main families weigh 2,
+ *   guests 1): the family most behind its share comes first;
+ * - a room named after a family (La Salle des Cloches…) holds 2 of it.
+ */
+const WINDOW = 20, CAP = 4, SIGNATURE_COUNT = 2;
+class FamilyPicker {
+  private recent: Code[] = [];
+  private used = new Map<string, number>(); // district|family → count
+  private placed = new Map<string, number>(); // district → count
+  private inRoom = new Map<string, Code[]>();
+
+  next(d: DistrictPlan, tier: Tier, room: string, sig: Code | undefined, left: number, rng: SeededRNG): Code {
+    const weights = new Map<Code, number>();
+    for (const f of d.main) weights.set(f, 2);
+    for (const f of d.guests) if (!weights.has(f)) weights.set(f, 1);
+    const total = [...weights.values()].reduce((a, b) => a + b, 0);
+    const n = (this.placed.get(d.id) ?? 0) + 1;
+    const here = this.inRoom.get(room) ?? [];
+    const win = this.recent.slice(-(WINDOW - 1));
+    const count = (f: Code) => win.filter((x) => x === f).length;
+    const prev = this.recent[this.recent.length - 1];
+    const able = [...weights.keys()].filter((f) => MAX_TIER[f] >= tier);
+    // The signature family is owed its lanterns before the room runs out.
+    const sigOwed = sig && MAX_TIER[sig] >= tier ? SIGNATURE_COUNT - here.filter((x) => x === sig).length : 0;
+    if (sig && sigOwed > 0 && sig !== prev && count(sig) < CAP && (left <= sigOwed * 2 || rng.chance(1, 3))) return sig;
+    // Hard rules first; relaxed only if nothing passes (a tiny district late in a window).
+    const tries: ((f: Code) => boolean)[] = [
+      (f) => f !== prev && count(f) < CAP && here.filter((x) => x === f).length < 3,
+      (f) => f !== prev && count(f) < CAP + 1,
+      (f) => f !== prev,
+      () => true,
+    ];
+    for (const ok of tries) {
+      const c = able.filter(ok);
+      if (!c.length) continue;
+      const score = new Map(c.map((f) => {
+        const share = (weights.get(f)! / total) * n - (this.used.get(`${d.id}|${f}`) ?? 0);
+        const last = this.recent.lastIndexOf(f);
+        const since = last < 0 ? 99 : this.recent.length - last;
+        return [f, share - (since <= 3 ? 0.9 : since <= 6 ? 0.35 : 0) + (rng.below(1000) / 1000) * 0.25] as const;
+      }));
+      return c.reduce((best, f) => (score.get(f)! > score.get(best)! ? f : best));
+    }
+    return 'LA';
+  }
+
+  record(district: string, room: string, f: Code) {
+    this.recent.push(f);
+    this.used.set(`${district}|${f}`, (this.used.get(`${district}|${f}`) ?? 0) + 1);
+    this.placed.set(district, (this.placed.get(district) ?? 0) + 1);
+    this.inRoom.set(room, [...(this.inRoom.get(room) ?? []), f]);
+  }
+}
+
 function planWorld(): DistrictOut[] {
   const rng = new SeededRNG(StableHash.seed('forge-plan', String(FORGE_VERSION)));
   const introduced = new Map<Code, number>();
+  const pick = new FamilyPicker();
   const out: DistrictOut[] = [];
   for (const d of PLAN) {
     const buildings: BuildingOut[] = [];
@@ -254,32 +325,20 @@ function planWorld(): DistrictOut[] {
         const id = `${d.id}.b${b + 1}.r${r + 1}`;
         const roomTiers = tiers.slice(cursor, cursor + size);
         cursor += size;
-        // Families: ~60 % main, ~40 % guests, spread evenly, never 3 in a row.
-        const mains = d.guests.length ? Math.round(size * 0.6) : size;
-        const pool: Code[] = [];
-        for (let i = 0; i < mains; i++) pool.push(d.main[(i + r + b) % d.main.length]);
-        for (let i = 0; i < size - mains; i++) pool.push(d.guests[(i + r * 2 + b) % d.guests.length]);
-        const sig = signatureOf(d.id, b, r);
-        if (sig && d.id !== 'phare') for (let i = 0, k = 0; i < pool.length && k < 3; i++) if (pool[pool.length - 1 - i] !== sig) { pool[pool.length - 1 - i] = sig; k++; }
-        let fams: Code[] = rng.shuffled(pool);
-        for (let guard = 0; guard < 200 && fams.some((f, i) => i >= 2 && f === fams[i - 1] && f === fams[i - 2]); guard++) fams = rng.shuffled(pool);
-        const lanterns: LanternOut[] = roomTiers.map((t, i) => ({ id: `${id}.${i + 1}`, family: fams[i], tier: t }));
-        // A family that cannot reach a tier swaps place with one that can.
-        for (let i = 0; i < lanterns.length; i++) {
-          if (MAX_TIER[lanterns[i].family] >= lanterns[i].tier) continue;
-          const j = lanterns.findIndex((o) => MAX_TIER[o.family] >= lanterns[i].tier && MAX_TIER[lanterns[i].family] >= o.tier);
-          if (j >= 0) [lanterns[i].family, lanterns[j].family] = [lanterns[j].family, lanterns[i].family];
-          else lanterns[i].family = d.main.find((f) => MAX_TIER[f] >= lanterns[i].tier) ?? 'LA';
-        }
+        const sig = d.id !== 'phare' ? signatureOf(d.id, b, r) : undefined;
+        const lanterns: LanternOut[] = roomTiers.map((t, i) => {
+          const lid = `${id}.${i + 1}`;
+          const fx = FIXED[lid];
+          const family = fx ? fx.f : pick.next(d, t, id, sig, size - i, rng);
+          pick.record(d.id, id, family);
+          return { id: lid, family, tier: fx ? fx.t : t };
+        });
         // A family's first 3 lanterns in the world are always Étincelle (GAME_DESIGN § 4.2).
         for (const l of lanterns) {
           const n = introduced.get(l.family) ?? 0;
           if (n < 3) l.tier = Tier.Spark;
           introduced.set(l.family, n + 1);
         }
-        // Recommended order = increasing difficulty; keep the family spread.
-        lanterns.sort((x, y) => x.tier - y.tier);
-        lanterns.forEach((l, i) => { l.id = `${id}.${i + 1}`; });
         return { id, lanterns };
       });
       const top = Math.max(...tiers);
@@ -298,11 +357,19 @@ function planWorld(): DistrictOut[] {
 
 // ---------------------------------------------------------------- main
 
+/** Fil: stores one full path with the puzzle, so a hint on a big open grid is instant on the phone. */
+function withKnownPath(code: Code, data: unknown) {
+  if (code !== 'FI') return;
+  const p = data as { known?: number[] };
+  const path = FAMILIES.FI.solve(data as never, 1).solutions[0] as number[] | undefined;
+  if (path) p.known = path;
+}
+
 function main() {
   const t0 = Date.now();
   const world = planWorld();
   const puzzles: Record<string, { f: Code; t: Tier; p: unknown }> = {};
-  const fixed: Record<string, Fixed> = { ...TUTORIAL, ...PROTOTYPE_ROOM };
+  const fixed = FIXED;
   // Fixed puzzles take their place and family in the world.
   for (const d of world) for (const b of d.buildings) for (const r of b.rooms) for (const l of r.lanterns) {
     const f = fixed[l.id];
@@ -333,6 +400,7 @@ function main() {
       continue;
     }
     const g = forgePuzzle(l.family, l.tier, l.id);
+    withKnownPath(l.family, g.data);
     l.tier = g.tier;
     puzzles[l.id] = { f: l.family, t: g.tier, p: g.data };
     (hist[l.family] ??= [0, 0, 0, 0, 0, 0])[g.tier]++;
@@ -347,6 +415,7 @@ function main() {
     const code = a.family as Code;
     const tier = Math.min(a.tier, MAX_TIER[code]) as Tier;
     const g = forgePuzzle(code, tier, `daily.${day}`);
+    withKnownPath(code, g.data);
     daily[day] = { f: code, t: g.tier, p: g.data };
   }
   // The mockup's evening challenge was "Tuesday 29 September · Balances · Flame".

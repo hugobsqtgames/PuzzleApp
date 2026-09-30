@@ -243,7 +243,7 @@ const RULE_DETAILS: Record<string, string> = {
   CA: 'Chaque ligne est un essai. ● : un chiffre juste à la bonne place. ○ : un chiffre juste à la mauvaise place. Tourne les molettes, puis Valider.',
   LA: 'Touche une case : une lampe. Touche encore : un point (« pas de lampe ici »), pour t’aider. Une lampe éclaire sa ligne et sa colonne jusqu’au premier mur.',
   EN: 'Touche une tuile pour la tourner d’un quart de tour (appui long : dans l’autre sens). La lumière suit les conduits reliés. Aucune ouverture ne doit rester dans le vide.',
-  SU: 'Trouve la règle qui relie les nombres : écarts, multiplications, suites mêlées… Une seule réponse suit une règle simple.',
+  SU: 'Trouve la règle qui relie les nombres : écarts, multiplications, suites mêlées… Une seule réponse suit une règle simple. Parfois ce sont des lettres : compte les sauts dans l’alphabet (A = 1, B = 2…).',
   BA: 'Chaque balance est en équilibre : les deux plateaux pèsent autant. Les objets identiques pèsent pareil. Les poids gris indiquent leur valeur.',
   MO: 'Chaque case a une forme, un nombre, un remplissage, une taille. Ligne par ligne, chacun suit sa règle : il reste pareil, avance d’un cran, ou reprend les trois mêmes valeurs dans un autre ordre.',
   ME: 'Touche un personnage pour dire s’il dit vrai ou s’il ment. Un menteur dit toujours faux, jamais à moitié. Quand tout le monde est choisi, Valider.',
@@ -251,11 +251,11 @@ const RULE_DETAILS: Record<string, string> = {
   MI: 'Touche une case vide : miroir /, puis miroir \\, puis rien. Le rayon rebondit sur les miroirs. Les cibles s’allument quand il les traverse.',
   EQ: 'Touche un indice pour le barrer quand tu l’as utilisé. Touche l’objet ou le lieu d’un habitant pour le changer. Chaque objet et chaque lieu ne sert qu’une fois.',
   MA: 'Choisis une pièce en bas, tourne-la si besoin, puis touche une case de la silhouette pour la poser. Touche une pièce posée pour la reprendre.',
-  CR: 'La mélodie joue quand tu arrives. Touche les cloches dans le même ordre. Tu peux la réécouter autant de fois que tu veux ; après une fausse note, recommence du début.',
-  VI: 'Touche le rond au bout d’une ligne ou d’une colonne pour changer son filtre : aucun, rouge, jaune, bleu. Chaque vitre prend la couleur de sa ligne mélangée à celle de sa colonne. Le rond au centre de chaque vitre montre sa couleur d’origine. Les filtres à cadenas sont déjà posés.',
+  CR: 'La mélodie joue quand tu arrives. Touche les cloches dans le même ordre. Tu peux la réécouter autant de fois que tu veux ; après une fausse note, recommence du début. « À rebours » : rejoue-la en partant de la dernière note.',
+  VI: 'Touche le rond au bout d’une ligne ou d’une colonne pour changer son filtre : aucun, rouge, jaune, bleu. Chaque vitre prend la couleur de sa ligne mélangée à celle de sa colonne. Le rond au centre de chaque vitre montre sa couleur d’origine. Les filtres à cadenas sont déjà posés. Une vitre voilée ne montre pas sa couleur : les autres suffisent pour tout retrouver.',
   DI: 'Compare les deux images. Touche un endroit où quelque chose a changé : une couleur, un objet, sa taille, son sens, ou un objet qui a disparu.',
   ET: 'Chaque indice parle des objets de gauche à droite. Touche deux objets pour les échanger. Quand l’étagère te semble rangée, Valider.',
-  OM: 'L’ombre peut avoir tourné d’un quart, d’un demi ou de trois quarts de tour. Elle n’est jamais retournée comme dans un miroir.',
+  OM: 'L’ombre peut avoir tourné d’un quart, d’un demi ou de trois quarts de tour. Elle n’est jamais retournée comme dans un miroir. « Reflet » : c’est l’inverse, le reflet est toujours retourné, et il peut aussi avoir tourné.',
   SC: 'Chaque salle du bâtiment, une fois assez éclairée, montre un chiffre peint dans son décor. Va les chercher, puis compose le code selon la règle du sceau.',
 };
 

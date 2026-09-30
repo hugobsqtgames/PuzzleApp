@@ -140,12 +140,25 @@ export function record(s: Session, now: Date): SolveRecord {
 
 /** What is kept when the player leaves a puzzle (GameState.inProgress). */
 export function progressOf(s: Session): unknown {
-  return { v: 1, state: s.state, moves: s.moves, paidHints: s.paidHints, wrongAnswers: s.wrongAnswers, usedSolution: s.usedSolution, startedAt: s.startedAt };
+  return { v: 1, fp: fingerprintOf(s), state: s.state, moves: s.moves, paidHints: s.paidHints, wrongAnswers: s.wrongAnswers, usedSolution: s.usedSolution, startedAt: s.startedAt };
+}
+
+/**
+ * Identifies the exact puzzle a saved board was played on. Not the family's
+ * fingerprint: that one is the same for a puzzle and its turned copy.
+ */
+function fingerprintOf(s: Session): string {
+  const text = `${s.code}:${JSON.stringify(s.data)}`;
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(36);
 }
 
 function restoreProgress(s: Session, raw: unknown): Session {
-  const o = raw as { v?: unknown; state?: unknown; moves?: unknown; paidHints?: unknown; wrongAnswers?: unknown; usedSolution?: unknown; startedAt?: unknown } | null;
+  const o = raw as { v?: unknown; fp?: unknown; state?: unknown; moves?: unknown; paidHints?: unknown; wrongAnswers?: unknown; usedSolution?: unknown; startedAt?: unknown } | null;
   if (!o || o.v !== 1 || o.state === undefined) return s;
+  // A board belongs to one puzzle: after a content update, the lantern may hold another one.
+  if (o.fp !== fingerprintOf(s)) return s;
   // Only a state the engine understands is restored: a damaged one restarts the puzzle, never crashes it.
   if (!isStateLike(s, o.state)) return s;
   const n = (v: unknown) => (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 ? v : 0);

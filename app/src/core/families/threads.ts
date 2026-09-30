@@ -11,6 +11,8 @@ import { CORRECT, Hint, HintLevel, INCOMPLETE, PuzzleFamily, SolveReport, TierTh
 export interface ThreadsPuzzle {
   rows: number;
   columns: number;
+  /** One known full path, stored with the content so hints never search long on the phone. */
+  known?: number[];
   start: number;
   end: number;
   /** Walls between two orthogonal neighbours, as "a-b" with a < b. */
@@ -128,6 +130,13 @@ export class ThreadsFamily implements PuzzleFamily<ThreadsPuzzle, ThreadsState, 
     return { solutionCount: r.paths.length, solutions: r.paths, trace: [], humanSolvable: r.complete, searchNodes: r.nodes };
   }
 
+  private refs = new WeakMap<ThreadsPuzzle, number[] | null>();
+  /** One full solution, searched once per puzzle with a large budget. */
+  private reference(p: ThreadsPuzzle): number[] | null {
+    if (!this.refs.has(p)) this.refs.set(p, p.known ?? this.search(p, [p.start], 1, 3_000_000).paths[0] ?? null);
+    return this.refs.get(p)!;
+  }
+
   initialState(p: ThreadsPuzzle): ThreadsState { return { path: [p.start] }; }
   stateApplying(solution: number[]): ThreadsState { return { path: solution.slice() }; }
 
@@ -157,12 +166,27 @@ export class ThreadsFamily implements PuzzleFamily<ThreadsPuzzle, ThreadsState, 
     if (this.validate(p, s).kind === 'correct') return null;
     // Longest prefix of the player's thread that can still be completed.
     let keep = s.path.length, found: number[] | null = null;
-    while (keep >= 1 && !found) {
+    const known = p.known;
+    if (known && s.path.every((x, i) => known[i] === x)) found = known;
+    else if (known) {
+      // One quick try from the whole thread, then the stored path.
+      const r = this.search(p, s.path, 1, 60_000);
+      if (r.paths.length) found = r.paths[0];
+    }
+    while (!known && keep >= 1 && !found) {
       const r = this.search(p, s.path.slice(0, keep), 1, 60_000);
       if (r.paths.length) found = r.paths[0];
       else keep--;
     }
-    if (!found) return null;
+    if (!found) {
+      // Big open grids can outrun the quick search: follow a full solution
+      // from where the player's thread leaves it.
+      const ref = this.reference(p);
+      if (!ref) return null;
+      keep = 1;
+      while (keep < s.path.length && s.path[keep] === ref[keep]) keep++;
+      found = ref;
+    }
     const at = (x: number) => [String(Math.floor(x / p.columns) + 1), String((x % p.columns) + 1)];
     if (keep < s.path.length) {
       const x = s.path[keep - 1];
@@ -193,7 +217,10 @@ export class ThreadsFamily implements PuzzleFamily<ThreadsPuzzle, ThreadsState, 
       const [a, b] = w.split('-').map(Number);
       if (!Number.isInteger(a) || !Number.isInteger(b) || a >= b || !neighbours(grid, a).includes(b)) return null;
     }
-    return { rows: o.rows, columns: o.columns, start: o.start!, end: o.end!, walls: o.walls.slice() };
+    const p: ThreadsPuzzle = { rows: o.rows, columns: o.columns, start: o.start!, end: o.end!, walls: o.walls.slice() };
+    // A stored path is kept only if it really solves the puzzle.
+    if (Array.isArray(o.known) && o.known.every((x) => Number.isInteger(x)) && this.validate(p, { path: o.known }).kind === 'correct') p.known = o.known.slice();
+    return p;
   }
 
   equals(a: ThreadsPuzzle, b: ThreadsPuzzle): boolean { return this.fingerprint(a) === this.fingerprint(b); }

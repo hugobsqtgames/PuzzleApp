@@ -13,7 +13,7 @@ import { SwitchesFamily, SwitchesPuzzle, SwitchesState } from '../core/families/
 import { LocksPuzzle, LocksState } from '../core/families/locks';
 import { LampsBoard, LampsFamily, LampsPuzzle, LampsState } from '../core/families/lamps';
 import { GearsFamily, GearsPuzzle, GearsState, gearsLight } from '../core/families/gears';
-import { SequencesPuzzle, SequencesState } from '../core/families/sequences';
+import { SequencesPuzzle, SequencesState, termText } from '../core/families/sequences';
 import { ScalesPuzzle, ScalesState } from '../core/families/scales';
 import { FAMILIES } from '../game/catalog';
 import { Session } from '../game/session';
@@ -21,6 +21,9 @@ import { Board2 } from './boards2';
 import { Board3, sealRuleText } from './boards3';
 import type { SealPuzzle } from '../core/families/seal';
 import type { SpotPuzzle } from '../core/families/spot';
+import type { ChimesPuzzle } from '../core/families/chimes';
+import type { ShadowsPuzzle } from '../core/families/shadows';
+import type { StainedPuzzle } from '../core/families/stained';
 
 export interface BoardProps {
   s: Session;
@@ -244,20 +247,20 @@ function Sequence({ s, width, onPlay, tap }: BoardProps) {
     <View>
       <View style={[box, { padding: 16, flexDirection: 'row', gap: 6, justifyContent: 'center' }]}>
         {p.terms.map((v, i) => (
-          <View key={i} style={[cell, { backgroundColor: T.s2 }]}><Text adjustsFontSizeToFit numberOfLines={1} style={{ fontFamily: ROUND, fontWeight: '800', fontSize: font, color: T.tx }}>{v}</Text></View>
+          <View key={i} style={[cell, { backgroundColor: T.s2 }]}><Text adjustsFontSizeToFit numberOfLines={1} style={{ fontFamily: ROUND, fontWeight: '800', fontSize: font, color: T.tx }}>{termText(p, v)}</Text></View>
         ))}
         <View style={[cell, { borderWidth: 2, borderStyle: 'dashed', borderColor: T.moon }]}>
-          <Text adjustsFontSizeToFit numberOfLines={1} style={{ fontFamily: ROUND, fontWeight: '800', fontSize: font, color: T.moon }}>{st.selected !== null ? p.options[st.selected] : '?'}</Text>
+          <Text adjustsFontSizeToFit numberOfLines={1} style={{ fontFamily: ROUND, fontWeight: '800', fontSize: font, color: T.moon }}>{st.selected !== null ? termText(p, p.options[st.selected]) : '?'}</Text>
         </View>
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 16 }}>
         {p.options.map((o, i) => {
           const wrong = st.ruledOut.includes(i), selected = st.selected === i;
           return (
-            <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected, disabled: wrong }} accessibilityLabel={wrong ? `${o}, écarté` : String(o)} disabled={wrong}
+            <Pressable key={i} accessibilityRole="button" accessibilityState={{ selected, disabled: wrong }} accessibilityLabel={wrong ? `${termText(p, o)}, écarté` : termText(p, o)} disabled={wrong}
               onPress={() => { tap(); onPlay({ ...st, selected: i }, false); }}
               style={{ width: '48%', flexGrow: 1, height: 64, borderRadius: R.m, backgroundColor: T.s2, borderWidth: selected ? 2 : 1, borderColor: wrong ? T.coral : selected ? T.moon : T.line, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontFamily: ROUND, fontSize: 26, fontWeight: '700', color: wrong ? T.coral : T.tx, textDecorationLine: wrong ? 'line-through' : 'none' }}>{o}</Text>
+              <Text style={{ fontFamily: ROUND, fontSize: 26, fontWeight: '700', color: wrong ? T.coral : T.tx, textDecorationLine: wrong ? 'line-through' : 'none' }}>{termText(p, o)}</Text>
             </Pressable>
           );
         })}
@@ -336,6 +339,11 @@ export function ruleFor(s: Session): string {
   }
   if (s.code === 'SC') return sealRuleText(s.data as SealPuzzle);
   if (s.code === 'DI') return `Trouve les ${(s.data as SpotPuzzle).diffs.length} différences entre les deux images.`;
+  // Variants say so first: the player must notice the rule has changed.
+  if (s.code === 'CR' && (s.data as ChimesPuzzle).reverse) return 'À rebours : écoute la mélodie, puis rejoue-la en partant de la dernière note.';
+  if (s.code === 'OM' && (s.data as ShadowsPuzzle).reflection) return 'Reflet : quel reflet appartient à l’objet ? Dans un miroir, l’objet est retourné, et il peut aussi être tourné.';
+  if (s.code === 'VI' && (s.data as StainedPuzzle).veiled?.length) return 'Vitres voilées : chaque ligne et chaque colonne a un filtre rouge, jaune, bleu, ou aucun. Certaines vitres sont voilées, les autres suffisent. Retrouve les filtres.';
+  if (s.code === 'SU' && (s.data as SequencesPuzzle).letters) return 'Trouve la lettre suivante.';
   return FAMILIES[s.code].rule;
 }
 
