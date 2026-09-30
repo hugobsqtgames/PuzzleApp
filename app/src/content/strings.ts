@@ -214,6 +214,89 @@ export const FR: Record<string, string> = {
   'shadows.hint.lead': 'Nilo écarte une ombre qui ne va pas.',
   'shadows.hint.insight': 'Nilo écarte deux ombres qui ne vont pas.',
   'shadows.hint.solution': 'Voici la bonne ombre.',
+
+  // Broderie
+  'embroidery.error.row': 'La ligne {0} a plus de points que ses nombres n’en demandent.',
+  'embroidery.error.col': 'La colonne {0} a plus de points que ses nombres n’en demandent.',
+  'embroidery.hint.whisper': 'Commence par les lignes aux grands nombres : leurs points se chevauchent forcément au milieu.',
+  'embroidery.hint.mistake': 'Cette case n’est pas juste. Défais-la.',
+  'embroidery.hint.row': 'La ligne {0} en dit plus qu’il n’y paraît : compte les places possibles pour ses points.',
+  'embroidery.hint.col': 'La colonne {0} en dit plus qu’il n’y paraît : compte les places possibles pour ses points.',
+  'embroidery.hint.row.insight': 'Voici ce que la ligne {0} permet de broder à coup sûr.',
+  'embroidery.hint.col.insight': 'Voici ce que la colonne {0} permet de broder à coup sûr.',
+  'embroidery.hint.solution': 'Voici la broderie terminée.',
+
+  // Signes
+  'signs.error.repeat': 'Un chiffre apparaît deux fois dans la même ligne ou la même colonne.',
+  'signs.error.sign': 'Ces deux cases ne respectent pas leur signe : la pointe désigne le plus petit.',
+  'signs.hint.whisper': 'Un signe « < » dit qui est le plus petit. Une case entourée de pointes est souvent un 1 ou le plus grand chiffre.',
+  'signs.hint.mistake': 'Ce chiffre n’est pas le bon. Efface-le.',
+  'signs.hint.lead.single': 'La case ligne {0}, colonne {1} n’a plus qu’un chiffre possible.',
+  'signs.hint.lead.row': 'Dans la ligne {0}, un chiffre n’a plus qu’une place : la case colonne {1}.',
+  'signs.hint.lead.col': 'Dans la colonne {1}, un chiffre n’a plus qu’une place : la case ligne {0}.',
+  'signs.hint.insight': 'Ligne {0}, colonne {1} : c’est un {2}.',
+  'signs.hint.solution': 'Voici le carré complet.',
+
+  // Toits
+  'roofs.error.repeat': 'Deux cheminées de même hauteur dans la même ligne ou la même colonne.',
+  'roofs.error.seen': 'Depuis ce bord, on ne voit pas le bon nombre de cheminées.',
+  'roofs.hint.whisper': 'Un 1 au bord : la plus haute cheminée est juste devant. Un nombre égal à la taille : elles montent une à une.',
+  'roofs.hint.mistake': 'Cette hauteur n’est pas la bonne. Efface-la.',
+  'roofs.hint.lead.single': 'La case ligne {0}, colonne {1} n’a plus qu’une hauteur possible.',
+  'roofs.hint.lead.row': 'Dans la ligne {0}, une hauteur n’a plus qu’une place : la case colonne {1}.',
+  'roofs.hint.lead.col': 'Dans la colonne {1}, une hauteur n’a plus qu’une place : la case ligne {0}.',
+  'roofs.hint.insight': 'Ligne {0}, colonne {1} : une cheminée de {2}.',
+  'roofs.hint.solution': 'Voici les toits de Vesper.',
+
+  // Glissade
+  'glide.dir.0': 'vers le haut', 'glide.dir.1': 'vers la droite', 'glide.dir.2': 'vers le bas', 'glide.dir.3': 'vers la gauche',
+  'glide.hint.whisper': 'La lanterne peut être atteinte en {0} glissades. Cherche d’abord où Nilo peut s’arrêter à côté d’elle.',
+  'glide.hint.lead': 'Nilo devrait glisser {0}.',
+  'glide.hint.insight': 'Nilo glisse {0}.',
+  'glide.hint.stuck': 'D’ici, la lanterne est hors d’atteinte. Nilo repart du début.',
+  'glide.hint.solution': 'Nilo retrouve le chemin jusqu’à la lanterne.',
+
+  // Taquin
+  'slider.hint.whisper': 'Il reste {0} glissements au plus court. Range la première ligne, puis la suivante.',
+  'slider.hint.whisper.far': 'Range la première ligne d’abord, sans toucher ensuite à ses tuiles.',
+  'slider.hint.lead': 'Fais glisser la tuile {0}.',
+  'slider.hint.insight': 'La tuile {0} glisse à sa place.',
+  'slider.hint.solution': 'Voici le vitrail remis en ordre.',
+
+  // Rubans
+  'ribbons.error.empty': 'Les rubans sont reliés, mais des cases restent vides : ils doivent couvrir tout le métier.',
+  'ribbons.hint.whisper': 'Commence par les rubans coincés dans un coin ou le long d’un bord : ils n’ont souvent qu’un chemin.',
+  'ribbons.hint.off': 'Ce ruban prend un chemin qui bloquera les autres. Reprends-le ici.',
+  'ribbons.hint.lead': 'Ce ruban-ci est le suivant à tisser.',
+  'ribbons.hint.insight': 'Voici ce ruban tissé.',
+  'ribbons.hint.solution': 'Voici le métier tissé.',
+
+  // Lucioles
+  'fireflies.error.touch': 'Deux lucioles se touchent : elles ne se posent jamais côte à côte, même en diagonale.',
+  'fireflies.error.row': 'La ligne {0} a trop de lucioles.',
+  'fireflies.error.col': 'La colonne {0} a trop de lucioles.',
+  'fireflies.error.alone': 'Cette luciole n’est à côté d’aucune lanterne.',
+  'fireflies.hint.whisper': 'Une case loin de toute lanterne reste vide. Une ligne marquée 0 aussi.',
+  'fireflies.hint.mistake': 'Cette case n’est pas juste. Défais-la.',
+  'fireflies.hint.far': 'Ces cases ne touchent aucune lanterne : aucune luciole n’y viendra.',
+  'fireflies.hint.far.insight': 'Nilo marque d’herbe les cases loin des lanternes.',
+  'fireflies.hint.touch': 'Ces cases touchent déjà une luciole : elles restent vides.',
+  'fireflies.hint.touch.insight': 'Nilo marque d’herbe les cases autour des lucioles.',
+  'fireflies.hint.full': 'Ces lignes ou colonnes ont déjà toutes leurs lucioles.',
+  'fireflies.hint.full.insight': 'Nilo marque d’herbe le reste de ces lignes et colonnes.',
+  'fireflies.hint.lead': 'Une luciole se pose ici.',
+  'fireflies.hint.insight': 'Nilo pose une luciole.',
+  'fireflies.hint.solution': 'Voici le jardin et toutes ses lucioles.',
+
+  // Passerelles
+  'bridges.error.over': 'Cet îlot a plus de passerelles que son nombre.',
+  'bridges.error.apart': 'Chaque îlot a ses passerelles, mais tous ne sont pas reliés ensemble.',
+  'bridges.hint.whisper': 'Un îlot qui demande autant de passerelles que ses voisins peuvent en porter n’a pas le choix : commence par lui.',
+  'bridges.hint.mistake': 'Il y a une passerelle en trop entre ces deux îlots.',
+  'bridges.hint.lead': 'Ces deux îlots sont reliés par une passerelle.',
+  'bridges.hint.lead.two': 'Ces deux îlots sont reliés par deux passerelles.',
+  'bridges.hint.insight': 'Nilo pose les passerelles entre ces deux îlots.',
+  'bridges.hint.solution': 'Voici toutes les passerelles du marché.',
   // Paliers
   'tier.spark': 'Étincelle', 'tier.glow': 'Lueur', 'tier.flame': 'Flamme', 'tier.blaze': 'Brasier', 'tier.beacon': 'Fanal', 'tier.star': 'Astre',
 };

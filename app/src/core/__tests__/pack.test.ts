@@ -41,13 +41,14 @@ test('families are spread out: never twice in a row, at most 4 in any 20 lantern
   expect(worst).toBeLessThanOrEqual(4);
 });
 
-test('the Phare already shows 8 kinds of puzzles, and every family is well represented', () => {
+test('the Phare already shows 8 kinds of puzzles, and all 25 families are well represented', () => {
   const phare = pack.world.districts.find((d: any) => d.id === 'phare');
   const kinds = new Set(phare.buildings.flatMap((b: any) => b.rooms.flatMap((r: any) => r.lanterns.map((l: any) => l.family))));
   expect(kinds.size).toBeGreaterThanOrEqual(8);
   const count = new Map<string, number>();
   for (const d of pack.world.districts) for (const b of d.buildings) for (const r of b.rooms) for (const l of r.lanterns) count.set(l.family, (count.get(l.family) ?? 0) + 1);
-  expect(Math.min(...count.values())).toBeGreaterThanOrEqual(30);
+  expect(Math.min(...count.values())).toBeGreaterThanOrEqual(20);
+  expect(count.size).toBe(25);
 });
 
 test('each variant appears in the world', () => {

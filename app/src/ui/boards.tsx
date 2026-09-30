@@ -20,6 +20,7 @@ import { FAMILIES } from '../game/catalog';
 import { Session } from '../game/session';
 import { Board2 } from './boards2';
 import { Board3, sealRuleText } from './boards3';
+import { Board4 } from './boards4';
 import type { SealPuzzle } from '../core/families/seal';
 import type { SpotPuzzle } from '../core/families/spot';
 import type { ChimesPuzzle } from '../core/families/chimes';
@@ -323,6 +324,7 @@ export function Board(props: BoardProps) {
     case 'SU': return <Sequence {...props} />;
     case 'BA': return <Scales {...props} />;
     case 'CR': case 'VI': case 'DI': case 'ET': case 'OM': case 'SC': return <Board3 {...props} />;
+    case 'BR': case 'SG': case 'TO': case 'GL': case 'TQ': case 'RU': case 'LU': case 'PA': return <Board4 {...props} />;
     default: return <Board2 {...props} />;
   }
 }

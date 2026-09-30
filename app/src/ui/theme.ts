@@ -22,8 +22,6 @@ export const T = {
 
 export const R = { xs: 6, s: 10, m: 16, l: 24, xl: 32 } as const;
 
-// Title serif. New York is not reachable from React Native; Georgia ships with
-// iOS, Android maps "serif" to Noto Serif. A bundled font can replace both.
 /**
  * Titles: Newsreader (SIL Open Font License, assets/fonts), close to the mockup's New York.
  * Each weight is its own family: a custom font must not be given fontWeight or fontStyle.

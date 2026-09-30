@@ -33,14 +33,22 @@ import { SpotFamily } from '../../app/src/core/families/spot';
 import { ShelfFamily } from '../../app/src/core/families/shelf';
 import { ShadowsFamily } from '../../app/src/core/families/shadows';
 import { SealFamily, sealRuleFor } from '../../app/src/core/families/seal';
+import { EmbroideryFamily } from '../../app/src/core/families/embroidery';
+import { SignsFamily } from '../../app/src/core/families/signs';
+import { RoofsFamily } from '../../app/src/core/families/roofs';
+import { GlideFamily } from '../../app/src/core/families/glide';
+import { SliderFamily } from '../../app/src/core/families/slider';
+import { RibbonsFamily } from '../../app/src/core/families/ribbons';
+import { FirefliesFamily } from '../../app/src/core/families/fireflies';
+import { BridgesFamily } from '../../app/src/core/families/bridges';
 import { DISTRICT_INFO } from '../../app/src/content/vesper';
 import { DailyPlanner } from '../../app/src/core/game/daily';
 import { addDays, dayKey, daysBetween } from '../../app/src/core/game/dayKey';
 import { Fixed, PROTOTYPE_DAILY, PROTOTYPE_ROOM, TUTORIAL } from './fixed';
 
-export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA' | 'CR' | 'VI' | 'DI' | 'ET' | 'OM' | 'SC';
-const ALL: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI', 'CR', 'VI', 'DI', 'ET', 'OM'];
-export const FORGE_VERSION = 4;
+export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA' | 'CR' | 'VI' | 'DI' | 'ET' | 'OM' | 'BR' | 'SG' | 'TO' | 'GL' | 'TQ' | 'RU' | 'LU' | 'PA' | 'SC';
+const ALL: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI', 'CR', 'VI', 'DI', 'ET', 'OM', 'BR', 'SG', 'TO', 'GL', 'TQ', 'RU', 'LU', 'PA'];
+export const FORGE_VERSION = 5;
 
 // ---------------------------------------------------------------- families
 
@@ -60,9 +68,11 @@ const THRESHOLDS: Record<Code, TierThresholds> = {
   MA: new TierThresholds([16, 26, 38, 50, 65]),
   CR: new ChimesFamily().thresholds, VI: new StainedFamily().thresholds, DI: new SpotFamily().thresholds,
   ET: new ShelfFamily().thresholds, OM: new ShadowsFamily().thresholds, SC: new SealFamily().thresholds,
+  BR: new EmbroideryFamily().thresholds, SG: new SignsFamily().thresholds, TO: new RoofsFamily().thresholds, GL: new GlideFamily().thresholds,
+  TQ: new SliderFamily().thresholds, RU: new RibbonsFamily().thresholds, LU: new FirefliesFamily().thresholds, PA: new BridgesFamily().thresholds,
 };
 /** Highest tier a family can produce today. */
-export const MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, BA: 5, SU: 3, MO: 4, ME: 5, FI: 4, MI: 5, EQ: 5, MA: 3, CR: 5, VI: 5, DI: 5, ET: 5, OM: 5, SC: 4 };
+export const MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, BA: 5, SU: 3, MO: 4, ME: 5, FI: 4, MI: 5, EQ: 5, MA: 3, CR: 5, VI: 5, DI: 5, ET: 5, OM: 5, BR: 4, SG: 5, TO: 5, GL: 5, TQ: 4, RU: 4, LU: 4, PA: 4, SC: 4 };
 
 function withThresholds<F extends object>(family: F, t: TierThresholds): F {
   const f = Object.create(family) as F;
@@ -84,6 +94,8 @@ const FAMILIES: Record<Code, PuzzleFamily<any, any, any, any>> = {
   EQ: withThresholds(new InquiriesFamily(), THRESHOLDS.EQ),
   MA: withThresholds(new MarquetryFamily(), THRESHOLDS.MA),
   CR: new ChimesFamily(), VI: new StainedFamily(), DI: new SpotFamily(), ET: new ShelfFamily(), OM: new ShadowsFamily(), SC: new SealFamily(),
+  BR: new EmbroideryFamily(), SG: new SignsFamily(), TO: new RoofsFamily(), GL: new GlideFamily(),
+  TQ: new SliderFamily(), RU: new RibbonsFamily(), LU: new FirefliesFamily(), PA: new BridgesFamily(),
 };
 const SIL = Object.keys(SILHOUETTES);
 const SMALL_SIL = ['lanterne', 'maison', 'phare', 'horloge'];
@@ -164,10 +176,34 @@ const PARAMS: Record<Code, unknown[][]> = {
   ],
   ET: [[{ n: 3 }, { n: 4 }], [{ n: 4 }, { n: 5 }], [{ n: 5 }, { n: 6 }], [{ n: 6 }, { n: 5 }], [{ n: 7 }, { n: 6 }], [{ n: 7 }]],
   OM: [
-    [{ cells: [4, 5], options: 3 }], [{ cells: [5, 6], options: 4 }, { cells: [4, 5], options: 4, reflection: true }], [{ cells: [6, 6], options: 4, nearMisses: true }, { cells: [5, 6], options: 4, reflection: true }],
-    [{ cells: [7, 7], options: 6, nearMisses: true }, { cells: [6, 7], options: 5, nearMisses: true }, { cells: [6, 6], options: 5, nearMisses: true, reflection: true }], [{ cells: [7, 7], options: 6, nearMisses: true }, { cells: [7, 7], options: 6, nearMisses: true, reflection: true }], [{ cells: [8, 9], options: 6, nearMisses: true }, { cells: [8, 8], options: 6, nearMisses: true, reflection: true }],
+    [{ cells: [4, 5], options: 3 }], [{ cells: [5, 6], options: 4 }, { cells: [5, 5], options: 4, reflection: true }],
+    [{ cells: [6, 6], options: 4, nearMisses: true }, { cells: [5, 6], options: 5, nearMisses: true, reflection: true }],
+    [{ cells: [7, 7], options: 6, nearMisses: true }, { cells: [5, 6], options: 5, nearMisses: true, reflection: true }, { cells: [6, 7], options: 5, nearMisses: true }],
+    [{ cells: [7, 7], options: 6, nearMisses: true }, { cells: [6, 7], options: 6, nearMisses: true, reflection: true }],
+    [{ cells: [8, 9], options: 6, nearMisses: true }, { cells: [7, 8], options: 6, nearMisses: true, reflection: true }],
   ],
   SC: [[], [], [], [], [], []],
+  BR: [
+    [{ rows: 5, cols: 5, density: 0.6 }, { rows: 5, cols: 5, density: 0.6, symmetric: true }], [{ rows: 6, cols: 6, density: 0.55, symmetric: true }, { rows: 6, cols: 6, density: 0.6 }],
+    [{ rows: 7, cols: 7, density: 0.55, symmetric: true }, { rows: 8, cols: 8, density: 0.55 }], [{ rows: 9, cols: 9, density: 0.55, symmetric: true }, { rows: 10, cols: 10, density: 0.55, symmetric: true }],
+    [{ rows: 10, cols: 10, density: 0.5 }, { rows: 10, cols: 10, density: 0.55, symmetric: true }], [],
+  ],
+  SG: [
+    [{ n: 4, startSigns: 6, extraGivens: 4 }], [{ n: 4, startSigns: 6 }, { n: 4, startSigns: 6, extraGivens: 2 }], [{ n: 5, startSigns: 10 }, { n: 5, startSigns: 6 }],
+    [{ n: 5, startSigns: 6 }, { n: 6, startSigns: 14 }], [{ n: 6, startSigns: 14 }, { n: 6, startSigns: 8 }], [{ n: 7, startSigns: 20 }],
+  ],
+  TO: [[{ n: 4, keepClues: 12, extraGivens: 3 }], [{ n: 4, keepClues: 8 }], [{ n: 5, keepClues: 12 }], [{ n: 5, keepClues: 8 }], [{ n: 6, keepClues: 14 }], [{ n: 6, keepClues: 10 }]],
+  GL: [
+    [{ rows: 5, cols: 5, rocks: [3, 5], moves: [2, 3] }], [{ rows: 6, cols: 6, rocks: [5, 8], moves: [4, 5] }], [{ rows: 7, cols: 7, rocks: [7, 11], moves: [6, 7] }],
+    [{ rows: 7, cols: 7, rocks: [7, 11], moves: [7, 8] }, { rows: 8, cols: 8, rocks: [9, 14], moves: [8, 9] }], [{ rows: 8, cols: 8, rocks: [9, 14], moves: [9, 11] }], [{ rows: 9, cols: 9, rocks: [12, 18], moves: [11, 14] }],
+  ],
+  TQ: [
+    [{ rows: 2, cols: 3, moves: [5, 8] }], [{ rows: 2, cols: 3, moves: [10, 16] }, { rows: 3, cols: 3, moves: [10, 13] }], [{ rows: 3, cols: 3, moves: [12, 15] }],
+    [{ rows: 3, cols: 3, moves: [17, 20] }, { rows: 3, cols: 3, moves: [21, 23] }], [{ rows: 3, cols: 3, moves: [24, 31] }, { rows: 2, cols: 4, moves: [25, 32] }], [],
+  ],
+  RU: [[{ rows: 5, cols: 5, pairs: [4, 5] }, { rows: 6, cols: 6, pairs: [5, 6] }], [{ rows: 7, cols: 7, pairs: [6, 7] }], [{ rows: 8, cols: 8, pairs: [7, 8] }], [{ rows: 8, cols: 8, pairs: [5, 6] }], [{ rows: 9, cols: 9, pairs: [7, 8] }], []],
+  LU: [[{ rows: 5, cols: 5, posts: [4, 5] }, { rows: 6, cols: 6, posts: [6, 7] }], [{ rows: 7, cols: 7, posts: [8, 10] }], [{ rows: 8, cols: 8, posts: [11, 13] }], [{ rows: 8, cols: 8, posts: [11, 13] }, { rows: 9, cols: 9, posts: [14, 16] }], [{ rows: 9, cols: 9, posts: [14, 16] }], []],
+  PA: [[{ rows: 5, cols: 5, islands: [4, 5] }, { rows: 6, cols: 6, islands: [6, 8] }], [{ rows: 7, cols: 7, islands: [9, 11] }], [{ rows: 8, cols: 8, islands: [12, 14] }], [{ rows: 9, cols: 9, islands: [15, 18] }], [{ rows: 10, cols: 10, islands: [18, 22] }], []],
   BA: [
     [{ unknowns: 2, maxWeight: 20 }],
     [{ unknowns: 2, maxWeight: 20 }],
@@ -207,28 +243,28 @@ interface DistrictPlan { id: string; main: Code[]; guests: Code[]; tiers: number
 
 /** Tier distribution per district, in % (GAME_DESIGN § 4.2). */
 const PLAN: DistrictPlan[] = [
-  { id: 'phare', main: ['IN', 'LA', 'SU', 'DI', 'CR', 'OM', 'ET', 'CA'], guests: [], tiers: [70, 30, 0, 0, 0, 0], buildings: 1, rooms: [6, 6, 6, 6], unlock: { kind: 'always' }, lettersFromKeystone4: false },
-  { id: 'biblio', main: ['SU', 'MO', 'ET'], guests: ['IN', 'LA', 'CA', 'DI', 'OM', 'CR', 'BA'], tiers: [25, 45, 25, 5, 0, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 14 }, lettersFromKeystone4: true },
-  { id: 'horlo', main: ['EN', 'CA', 'CR'], guests: ['SU', 'MO', 'LA', 'IN', 'ET', 'VI', 'ME', 'EQ'], tiers: [10, 35, 35, 15, 5, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 110 }, lettersFromKeystone4: true },
-  { id: 'serre', main: ['FI', 'MA', 'DI'], guests: ['EN', 'LA', 'MO', 'VI', 'OM', 'CR', 'IN', 'SU', 'MI'], tiers: [5, 25, 40, 20, 10, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 206 }, lettersFromKeystone4: true },
-  { id: 'marche', main: ['BA', 'CA', 'ET'], guests: ['MA', 'FI', 'SU', 'EN', 'DI', 'CR', 'IN', 'LA', 'MI', 'EQ', 'ME'], tiers: [0, 15, 35, 30, 15, 5], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 302 }, lettersFromKeystone4: true },
-  { id: 'theatre', main: ['ME', 'EQ', 'OM'], guests: ['BA', 'MO', 'FI', 'CR', 'VI', 'DI', 'IN', 'LA', 'MI'], tiers: [0, 10, 30, 30, 20, 10], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 398 }, lettersFromKeystone4: true },
-  { id: 'obs', main: ['MI', 'VI', 'LA'], guests: ['SU', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'FI', 'IN', 'OM', 'DI', 'ET', 'CR', 'MO'], tiers: [0, 0, 25, 30, 30, 15], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 494 }, lettersFromKeystone4: true },
-  { id: 'grenier', main: ['EN', 'LA', 'CA', 'IN', 'BA', 'MI', 'ME', 'EQ', 'FI', 'MO', 'VI', 'ET', 'OM', 'DI', 'CR', 'SU'], guests: [], tiers: [0, 0, 0, 25, 45, 30], buildings: 1, rooms: [16], unlock: { kind: 'totalLightsAndLetters', lights: 590, letters: 4 }, lettersFromKeystone4: false },
+  { id: 'phare', main: ['IN', 'LA', 'SU', 'DI', 'CR', 'OM', 'ET', 'CA', 'GL', 'TQ'], guests: [], tiers: [70, 30, 0, 0, 0, 0], buildings: 1, rooms: [6, 6, 6, 6], unlock: { kind: 'always' }, lettersFromKeystone4: false },
+  { id: 'biblio', main: ['SU', 'MO', 'ET', 'SG'], guests: ['IN', 'LA', 'CA', 'DI', 'OM', 'CR', 'BA', 'BR', 'TO', 'GL', 'TQ', 'RU', 'LU', 'PA'], tiers: [25, 45, 25, 5, 0, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 14 }, lettersFromKeystone4: true },
+  { id: 'horlo', main: ['EN', 'CA', 'CR', 'TQ'], guests: ['SU', 'MO', 'LA', 'IN', 'ET', 'VI', 'ME', 'EQ', 'BR', 'SG', 'TO', 'GL', 'RU', 'LU', 'PA'], tiers: [10, 35, 35, 15, 5, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 110 }, lettersFromKeystone4: true },
+  { id: 'serre', main: ['FI', 'MA', 'DI', 'LU'], guests: ['EN', 'LA', 'MO', 'VI', 'OM', 'CR', 'IN', 'SU', 'MI', 'BR', 'SG', 'TO', 'GL', 'TQ', 'RU', 'PA'], tiers: [5, 25, 40, 20, 10, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 206 }, lettersFromKeystone4: true },
+  { id: 'marche', main: ['BA', 'CA', 'ET', 'PA'], guests: ['MA', 'FI', 'SU', 'EN', 'DI', 'CR', 'IN', 'LA', 'MI', 'EQ', 'ME', 'BR', 'SG', 'TO', 'GL', 'TQ', 'RU', 'LU'], tiers: [0, 15, 35, 30, 15, 5], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 302 }, lettersFromKeystone4: true },
+  { id: 'theatre', main: ['ME', 'EQ', 'OM', 'BR'], guests: ['BA', 'MO', 'FI', 'CR', 'VI', 'DI', 'IN', 'LA', 'MI', 'SG', 'TO', 'GL', 'TQ', 'RU', 'LU', 'PA'], tiers: [0, 10, 30, 30, 20, 10], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 398 }, lettersFromKeystone4: true },
+  { id: 'obs', main: ['MI', 'VI', 'LA', 'TO'], guests: ['SU', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'FI', 'IN', 'OM', 'DI', 'ET', 'CR', 'MO', 'BR', 'SG', 'GL', 'TQ', 'RU', 'LU', 'PA'], tiers: [0, 0, 25, 30, 30, 15], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 494 }, lettersFromKeystone4: true },
+  { id: 'grenier', main: ['EN', 'LA', 'CA', 'IN', 'BA', 'MI', 'ME', 'EQ', 'FI', 'MO', 'VI', 'ET', 'OM', 'DI', 'CR', 'SU', 'BR', 'SG', 'TO', 'GL', 'TQ', 'RU', 'LU', 'PA'], guests: [], tiers: [0, 0, 0, 25, 45, 30], buildings: 1, rooms: [16], unlock: { kind: 'totalLightsAndLetters', lights: 590, letters: 4 }, lettersFromKeystone4: false },
 ];
 
 /** Rooms whose name calls for a family: three of their lanterns take it (GAME_DESIGN § 3, « chaque salle a ses énigmes »). */
 const SIGNATURE: Record<string, Code> = {
   'La Cuisine': 'ET', 'La Lanterne': 'MI', 'Le Globe': 'MO', 'Les Portulans': 'FI', 'La Table des vents': 'MI', 'Le Balcon': 'DI',
-  'L’Atelier d’enluminure': 'VI', 'Le Cabinet des brouillons': 'DI', 'Les Rayonnages': 'ET', 'La Réserve': 'ET', 'Les Vitraux': 'VI', 'Le Sommet': 'DI',
+  'L’Atelier d’enluminure': 'VI', 'Le Cabinet des brouillons': 'DI', 'Les Rayonnages': 'ET', 'La Réserve': 'ET', 'Les Vitraux': 'VI', 'Le Sommet': 'TO',
   'La Forge': 'EN', 'Le Magasin': 'ET', 'Le Vestibule': 'CR', 'Les Rouages': 'EN', 'La Salle des Cloches': 'CR', 'Le Cadran': 'CA', 'Le Coucou': 'CR',
   'Les Poupées': 'DI', 'Le Joueur d’échecs': 'EQ', 'La Danseuse': 'CR', 'Le Cœur de l’automate': 'EN',
-  'Les Orangers': 'DI', 'La Verrière': 'VI', 'Les Nénuphars': 'FI', 'Le Fond du bassin': 'DI', 'Les Semis': 'ET', 'Les Lianes': 'FI', 'La Canopée': 'OM',
+  'Les Orangers': 'LU', 'La Verrière': 'VI', 'Les Nénuphars': 'PA', 'Le Fond du bassin': 'DI', 'Les Semis': 'ET', 'Les Lianes': 'RU', 'La Canopée': 'OM',
   'Les Étals': 'DI', 'Les Balances': 'BA', 'Les Sacs': 'BA', 'Le Comptoir': 'BA', 'La Cale': 'ET', 'Le Grand Plateau': 'BA', 'Les Étalons': 'BA', 'Le Registre': 'EQ', 'La Criée': 'DI',
-  'Le Vestiaire': 'ET', 'Le Bar': 'ET', 'Les Décors': 'OM', 'Les Accessoires': 'ET', 'La Machinerie': 'EN', 'Le Miroir': 'MI', 'La Malle': 'OM',
+  'Le Vestiaire': 'BR', 'Le Bar': 'ET', 'Les Décors': 'OM', 'Les Accessoires': 'ET', 'La Machinerie': 'EN', 'Le Miroir': 'MI', 'La Malle': 'OM',
   'La Fosse': 'CR', 'Les Projecteurs': 'VI', 'Le Plateau': 'OM',
-  'Le Polissoir': 'MI', 'Le Prisme': 'VI', 'Les Miroirs': 'MI', 'Le Banc d’optique': 'MI', 'Le Télescope': 'OM', 'Le Mécanisme': 'EN',
-  'Les Almanachs': 'ET', 'Les Globes célestes': 'OM', 'Le Sténopé': 'OM', 'Les Plaques': 'DI', 'Le Bain': 'VI', 'Le Rideau': 'OM',
+  'Le Polissoir': 'MI', 'Le Prisme': 'VI', 'Les Miroirs': 'MI', 'Le Banc d’optique': 'MI', 'Le Télescope': 'OM', 'Le Mécanisme': 'TQ',
+  'Les Almanachs': 'ET', 'Les Globes célestes': 'OM', 'Le Sténopé': 'OM', 'Les Plaques': 'DI', 'Le Bain': 'VI', 'Le Rideau': 'BR',
 };
 function signatureOf(district: string, b: number, r: number): Code | undefined {
   const info = DISTRICT_INFO.find((d) => d.id === district);
@@ -265,7 +301,7 @@ class FamilyPicker {
   private placed = new Map<string, number>(); // district → count
   private inRoom = new Map<string, Code[]>();
 
-  next(d: DistrictPlan, tier: Tier, room: string, sig: Code | undefined, left: number, rng: SeededRNG): Code {
+  next(d: DistrictPlan, tier: Tier, room: string, sig: Code | undefined, left: number, rng: SeededRNG, avoid?: Code): Code {
     const weights = new Map<Code, number>();
     for (const f of d.main) weights.set(f, 2);
     for (const f of d.guests) if (!weights.has(f)) weights.set(f, 1);
@@ -275,10 +311,10 @@ class FamilyPicker {
     const win = this.recent.slice(-(WINDOW - 1));
     const count = (f: Code) => win.filter((x) => x === f).length;
     const prev = this.recent[this.recent.length - 1];
-    const able = [...weights.keys()].filter((f) => MAX_TIER[f] >= tier);
+    const able = [...weights.keys()].filter((f) => MAX_TIER[f] >= tier && f !== avoid);
     // The signature family is owed its lanterns before the room runs out.
     const sigOwed = sig && MAX_TIER[sig] >= tier ? SIGNATURE_COUNT - here.filter((x) => x === sig).length : 0;
-    if (sig && sigOwed > 0 && sig !== prev && count(sig) < CAP && (left <= sigOwed * 2 || rng.chance(1, 3))) return sig;
+    if (sig && sigOwed > 0 && sig !== prev && sig !== avoid && count(sig) < CAP && (left <= sigOwed * 2 || rng.chance(1, 3))) return sig;
     // Hard rules first; relaxed only if nothing passes (a tiny district late in a window).
     const tries: ((f: Code) => boolean)[] = [
       (f) => f !== prev && count(f) < CAP && here.filter((x) => x === f).length < 3,
@@ -329,7 +365,9 @@ function planWorld(): DistrictOut[] {
         const lanterns: LanternOut[] = roomTiers.map((t, i) => {
           const lid = `${id}.${i + 1}`;
           const fx = FIXED[lid];
-          const family = fx ? fx.f : pick.next(d, t, id, sig, size - i, rng);
+          // A hand-placed lantern right after this one counts as its neighbour already.
+          const nextFixed = FIXED[i + 1 < size ? `${id}.${i + 2}` : `${d.id}.b${b + 1}.r${r + 2}.1`]?.f;
+          const family = fx ? fx.f : pick.next(d, t, id, sig, size - i, rng, nextFixed);
           pick.record(d.id, id, family);
           return { id: lid, family, tier: fx ? fx.t : t };
         });

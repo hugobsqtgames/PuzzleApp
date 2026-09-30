@@ -258,6 +258,14 @@ const RULE_DETAILS: Record<string, string> = {
   ET: 'Chaque indice parle des objets de gauche à droite. Touche deux objets pour les échanger. Quand l’étagère te semble rangée, Valider.',
   OM: 'L’ombre peut avoir tourné d’un quart, d’un demi ou de trois quarts de tour. Elle n’est jamais retournée comme dans un miroir. « Reflet » : c’est l’inverse, le reflet est toujours retourné, et il peut aussi avoir tourné.',
   SC: 'Chaque salle du bâtiment, une fois assez éclairée, montre un chiffre peint dans son décor. Va les chercher, puis compose le code selon la règle du sceau.',
+  BR: 'Les nombres d’une ligne sont ses groupes de points, dans l’ordre, avec au moins une case vide entre deux groupes. « Broder » pose un point, « Marquer vide » une croix pour t’en souvenir. Les nombres pâlissent quand leur ligne est juste.',
+  SG: 'Chaque chiffre de 1 à la taille du carré apparaît une fois par ligne et une fois par colonne. Un signe entre deux cases dit laquelle est la plus petite : la pointe la désigne. Touche une case, puis un chiffre.',
+  TO: 'Chaque hauteur de cheminée apparaît une fois par ligne et une fois par colonne. Un nombre au bord dit combien de cheminées on voit en regardant depuis là : une grande cache toutes les plus petites derrière elle. Touche une case, puis une hauteur.',
+  GL: 'Nilo glisse sur la glace jusqu’à ce qu’une caisse ou le bord l’arrête. Il doit s’arrêter pile sur la lanterne. Glisse le doigt sur le canal, ou touche les flèches. Annuler revient d’une glissade.',
+  TQ: 'Touche une tuile à côté de la case vide pour la faire glisser. Touche une tuile plus loin sur la même ligne ou colonne : toute la rangée glisse. Range les tuiles de 1 à la dernière, la case vide à la fin.',
+  RU: 'Touche une épingle, puis fais glisser le doigt (ou touche case après case) jusqu’à l’épingle de même couleur. Les rubans ne se croisent jamais et doivent couvrir tout le métier. Touche un ruban pour le reprendre à cet endroit.',
+  LU: 'Chaque lanterne a sa luciole juste à côté : au-dessus, en dessous, à gauche ou à droite. Deux lucioles ne se touchent jamais, même par un coin. Les nombres comptent les lucioles de chaque ligne et colonne. Touche une case : luciole, puis herbe, puis libre.',
+  PA: 'Relie les îlots par des passerelles droites, une ou deux entre deux îlots, qui ne se croisent jamais. Le nombre d’un îlot est son nombre de passerelles. À la fin, tous les îlots doivent être reliés ensemble. Touche un îlot, puis un autre en face.',
 };
 
 function Row({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {

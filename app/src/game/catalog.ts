@@ -22,14 +22,22 @@ import { SpotFamily } from '../core/families/spot';
 import { ShelfFamily } from '../core/families/shelf';
 import { ShadowsFamily } from '../core/families/shadows';
 import { SealFamily } from '../core/families/seal';
+import { EmbroideryFamily } from '../core/families/embroidery';
+import { SignsFamily } from '../core/families/signs';
+import { RoofsFamily } from '../core/families/roofs';
+import { GlideFamily } from '../core/families/glide';
+import { SliderFamily } from '../core/families/slider';
+import { RibbonsFamily } from '../core/families/ribbons';
+import { FirefliesFamily } from '../core/families/fireflies';
+import { BridgesFamily } from '../core/families/bridges';
 import { DailyPlanner } from '../core/game/daily';
 import { DayKey, daysBetween } from '../core/game/dayKey';
 import { Building, District, Lantern, Room, World } from '../core/game/world';
 import { DistrictId, DISTRICT_BY_ID } from '../content/vesper';
 
-export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA' | 'CR' | 'VI' | 'DI' | 'ET' | 'OM' | 'SC';
+export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA' | 'CR' | 'VI' | 'DI' | 'ET' | 'OM' | 'BR' | 'SG' | 'TO' | 'GL' | 'TQ' | 'RU' | 'LU' | 'PA' | 'SC';
 /** Families of the lanterns and of the evening challenge (the seal only closes buildings). */
-export const CODES: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI', 'CR', 'VI', 'DI', 'ET', 'OM'];
+export const CODES: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI', 'CR', 'VI', 'DI', 'ET', 'OM', 'BR', 'SG', 'TO', 'GL', 'TQ', 'RU', 'LU', 'PA'];
 
 export interface FamilyInfo {
   code: Code;
@@ -60,6 +68,14 @@ export const FAMILIES: Record<Code, FamilyInfo> = {
   DI: { code: 'DI', name: 'Différences', answer: false, rule: 'Trouve ce qui a changé dans la seconde image.', engine: new SpotFamily(), achievement: 'Œil de lynx' },
   ET: { code: 'ET', name: 'Étagère', answer: true, rule: 'Range les objets de gauche à droite en suivant les indices.', engine: new ShelfFamily(), achievement: 'Rangeur' },
   OM: { code: 'OM', name: 'Ombres', answer: true, rule: 'Quelle ombre appartient à l’objet ? Une ombre tourne, mais ne se retourne jamais.', engine: new ShadowsFamily(), achievement: 'Montreur d’ombres' },
+  BR: { code: 'BR', name: 'Broderie', answer: false, rule: 'Brode le motif : les nombres donnent les groupes de points de chaque ligne et de chaque colonne.', engine: new EmbroideryFamily(), achievement: 'Brodeuse' },
+  SG: { code: 'SG', name: 'Signes', answer: false, rule: 'Chaque chiffre une fois par ligne et par colonne. La pointe d’un signe désigne le plus petit.', engine: new SignsFamily(), achievement: 'Arithméticien' },
+  TO: { code: 'TO', name: 'Toits', answer: false, rule: 'Chaque hauteur une fois par ligne et par colonne. Un nombre au bord compte les cheminées visibles depuis là.', engine: new RoofsFamily(), achievement: 'Couvreur' },
+  GL: { code: 'GL', name: 'Glissade', answer: false, rule: 'Nilo glisse jusqu’à heurter quelque chose. Fais-le s’arrêter sur la lanterne.', engine: new GlideFamily(), achievement: 'Patineur' },
+  TQ: { code: 'TQ', name: 'Taquin', answer: false, rule: 'Fais glisser les tuiles pour les remettre dans l’ordre.', engine: new SliderFamily(), achievement: 'Vitrier' },
+  RU: { code: 'RU', name: 'Rubans', answer: false, rule: 'Relie chaque paire d’épingles par un ruban. Les rubans ne se croisent pas et couvrent tout.', engine: new RibbonsFamily(), achievement: 'Tisserand' },
+  LU: { code: 'LU', name: 'Lucioles', answer: false, rule: 'Une luciole à côté de chaque lanterne. Elles ne se touchent jamais. Les nombres comptent les lucioles.', engine: new FirefliesFamily(), achievement: 'Veilleur de nuit' },
+  PA: { code: 'PA', name: 'Passerelles', answer: false, rule: 'Relie les îlots par des passerelles qui ne se croisent pas. Chaque nombre dit combien en partent.', engine: new BridgesFamily(), achievement: 'Pontonnier' },
   SC: { code: 'SC', name: 'Sceau', answer: true, rule: 'Chaque salle éclairée cache un chiffre dans son décor. Retrouve-les pour ouvrir le sceau.', engine: new SealFamily(), achievement: 'Gardien des sceaux' },
 };
 
@@ -117,7 +133,7 @@ export function puzzleFor(id: string): PlayablePuzzle | null {
 // ---------------------------------------------------------------- daily
 
 const planner = new DailyPlanner([...CODES], 'fr', P.version);
-const DAILY_MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, SU: 3, BA: 4, MO: 4, ME: 5, FI: 4, MI: 5, EQ: 4, MA: 3, CR: 4, VI: 4, DI: 4, ET: 4, OM: 4, SC: 3 };
+const DAILY_MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, SU: 3, BA: 4, MO: 4, ME: 5, FI: 4, MI: 5, EQ: 4, MA: 3, CR: 4, VI: 4, DI: 4, ET: 4, OM: 4, BR: 4, SG: 4, TO: 3, GL: 4, TQ: 3, RU: 4, LU: 4, PA: 4, SC: 3 };
 /** On-device fallback beyond the prepared range: light parameters only (fast). */
 const DAILY_FALLBACK: Record<Code, unknown> = {
   IN: { rows: 4, columns: 4, presses: [4, 7] }, CA: { length: 3, clueCount: [4, 7] }, LA: { rows: 6, columns: 6 },
@@ -126,6 +142,9 @@ const DAILY_FALLBACK: Record<Code, unknown> = {
   MI: { rows: 6, columns: 6, mirrors: 3, targets: 4, obstaclePercent: 12 }, EQ: { size: 4, kinds: ['has', 'hasNot', 'at', 'notAt', 'objectAt', 'objectNotAt'] },
   MA: { silhouettes: ['lanterne', 'cle', 'theiere', 'maison', 'bateau', 'horloge'], pieceSize: [3, 5] },
   CR: { bells: 4, length: [5, 7] }, VI: { rows: 3, cols: 4 }, DI: { items: [11, 14], diffs: 5 }, ET: { n: 5 }, OM: { cells: [6, 7], options: 4 },
+  BR: { rows: 7, cols: 7, density: 0.55, symmetric: true }, SG: { n: 5, startSigns: 8 }, TO: { n: 4, keepClues: 10 },
+  GL: { rows: 7, cols: 7, rocks: [7, 11], moves: [5, 7] }, TQ: { rows: 3, cols: 3, moves: [12, 18] }, RU: { rows: 6, cols: 6, pairs: [5, 6] },
+  LU: { rows: 7, cols: 7, posts: [8, 10] }, PA: { rows: 7, cols: 7, islands: [9, 11] },
   SC: { rooms: ['phare.b1.r1'] },
 };
 
