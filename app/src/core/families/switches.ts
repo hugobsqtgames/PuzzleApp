@@ -1,4 +1,4 @@
-/** Interrupteurs — portage exact de Families/Switches/Switches.swift (résolution exacte sur GF(2)). */
+/** Interrupteurs (résolution exacte sur GF(2)). */
 import { canonicalGrid } from '../puzzlekit/grid';
 import { SeededRNG } from '../puzzlekit/rng';
 import { CORRECT, HintLevel, INCOMPLETE, PuzzleFamily, SolveReport, TierThresholds, ValidationResult, cell, clampScore, tpl, Hint } from '../puzzlekit/types';

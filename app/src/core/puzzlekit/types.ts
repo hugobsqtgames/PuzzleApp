@@ -1,4 +1,4 @@
-/** Types communs du moteur de puzzles — portage de PuzzleKit/PuzzleFamily.swift et Difficulty.swift. */
+/** Types communs du moteur de puzzles. */
 import { SeededRNG } from './rng';
 
 export enum Tier {

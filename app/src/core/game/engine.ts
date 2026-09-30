@@ -1,5 +1,5 @@
 /**
- * Point d'entrée unique des règles — portage de GameCore/GameEngine.swift.
+ * Point d'entrée unique des règles.
  * L'état est modifié AVANT les animations : quitter l'app pendant une célébration ne perd rien et ne redonne rien.
  */
 import { HintLevel, Tier } from '../puzzlekit/types';

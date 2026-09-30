@@ -1,4 +1,4 @@
-/** Symétries de grille et forme canonique (empreintes) — portage de PuzzleKit/Grid.swift. */
+/** Symétries de grille et forme canonique (empreintes). */
 export type GridSymmetry = 'identity' | 'rotate90' | 'rotate180' | 'rotate270' | 'flipHorizontal' | 'flipVertical' | 'transpose' | 'antiTranspose';
 export const ALL_SYMMETRIES: GridSymmetry[] = ['identity', 'rotate90', 'rotate180', 'rotate270', 'flipHorizontal', 'flipVertical', 'transpose', 'antiTranspose'];
 

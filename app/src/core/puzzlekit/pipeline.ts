@@ -1,4 +1,4 @@
-/** Pipeline d'acceptation : GENERATE → SOLVE → UNIQUE? → VALIDATE → RATE → TIER? → DOUBLON? — portage de CandidatePipeline.swift. */
+/** Pipeline d'acceptation : GENERATE → SOLVE → UNIQUE? → VALIDATE → RATE → TIER? → DOUBLON?. */
 import { SeededRNG, StableHash } from './rng';
 import { PuzzleFamily, SolveReport, Tier } from './types';
 

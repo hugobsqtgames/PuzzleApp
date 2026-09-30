@@ -1,4 +1,4 @@
-/** Déblocages — portage de GameCore/Progression.swift. On débloque par quantité de lumière, jamais par un puzzle précis. */
+/** Déblocages. On débloque par quantité de lumière, jamais par un puzzle précis. */
 import { GameState } from './state';
 import { Building, District, Lantern, World, buildingLanterns, regularLanterns, worldLanterns } from './world';
 

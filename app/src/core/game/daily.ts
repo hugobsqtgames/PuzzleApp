@@ -1,4 +1,4 @@
-/** Défi du jour, série et veilleuses — portage de GameCore/Daily.swift. */
+/** Défi du jour, série et veilleuses. */
 import { SeededRNG, StableHash } from '../puzzlekit/rng';
 import { Tier } from '../puzzlekit/types';
 import { DayKey, addDays, dayKey, daysBetween, isoWeekday, localDayKey } from './dayKey';

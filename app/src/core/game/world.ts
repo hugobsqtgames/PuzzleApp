@@ -1,4 +1,4 @@
-/** Modèle du monde — portage de GameCore/World.swift. Les identifiants de puzzles ne changent jamais. */
+/** Modèle du monde. Les identifiants de puzzles ne changent jamais. */
 import { Tier } from '../puzzlekit/types';
 
 export interface Lantern { puzzle: string; family: string; tier: Tier }

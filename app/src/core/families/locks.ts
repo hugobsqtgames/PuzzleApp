@@ -1,4 +1,4 @@
-/** Cadenas — portage exact de Families/Locks/Locks.swift. */
+/** Cadenas. */
 import { SeededRNG } from '../puzzlekit/rng';
 import { CORRECT, Hint, HintLevel, INCOMPLETE, PuzzleFamily, SolveReport, TierThresholds, ValidationResult, cell, clampScore, tpl, DeductionStep } from '../puzzlekit/types';
 

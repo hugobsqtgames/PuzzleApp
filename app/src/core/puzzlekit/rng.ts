@@ -1,5 +1,5 @@
 /**
- * Générateurs pseudo-aléatoires déterministes — portage exact du cœur Swift (PuzzleKit/SeededRNG.swift).
+ * Générateurs pseudo-aléatoires déterministes.
  * Toute l'arithmétique 64 bits passe par BigInt : mêmes graines ⇒ mêmes nombres ⇒ mêmes puzzles,
  * sur iOS, Android et dans les outils. Ne jamais utiliser Math.random() pour la structure d'un puzzle.
  */

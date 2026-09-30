@@ -1,5 +1,5 @@
 /**
- * Sauvegarde locale robuste — portage de Persistence/SaveStore.swift.
+ * Sauvegarde locale robuste.
  * Écriture atomique (fichier temporaire puis renommage), copie de secours, décodage tolérant,
  * fusion avec le secours en cas de relecture partielle, fichiers illisibles jamais écrasés.
  */

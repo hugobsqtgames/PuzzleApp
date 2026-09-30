@@ -1,5 +1,5 @@
 /**
- * Directeur son et haptique — portage de GameAudio/AudioDirector.swift.
+ * Directeur son et haptique.
  * DÉCIDE (quoi jouer, quand, quelle vibration) ; expo-audio / expo-haptics EXÉCUTENT les commandes.
  */
 export const SOUND_EVENTS = ['manipulate', 'error', 'lanternLit', 'shards', 'roomCompleted', 'buildingCompleted', 'unlock', 'newDistrict', 'hint', 'locked', 'uiTap'] as const;

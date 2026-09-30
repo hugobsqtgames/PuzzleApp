@@ -1,4 +1,4 @@
-/** Lampes (genre « Akari ») — portage exact de Families/Lamps/Lamps.swift. */
+/** Lampes (genre « Akari »). */
 import { canonicalGrid } from '../puzzlekit/grid';
 import { SeededRNG } from '../puzzlekit/rng';
 import { CORRECT, CellRef, DeductionStep, Hint, HintLevel, INCOMPLETE, Issue, PuzzleFamily, SolveReport, TierThresholds, ValidationResult, cell, clampScore, maxTechniqueRank, tpl } from '../puzzlekit/types';

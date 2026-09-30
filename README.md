@@ -35,14 +35,13 @@ Limites actuelles : français seulement ; la police des titres est Georgia (syst
 
 | Document | Contenu |
 |---|---|
-| [PRODUCT_DISCOVERY.md](PRODUCT_DISCOVERY.md) | Vision, marché, concept, différenciation, naming, risques, roadmap |
-| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Identité de marque, direction artistique « Encre & Lueur », tokens, composants, Nilo, icône |
-| [GAME_DESIGN.md](GAME_DESIGN.md) | Monde, déblocages, difficulté, familles de puzzles (conception d'origine : 12), indices, économie, défi du jour, succès |
-| [TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md) | Modules Swift, moteur de puzzles, pipeline de contenu, sauvegarde, tests, confidentialité |
-| [WIREFRAMES.md](WIREFRAMES.md) | Les 24 écrans, leurs états et la navigation |
-| [VALIDATION.md](VALIDATION.md) | Revue critique de la conception et corrections appliquées |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture de l'app Expo : cœur, contenu, écrans, sauvegarde, tests, mises à jour de contenu |
+| [docs/PRODUCT_DISCOVERY.md](docs/PRODUCT_DISCOVERY.md) | Vision, marché, concept, différenciation, naming, risques, roadmap |
+| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Identité de marque, direction artistique « Encre & Lueur », tokens, composants, Nilo, icône |
+| [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md) | Monde, déblocages, difficulté, familles de puzzles (conception d'origine : 12), indices, économie, défi du jour, succès |
+| [docs/WIREFRAMES.md](docs/WIREFRAMES.md) | Les 24 écrans, leurs états et la navigation |
+| [docs/historique/](docs/historique) | Archives : l'ancienne architecture et l'audit du cœur Swift (retiré), la revue de conception |
 | [app/](app) | App Expo : cœur TypeScript (`src/core/`) et écrans |
-| [Packages/LampionKit](Packages/LampionKit) | Archivé : cœur d'origine en Swift pur : moteur de puzzles, familles, progression, économie, défi du jour, sauvegarde |
 | [prototype/index.html](prototype/index.html) | Maquette navigable : direction artistique puis 24 écrans iPhone et iPad, puzzles jouables |
 
 ## Ouvrir la maquette
@@ -57,24 +56,3 @@ Les puzzles jouables de la maquette ont été générés puis vérifiés (soluti
 python3 prototype/verification/generate_lanterns_and_lock.py
 python3 prototype/verification/generate_gears.py
 ```
-
-## Cœur Swift (LampionKit) — archivé
-
-Implémentation de référence, gardée pour comparaison et plus mise à jour : l'app utilise le portage TypeScript de `app/src/core/`. Swift pur, compile sur macOS comme sur Linux.
-
-```
-cd Packages/LampionKit
-swift test                                  # tests unitaires et de propriétés
-swift run -c release contentforge soak 200  # génère, résout, valide et mesure 200 puzzles par famille
-```
-
-| Module | Rôle |
-|---|---|
-| `PuzzleKit` | Aléatoire déterministe, contrat `PuzzleFamily`, pipeline d'acceptation, paliers, empreintes |
-| `FamilySwitches` | Interrupteurs : résolveur exact GF(2), nombre minimal de coups |
-| `FamilyLocks` | Cadenas : solution unique, indices minimaux, erreurs précises |
-| `FamilyLamps` | Lampes : résolveur exhaustif + résolveur « humain » par techniques (difficulté, indices) |
-| `GameCore` | Monde, déblocages, portefeuille idempotent, récompenses, défi du jour, série et veilleuses |
-| `Persistence` | Sauvegarde versionnée, écriture atomique, secours, migrations, décodage tolérant |
-| `GameAudio` | Directeur son et haptique : ambiances par lieu, fondus, anti-rafale, réglages, arrière-plan |
-| `ContentForge` | Outil en ligne de commande de génération et de validation du contenu |

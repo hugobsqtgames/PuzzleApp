@@ -1,5 +1,5 @@
 /**
- * Jour calendaire local « AAAA-MM-JJ » — portage de GameCore/DayKey.swift.
+ * Jour calendaire local « AAAA-MM-JJ ».
  * Stocké en chaîne (clé de Set/Map, JSON direct) ; l'arithmétique passe par un numéro de jour civil exact.
  */
 export type DayKey = string;

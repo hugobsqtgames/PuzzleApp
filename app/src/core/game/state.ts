@@ -1,5 +1,5 @@
 /**
- * État de jeu sauvegardé — portage de GameCore/GameState.swift, Economy.swift (portefeuille) et DailyState.
+ * État de jeu sauvegardé, portefeuille et défi du jour.
  * Décodage tolérant ÉLÉMENT PAR ÉLÉMENT : une donnée abîmée ne fait perdre qu'elle-même, et chaque perte
  * est comptée (la sauvegarde peut alors être complétée par la copie de secours).
  */
