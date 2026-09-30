@@ -54,7 +54,7 @@ export const EN_UI: Record<string, string> = {
   ', réussi': ', solved',
   ', rattrapé': ', caught up',
   'Rattrapage': 'Catch-up',
-  'Rattraper le {0}': 'Catch up on the {0}',
+  'Rattraper le {0}': 'Catch up on {0}',
   'Récompense de base. Un rattrapage ne compte pas pour la série.': 'Base reward. A catch-up does not count towards the streak.',
   'Grenier de l’Allumeur : {0}': 'Lamplighter’s Attic: {0}',
   'Lanternes du quartier': 'Lanterns of the district',
@@ -242,7 +242,7 @@ export const EN_UI: Record<string, string> = {
   'Il porte la dernière flamme de Vesper. Il t’aidera, sans jamais te presser.': 'He carries the last flame of Vesper. He will help you, without ever rushing you.',
   'Toucher pour continuer': 'Tap to continue',
   'Lampion': 'Lampion',
-  'Touchez pour continuer': 'Tap to continue',
+  'Touche pour continuer': 'Tap to continue',
   'Allumer la première lanterne': 'Light the first lantern',
   'Passer': 'Skip',
   'Le défi du soir t’attend.': 'The evening challenge is waiting for you.',
@@ -455,4 +455,5 @@ export const EN_UI: Record<string, string> = {
   'Lettres de l’Allumeur : {0} / {1}': 'Letters from the Lamplighter: {0} / {1}',
   '{0} veilleuse': '{0} night-light',
   '{0} veilleuses': '{0} night-lights',
+  'Porter : {0}': 'Wear: {0}',
 };

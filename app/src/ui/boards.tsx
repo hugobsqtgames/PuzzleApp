@@ -306,7 +306,7 @@ function Scales({ s, width, onPlay, tap }: BoardProps) {
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
         {keys.map((k) => (
-          <Pressable key={k} accessibilityRole="button" accessibilityLabel={k === '⌫' ? 'Effacer' : k === 'C' ? 'Tout effacer' : k} onPress={() => { tap(); press(k); }}
+          <Pressable key={k} accessibilityRole="button" accessibilityLabel={k === '⌫' ? tr('Effacer') : k === 'C' ? tr('Tout effacer') : k} onPress={() => { tap(); press(k); }}
             style={{ width: (width - 30) / 6, height: 52, borderRadius: 12, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ fontFamily: ROUND, fontSize: 22, fontWeight: '700', color: T.tx }}>{k}</Text>
           </Pressable>

@@ -10,10 +10,10 @@ import { BackButton, Button, Card, GlyphCircle, Icon, IconButton, Pill, TierBars
 import { T, type } from '../ui/theme';
 import { FAMILIES, TIER_NAMES, dailyPuzzle } from '../game/catalog';
 import { addDays, daysBetween, dayKey } from '../core/game/dayKey';
-import { dailyLabel, dateOfDay, monthName } from '../ui/dates';
+import { dailyLabel, dateOfDay, monthName, weekInitials } from '../ui/dates';
 import { STANDARD_STREAK } from '../core/game/daily';
 import { STANDARD_ECONOMY } from '../core/game/engine';
-import { tr, trn } from '../i18n';
+import { lang, tr, trn } from '../i18n';
 
 export default function Daily() {
   const { state, today, openDaily, showToast } = useStore();
@@ -22,7 +22,10 @@ export default function Daily() {
   const p = dailyPuzzle(today);
   const done = state.daily.completedDays.has(today);
   const tomorrow = dailyPuzzle(addDays(today, 1));
-  const bonus = Math.min(STANDARD_ECONOMY.dailyStreakBonusCap, state.daily.streak + 1);
+  // The streak tonight's success would reach (as the engine counts it: night-lights cover missed evenings).
+  const last = state.daily.lastStreakDay, gap = last ? daysBetween(today, last) : 0;
+  const nextStreak = !last ? 1 : gap <= 0 ? state.daily.streak : gap === 1 || state.daily.nightlights >= gap - 1 ? state.daily.streak + 1 : 1;
+  const bonus = Math.min(STANDARD_ECONOMY.dailyStreakBonusCap, nextStreak);
   const missed = Array.from({ length: STANDARD_STREAK.catchUpWindowDays }, (_, i) => addDays(today, -(i + 1)))
     .filter((d) => !state.daily.completedDays.has(d) && !state.daily.catchUpDays.has(d) && dailyPuzzle(d));
 
@@ -85,7 +88,7 @@ export default function Daily() {
           <IconButton name="chev" label={tr('Mois suivant')} size={36} disabled={isCurrentMonth} onPress={() => setMonth(({ y, m }) => (m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 }))} />
         </View>
         <View style={{ flexDirection: 'row' }}>
-          {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => <Text key={i} style={[type.foot, { flex: 1, textAlign: 'center' }]}>{d}</Text>)}
+          {weekInitials().map((d, i) => <Text key={i} style={[type.foot, { flex: 1, textAlign: 'center' }]}>{d}</Text>)}
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {cells.map((d, i) => {
@@ -110,7 +113,7 @@ export default function Daily() {
           {missed.map((d) => (
             <Pressable key={d} accessibilityRole="button" onPress={() => { tap(); play(d); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.line }}>
               <Icon name="cal" size={20} color={T.tx2} />
-              <Text style={[type.body, { flex: 1 }]}>{tr('Rattraper le {0}', [dailyLabel(dateOfDay(d)).toLowerCase()])}</Text>
+              <Text style={[type.body, { flex: 1 }]}>{tr('Rattraper le {0}', [lang() === 'fr' ? dailyLabel(dateOfDay(d)).toLowerCase() : dailyLabel(dateOfDay(d))])}</Text>
               <Icon name="chev" size={18} color={T.tx3} />
             </Pressable>
           ))}

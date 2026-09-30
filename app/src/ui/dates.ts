@@ -12,6 +12,9 @@ export function dailyLabel(date: Date = new Date()): string {
 }
 
 /** Name of month m (1–12), capitalised as a heading. */
+/** Initials of the week, Monday first (the calendar's header). */
+export const weekInitials = () => (lang() === 'en' ? ['M', 'T', 'W', 'T', 'F', 'S', 'S'] : ['L', 'M', 'M', 'J', 'V', 'S', 'D']);
+
 export function monthName(m: number): string {
   const n = MONTHS[lang()][m - 1];
   return n.charAt(0).toUpperCase() + n.slice(1);

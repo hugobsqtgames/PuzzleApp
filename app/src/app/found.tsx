@@ -19,7 +19,7 @@ import { achievementContext, COSMETICS, look } from '../game/rewards';
 import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoom, roomName } from '../game/views';
 import { WORLD } from '../game/catalog';
 import { followUps } from './success';
-import { tr } from '../i18n';
+import { inFrench, tr } from '../i18n';
 
 const kindOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step ?? 0))] ?? '').split(':')[0];
 const idOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step ?? 0))] ?? '').split(':')[1] ?? '';
@@ -90,7 +90,7 @@ export default function Found() {
             <Text style={type.title1}>{tr('Objet trouvé')}</Text>
             <Text style={[type.title3, { textAlign: 'center' }]}>{obj.name}</Text>
             <Text style={[type.dialogue, { maxWidth: 320, textAlign: 'center', color: T.tx2 }]}>{obj.story}</Text>
-            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}><ShardPill n="+20" /><Pill icon="book">{tr('Carnet')} · {profile.picked.length} / {allRooms().length}</Pill></View>
+            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}><ShardPill n={`+${engine.economy.roomBonus}`} /><Pill icon="book">{tr('Carnet')} · {profile.picked.length} / {allRooms().length}</Pill></View>
           </>
         );
       }
@@ -101,7 +101,8 @@ export default function Found() {
     const at = locateBuilding(id);
     if (at) {
       const ctx = achievementContext(state, engine.progression, profile);
-      const reward = COSMETICS.find((c) => c.earn && c.earn.when(ctx) && c.earn.text.includes(buildingName(at.district, at.index)));
+      // The wardrobe names the building its prize comes from (compared in French, the language they are written in).
+      const reward = COSMETICS.find((c) => c.earn && c.earn.when(ctx) && inFrench(() => c.earn!.text.includes(buildingName(at.district, at.index))));
       body = (
         <>
           <Nilo size={150} mood="wonder" look={look(state)} />
@@ -109,12 +110,12 @@ export default function Found() {
           <Text style={[type.title1, { textAlign: 'center' }]}>{buildingName(at.district, at.index)}</Text>
           <Text style={[type.dialogue, { textAlign: 'center' }]}>{infoOf(at.district).buildings[at.index].residentAwake}</Text>
           <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <ShardPill n="+50" />
+            <ShardPill n={`+${engine.economy.buildingBonus}`} />
             {reward ? <Pill icon="star" iconColor={T.gold}>{reward.name}</Pill> : null}
           </View>
         </>
       );
-      if (reward) buttons = (<><Button title={`Porter : ${reward.name}`} onPress={() => { equip(reward.slot, reward.id); next(); }} /><Button title={tr('Plus tard')} kind="ghost" onPress={next} /></>);
+      if (reward) buttons = (<><Button title={tr('Porter : {0}', [reward.name])} onPress={() => { equip(reward.slot, reward.id); next(); }} /><Button title={tr('Plus tard')} kind="ghost" onPress={next} /></>);
     }
   }
 
@@ -129,7 +130,7 @@ export default function Found() {
         <Text style={[type.cap, { color: info.hue }]}>{tr('Quartier entièrement éclairé')}</Text>
         <Text style={[type.title1, { textAlign: 'center' }]}>{info.name}</Text>
         {info.keeper ? <Text style={[type.dialogue, { textAlign: 'center' }]}>{tr('{0} se réveille.', [info.keeper.name])} {info.keeper.line}</Text> : null}
-        <ShardPill n="+100" />
+        <ShardPill n={`+${engine.economy.districtBonus}`} />
       </>
     );
   }

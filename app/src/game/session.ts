@@ -8,11 +8,13 @@
  */
 import { CellRef, HintLevel, Tier } from '../core/puzzlekit/types';
 import { SolveRecord } from '../core/game/state';
+import { STANDARD_ECONOMY } from '../core/game/engine';
 import { t } from '../content/strings';
 import { Code, FAMILIES, PlayablePuzzle } from './catalog';
 
 export type SessionKind = 'lantern' | 'daily';
-export const HINT_COSTS = [0, 5, 10, 20] as const;
+/** What each hint level costs: the engine's table, so the sheet always shows what is charged. */
+export const HINT_COSTS = STANDARD_ECONOMY.hintCosts;
 export const MURMURE_COOLDOWN_MS = 20_000;
 
 export interface Session {

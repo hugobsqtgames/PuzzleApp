@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, View, ViewStyle, useWindowDimensions } from 'react-native';
+import { Animated, Easing, Modal, Pressable, ScrollView, StyleProp, StyleSheet, Switch, View, ViewStyle, useWindowDimensions } from 'react-native';
 import { Text } from './Text';
 import { useAnimatedValue } from './motion';
 import { SvgXml } from 'react-native-svg';
@@ -223,7 +223,10 @@ export function Sheet({ visible, onClose, children }: { visible: boolean; onClos
       </Animated.View>
       <Animated.View style={[s.sheet, { left: side, right: side, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }] }]}>
         <View style={s.grab} />
-        {children}
+        {/* Long rules or large text on a small phone: the content scrolls instead of being cut off. */}
+        <ScrollView style={{ flexGrow: 0 }} bounces={false} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {children}
+        </ScrollView>
       </Animated.View>
     </Modal>
   );

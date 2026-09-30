@@ -62,6 +62,8 @@ export default function PuzzleScreen() {
   const boardScale = wide ? Math.min(1.5, (wideWidth - 56 - SIDE_W - 32) / BOARD_BASE) : 1;
   const boardWidth = wide ? BOARD_BASE : Math.min(width, 600) - 32;
   const later = (fn: () => void, ms: number) => { timers.current.push(setTimeout(fn, ms)); };
+  // Boards played by dragging (Glissade, Rubans): a scrolling page would take the gesture over on iOS.
+  const dragBoard = s.code === 'GL' || s.code === 'RU';
 
   const end = (q: Session, delay: number) => {
     if (finishing.current) return;
@@ -198,7 +200,7 @@ export default function PuzzleScreen() {
             <View style={{ minHeight: 48, justifyContent: 'center' }}>{feedback}</View>
             {controls}
           </View>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false} scrollEnabled={!dragBoard} bounces={!dragBoard}>
             <Scaled base={BOARD_BASE} k={boardScale}>{board}</Scaled>
           </ScrollView>
         </View>
@@ -206,7 +208,7 @@ export default function PuzzleScreen() {
         <>
           {header}
           {rule}
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false} scrollEnabled={!dragBoard} bounces={!dragBoard}>
             {board}
           </ScrollView>
           <View style={{ minHeight: 48, justifyContent: 'center' }}>{feedback}</View>

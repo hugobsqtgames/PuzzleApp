@@ -119,7 +119,7 @@ export default function RoomScreen() {
 
   const headerBlock = (
       <View style={{ paddingHorizontal: 16, gap: 6, zIndex: 2 }}>
-        <BackButton label={searching && step !== undefined ? 'Plus tard' : buildingName(d, bi)} onPress={() => (searching && step !== undefined ? leaveSearch() : goBack())} />
+        <BackButton label={searching && step !== undefined ? tr('Plus tard') : buildingName(d, bi)} onPress={() => (searching && step !== undefined ? leaveSearch() : goBack())} />
         <Crumb parent={buildingName(d, bi)} current={lanterns.length === 16 ? tr('Finale') : tr('Salle {0}', [ri + 1])} />
         <Text style={type.title1} accessibilityRole="header">{title}</Text>
         <GaugeRow n={n} total={lanterns.length} label={tr('Lanternes de la salle')} />
@@ -206,8 +206,8 @@ export default function RoomScreen() {
             </View>
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 16, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center' }}>
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}><TierBars tier={sel.tier} /><Text style={type.sub}>{TIER_NAMES[sel.tier]}</Text></View>
-              <Pill icon="shard" iconColor={T.moon}>+{REWARDS[sel.tier]}</Pill>
-              {lit[selected] ? <Pill icon="check" iconColor={T.gold} color={T.gold}>{tr('Résolue')}</Pill> : null}
+              {/* Rewards are earned once: a lit lantern only shows that it is solved. */}
+              {lit[selected] ? <Pill icon="check" iconColor={T.gold} color={T.gold}>{tr('Résolue')}</Pill> : <Pill icon="shard" iconColor={T.moon}>+{REWARDS[sel.tier]}</Pill>}
             </View>
             <Text style={[type.sub, { marginBottom: 16 }]}>{fam(sel.family).rule}</Text>
             <Button title={lit[selected] ? tr('Rejouer') : state.inProgress.has(sel.puzzle) ? tr('Reprendre') : tr('Allumer')} onPress={() => play_(selected)} />

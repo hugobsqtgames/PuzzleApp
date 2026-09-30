@@ -63,7 +63,7 @@ export default function Welcome() {
           <Text style={[type.display, { fontSize: 48, lineHeight: 52 }]}>{tr('Lampion')}</Text>
           <Text style={[type.dialogue, { color: T.gold }]}>{tr('Chaque énigme rallume une lumière.')}</Text>
         </Animated.View>
-        <Text style={[type.foot, { position: 'absolute', bottom: 36, opacity: 0.6 }]}>{tr('Touchez pour continuer')}</Text>
+        <Text style={[type.foot, { position: 'absolute', bottom: 36, opacity: 0.6 }]}>{tr('Touche pour continuer')}</Text>
       </Pressable>
     );
   }

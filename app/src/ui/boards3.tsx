@@ -234,7 +234,7 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
           return (
             <View key={c as number} style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
               <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: GLASS[c as number], overflow: 'hidden' }}>{aid ? <GlassMarks bits={c as number} size={d} round /> : null}</View>
-              <Text style={{ color: T.tx2, fontSize: 12 }}>{l as string}</Text>
+              <Text style={{ color: T.tx2, fontSize: 12 }}>{(l as string).split(' + ').map((w) => tr(w)).join(' + ')}</Text>
             </View>
           );
         })}

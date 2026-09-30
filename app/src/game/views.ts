@@ -9,7 +9,7 @@ import { lang, tr, trn } from '../i18n';
 
 export const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 /** « La Tour » → « la Tour », "The Tower" → "the Tower" (inside a sentence). */
-export const lowerArticle = (name: string) => name.replace(/^(La|Le|Les|L’|The) ?/, (m) => m.toLowerCase());
+export const lowerArticle = (name: string) => name.replace(/^(?:(?:La|Le|Les|The) |L’)/, (m) => m.toLowerCase());
 
 export const districtById = (id: string) => WORLD.districts.find((d) => d.id === id)!;
 export const infoOf = (d: District) => DISTRICT_BY_ID[d.id as DistrictId];

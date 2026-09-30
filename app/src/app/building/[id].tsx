@@ -46,7 +46,7 @@ export default function BuildingScreen() {
 
   return (
     <Screen scroll place={info.sound}>
-      <BackButton label={d.id === 'grenier' ? 'Le Phare' : info.short} onPress={() => goBack()} />
+      <BackButton label={d.id === 'grenier' ? tr('Le Phare') : info.short} onPress={() => goBack()} />
       <Crumb parent={info.short} current={buildingName(d, bi)} />
       <Text style={type.title1}>{buildingName(d, bi)}</Text>
       <GaugeRow n={lit} total={all.length} label={tr('Lanternes du bâtiment')} />
