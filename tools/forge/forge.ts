@@ -4,7 +4,9 @@
  * validated (unique solution when required), rated, tiered and deduplicated,
  * plus the daily puzzles of the coming years.
  *
- *   cd app && npx tsx ../tools/forge/forge.ts
+ *   cd app && npx tsx ../tools/forge/forge.ts            (everything, from scratch)
+ *   cd app && npx tsx ../tools/forge/forge.ts --extend   (an update: keep what is published)
+ *   cd app && npx tsx ../tools/forge/forge.ts --lock     (at release: record what is published)
  *
  * Output: app/src/content/generated/pack.json (deterministic: same code →
  * same file, byte for byte).
@@ -286,6 +288,22 @@ export interface DistrictOut { id: string; unlock: unknown; buildings: BuildingO
 /** Hand-placed lanterns keep their family and tier. */
 const FIXED: Record<string, Fixed> = { ...TUTORIAL, ...PROTOTYPE_ROOM };
 
+// ---------------------------------------------------------------- updates
+//   --extend  keeps every lantern and daily puzzle of the current pack as is,
+//             and only generates what is new (a district, a building, dates).
+//   --lock    writes released.json: the fingerprint of everything published.
+//             content.test then refuses any pack that changes a released puzzle.
+const OUT = path.resolve(__dirname, '../../app/src/content/generated/pack.json');
+const LOCK = path.resolve(__dirname, 'released.json');
+const EXTEND = process.argv.includes('--extend');
+type Kept = { f: Code; t: Tier; p: unknown };
+const previous: { puzzles: Record<string, Kept>; daily: { puzzles: Record<string, Kept> } } | null =
+  EXTEND && fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : null;
+/** Lanterns already published: their family, tier and puzzle never change. */
+const KEEP: Record<string, Kept> = previous?.puzzles ?? {};
+/** A lantern placed by hand or already published. */
+const settled = (id: string): Fixed | Kept | undefined => FIXED[id] ?? KEEP[id];
+
 /**
  * Chooses the family of each lantern in play order, so that the player never
  * sees the same kind of puzzle over and over:
@@ -364,9 +382,9 @@ function planWorld(): DistrictOut[] {
         const sig = d.id !== 'phare' ? signatureOf(d.id, b, r) : undefined;
         const lanterns: LanternOut[] = roomTiers.map((t, i) => {
           const lid = `${id}.${i + 1}`;
-          const fx = FIXED[lid];
+          const fx = settled(lid);
           // A hand-placed lantern right after this one counts as its neighbour already.
-          const nextFixed = FIXED[i + 1 < size ? `${id}.${i + 2}` : `${d.id}.b${b + 1}.r${r + 2}.1`]?.f;
+          const nextFixed = settled(i + 1 < size ? `${id}.${i + 2}` : `${d.id}.b${b + 1}.r${r + 2}.1`)?.f;
           const family = fx ? fx.f : pick.next(d, t, id, sig, size - i, rng, nextFixed);
           pick.record(d.id, id, family);
           return { id: lid, family, tier: fx ? fx.t : t };
@@ -407,13 +425,18 @@ function main() {
   const t0 = Date.now();
   const world = planWorld();
   const puzzles: Record<string, { f: Code; t: Tier; p: unknown }> = {};
-  const fixed = FIXED;
-  // Fixed puzzles take their place and family in the world.
-  for (const d of world) for (const b of d.buildings) for (const r of b.rooms) for (const l of r.lanterns) {
-    const f = fixed[l.id];
-    if (f) { l.family = f.f; l.tier = f.t; }
+  const fixed: Record<string, Fixed | Kept> = { ...KEEP, ...FIXED };
+  // Fixed and published puzzles take their place and family in the world.
+  for (const d of world) for (const b of d.buildings) {
+    for (const r of b.rooms) for (const l of r.lanterns) {
+      const f = fixed[l.id];
+      if (f) { l.family = f.f; l.tier = f.t; }
+    }
+    if (b.keystone && KEEP[b.keystone.id]) b.keystone.tier = KEEP[b.keystone.id].t;
   }
-  for (const [id, f] of Object.entries(fixed)) {
+  // Published puzzles were checked when they were made; they only block duplicates.
+  for (const k of Object.values(KEEP)) if (k.f !== 'SC') seen[k.f].add(FAMILIES[k.f].fingerprint(FAMILIES[k.f].parse(k.p)));
+  for (const [id, f] of Object.entries(FIXED)) {
     if (f.p === undefined) continue;
     const family = FAMILIES[f.f];
     // A hand-placed puzzle must pass the same checks as a generated one.
@@ -428,6 +451,7 @@ function main() {
   for (const l of all) {
     const fx = fixed[l.id];
     if (fx?.p !== undefined) { puzzles[l.id] = { f: fx.f, t: fx.t, p: fx.p }; continue; }
+    if (KEEP[l.id]) { puzzles[l.id] = KEEP[l.id]; continue; }
     if (l.family === 'SC') {
       const b = world.flatMap((d) => d.buildings).find((x) => x.keystone === l)!;
       const bi = Number(b.id.split('.b')[1]) - 1;
@@ -449,6 +473,8 @@ function main() {
   const daily: Record<string, { f: Code; t: Tier; p: unknown }> = {};
   const first = dayKey(2026, 9, 1), last = dayKey(2028, 12, 31);
   for (let day = first; daysBetween(last, day) >= 0; day = addDays(day, 1)) {
+    const kept = previous?.daily.puzzles[day];
+    if (kept) { daily[day] = kept; continue; }
     const a = planner.assignment(day);
     const code = a.family as Code;
     const tier = Math.min(a.tier, MAX_TIER[code]) as Tier;
@@ -459,9 +485,16 @@ function main() {
   // The mockup's evening challenge was "Tuesday 29 September · Balances · Flame".
   daily['2026-09-29'] = { f: PROTOTYPE_DAILY.f, t: PROTOTYPE_DAILY.t, p: PROTOTYPE_DAILY.p };
   const pack = { version: FORGE_VERSION, world: { id: 'vesper', districts: world }, puzzles, daily: { first, last, puzzles: daily } };
-  const out = path.resolve(__dirname, '../../app/src/content/generated/pack.json');
+  const out = OUT;
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(pack));
+  if (EXTEND) process.stderr.write(`  kept ${Object.keys(KEEP).length} published lanterns and ${Object.keys(previous?.daily.puzzles ?? {}).length} daily puzzles\n`);
+  if (process.argv.includes('--lock')) {
+    const fp = (x: Kept) => StableHash.fnv1a64(JSON.stringify(x)).toString(16);
+    const lock = { version: FORGE_VERSION, lanterns: Object.fromEntries(Object.entries(puzzles).map(([k, v]) => [k, fp(v)])), daily: Object.fromEntries(Object.entries(daily).map(([k, v]) => [k, fp(v)])) };
+    fs.writeFileSync(LOCK, JSON.stringify(lock, null, 0));
+    process.stderr.write(`  released.json: ${Object.keys(lock.lanterns).length} lanterns, ${Object.keys(lock.daily).length} daily puzzles locked\n`);
+  }
   process.stderr.write(`\n${all.length} lanterns, ${Object.keys(daily).length} daily puzzles in ${((Date.now() - t0) / 1000).toFixed(0)} s → ${(fs.statSync(out).size / 1024).toFixed(0)} KB\n`);
   for (const [f, h] of Object.entries(hist)) process.stderr.write(`  ${f}: ${h.join(' ')}\n`);
 }

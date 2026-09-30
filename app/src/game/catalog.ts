@@ -110,6 +110,9 @@ export const WORLD: World = {
   })),
 };
 export const CONTENT_VERSION = P.version;
+/** Every lantern of the world, keystones included (as counted by totalLights): grows when an update adds districts. */
+export const LANTERN_COUNT = P.world.districts.reduce((n, d) => n + d.buildings.reduce((m, b) => m + b.rooms.reduce((k, r) => k + r.lanterns.length, 0) + (b.keystone ? 1 : 0), 0), 0);
+export const formatCount = (n: number) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g, ' ');
 
 export const districtInfo = (d: District) => DISTRICT_BY_ID[d.id as DistrictId];
 

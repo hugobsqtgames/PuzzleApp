@@ -12,7 +12,8 @@ import { useReducedMotion } from '../ui/motion';
 import { vesperWindowXml } from '../ui/art';
 import { T, R, type } from '../ui/theme';
 import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName } from '../game/views';
-import { FAMILIES, TIER_NAMES, dailyPuzzle, WORLD } from '../game/catalog';
+import { FAMILIES, LANTERN_COUNT, TIER_NAMES, dailyPuzzle, WORLD, formatCount } from '../game/catalog';
+import { ENDING_SEEN } from '../game/story';
 import { look } from '../game/rewards';
 import { dailyLabel, dateOfDay } from '../ui/dates';
 import { addDays } from '../core/game/dayKey';
@@ -61,7 +62,7 @@ export default function Home() {
           {!reduce ? <Twinkles w={winW} h={120} n={8} seed={3} /> : null}
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
             <Text style={[type.cap, { color: T.tx }]}>Vesper</Text>
-            <Text style={type.foot}>{total} / 1 000 lanternes</Text>
+            <Text style={type.foot}>{total} / {formatCount(LANTERN_COUNT)} lanternes</Text>
           </View>
           <View style={{ position: 'absolute', right: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 999, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line }}>
             <Icon name="map" size={16} /><Text style={{ color: T.tx, fontSize: 15, fontWeight: '600' }}>Carte</Text>
@@ -121,6 +122,17 @@ export default function Home() {
           <View style={{ flex: 1 }}>
             <Text style={type.callout}>{total >= nextNeed ? `${infoOf(next).name} : il manque des lettres de l’Allumeur` : `Encore ${nextNeed - total} lumières pour ${infoOf(next).name.replace(/^(La|Le|L’) /, (m) => m.toLowerCase())}`}</Text>
             <View style={{ marginTop: 8 }}><Gauge n={total - prevNeed} total={Math.max(1, nextNeed - prevNeed)} height={5} /></View>
+          </View>
+        </Pressable>
+      ) : null}
+
+      {state.seenDialogue.has(ENDING_SEEN) ? (
+        <Pressable accessibilityRole="button" accessibilityLabel="La suite : de l’autre côté de la mer. Revoir la fin du premier chapitre." onPress={() => { tap(); router.push('/ending'); }}
+          style={{ backgroundColor: T.s1, borderWidth: 1, borderColor: 'rgba(255,217,142,0.35)', borderRadius: R.l, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <GlyphCircle icon="light" color={T.gold} />
+          <View style={{ flex: 1 }}>
+            <Text style={type.headline}>De l’autre côté de la mer</Text>
+            <Text style={type.sub}>Une lumière a répondu. Le prochain chapitre arrivera avec une mise à jour.</Text>
           </View>
         </Pressable>
       ) : null}

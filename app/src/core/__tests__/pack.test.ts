@@ -2,6 +2,9 @@
 // serves the same kind of puzzle over and over.
 import { FAMILIES } from '../../game/catalog';
 import { HintLevel } from '../puzzlekit/types';
+import * as fs from 'fs';
+import * as path from 'path';
+import { StableHash } from '../puzzlekit/rng';
 import { play, progressOf, startSession } from '../../game/session';
 
 const pack = require('../../content/generated/pack.json');
@@ -75,4 +78,16 @@ test('a board in progress comes back only on the very puzzle it was played on', 
   expect(startSession(b, 'lantern', new Date(), saved).moves).toBe(0);
   // An old save without a fingerprint starts fresh too.
   expect(startSession(a, 'lantern', new Date(), { ...saved, fp: undefined }).moves).toBe(0);
+});
+
+test('released content never changes (tools/forge/released.json, written at release with --lock)', () => {
+  const lockFile = path.resolve(__dirname, '../../../../tools/forge/released.json');
+  if (!fs.existsSync(lockFile)) return; // nothing released yet
+  const lock = JSON.parse(fs.readFileSync(lockFile, 'utf8')) as { lanterns: Record<string, string>; daily: Record<string, string> };
+  const fp = (x: unknown) => StableHash.fnv1a64(JSON.stringify(x)).toString(16);
+  const changed = Object.entries(lock.lanterns).filter(([id, h]) => !pack.puzzles[id] || fp(pack.puzzles[id]) !== h).map(([id]) => id);
+  const days = Object.entries(lock.daily).filter(([d, h]) => !pack.daily.puzzles[d] || fp(pack.daily.puzzles[d]) !== h).map(([d]) => d);
+  // A released lantern must keep its puzzle: players' saves and memories point to it. Use forge --extend.
+  expect(changed).toEqual([]);
+  expect(days).toEqual([]);
 });

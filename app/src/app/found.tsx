@@ -41,6 +41,8 @@ export default function Found() {
 
   const next = () => {
     if (objectParam) { router.back(); return; }
+    // The last letter leads to the top of the Phare.
+    if (steps[i + 1]?.startsWith('ending')) { router.replace('/ending'); return; }
     if (i + 1 < steps.length) { router.replace({ pathname: '/found', params: { step: String(i + 1) } }); return; }
     const cur = engine.progression.recommended(state);
     if (kind === 'district' || kind === 'keeper' || !cur) { router.dismissTo('/'); return; }
@@ -142,6 +144,7 @@ export default function Found() {
         <Text style={[type.dialogue, { textAlign: 'center', maxWidth: 340 }]}>« {letter.text} »</Text>
       </>
     );
+    if (steps[i + 1]?.startsWith('ending')) buttons = <Button title="Monter au sommet du Phare" icon="light" onPress={next} />;
   }
 
   if (kind === 'district') {

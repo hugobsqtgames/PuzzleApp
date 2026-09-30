@@ -8,10 +8,11 @@ import { SvgXml } from 'react-native-svg';
 
 import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
-import { BackButton, Card, Gauge, Icon, Nilo, Sheet, tap } from '../ui/components';
+import { BackButton, Button, Card, Gauge, Icon, Nilo, Sheet, tap } from '../ui/components';
 import { objectSvg } from '../ui/scenes/objects';
 import { T, SERIF, type } from '../ui/theme';
-import { CODES, FAMILIES, TIER_NAMES, WORLD } from '../game/catalog';
+import { CODES, FAMILIES, LANTERN_COUNT, TIER_NAMES, WORLD, formatCount } from '../game/catalog';
+import { ENDING_SEEN } from '../game/story';
 import { achievementContext, achievementStatus, look } from '../game/rewards';
 import { allRooms, collectibleOf, districtViews, infoOf, roomName, unlockText } from '../game/views';
 import { LETTERS } from '../content/vesper';
@@ -218,9 +219,10 @@ function VesperTab() {
     <>
       <Card style={{ alignItems: 'center', gap: 4, padding: 20 }}>
         <Text style={type.cap}>Vesper</Text>
-        <Text style={type.display}>{p.totalLights(state)}<Text style={[type.title2, { color: T.tx2 }]}> / 1 000</Text></Text>
+        <Text style={type.display}>{p.totalLights(state)}<Text style={[type.title2, { color: T.tx2 }]}> / {formatCount(LANTERN_COUNT)}</Text></Text>
         <Text style={type.foot}>Lettres de l’Allumeur : {p.letters(state)} / 6</Text>
       </Card>
+      {state.seenDialogue.has(ENDING_SEEN) ? <Button title="Revoir la fin du premier chapitre" kind="ghost" icon="light" onPress={() => router.push('/ending')} /> : null}
       <Card style={{ paddingVertical: 4 }}>
         {views.map((v) => {
           const d = WORLD.districts.find((x) => x.id === v.id)!;

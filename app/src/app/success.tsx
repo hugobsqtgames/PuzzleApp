@@ -69,7 +69,7 @@ export function followUps(r: Result | null): string[] {
   }
   // The Phare's own letter comes with its last room.
   if (r.celebrations.some((c) => c.kind === 'districtCompleted' && c.districtID === 'phare')) out.push('letter:phare');
-  if (r.celebrations.some((c) => c.kind === 'districtCompleted' && c.districtID === 'grenier')) out.push('letter:grenier');
+  if (r.celebrations.some((c) => c.kind === 'districtCompleted' && c.districtID === 'grenier')) out.push('letter:grenier', 'ending:1');
   return out;
 }
 

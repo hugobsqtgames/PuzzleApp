@@ -40,7 +40,10 @@
     "web": "expo start --web",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "content:build": "tsx ../tools/forge/forge.ts",
+    "content:extend": "tsx ../tools/forge/forge.ts --extend",
+    "content:lock": "tsx ../tools/forge/forge.ts --extend --lock"
   },
   "private": true,
   "jest": {

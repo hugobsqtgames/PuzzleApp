@@ -23,6 +23,7 @@ function Navigator() {
       <Stack.Screen name="success" options={{ gestureEnabled: false, animation: 'fade', animationDuration: 380 }} />
       <Stack.Screen name="found" options={{ gestureEnabled: false, animation: 'fade', animationDuration: 380 }} />
       <Stack.Screen name="welcome" options={{ gestureEnabled: false, animation: 'none' }} />
+      <Stack.Screen name="ending" options={{ gestureEnabled: false, animation: 'fade', animationDuration: 900 }} />
     </Stack>
   );
 }
