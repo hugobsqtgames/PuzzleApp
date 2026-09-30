@@ -73,6 +73,8 @@ interface Store {
   /** The player found the room's object in the lit scene. */
   pickObject(roomId: string): void;
   play(event: SoundEvent): void;
+  /** A bell of the Carillon. */
+  note(i: number): void;
   enterPlace(place: Parameters<SoundEngine['enter']>[0]): void;
   haptic(kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium'): void;
   resetProgress(): Promise<void>;
@@ -85,8 +87,8 @@ const engine = new GameEngine(WORLD);
 const saveStore = new SaveStore(deviceFS, SAVE_DIRECTORY, `content-${CONTENT_VERSION}`);
 const SIDE_FILE = `${SAVE_DIRECTORY}/profile.json`;
 
-function decodeSide(text: string): { settings: Settings; profile: Profile } {
-  const out = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };
+function decodeSide(text: string): { settings: Settings; profile: Profile; legacyObjects?: boolean } {
+  const out: { settings: Settings; profile: Profile; legacyObjects?: boolean } = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };
   try {
     const o = JSON.parse(text) as { settings?: Record<string, unknown>; profile?: Record<string, unknown> };
     for (const k of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
@@ -94,6 +96,8 @@ function decodeSide(text: string): { settings: Settings; profile: Profile } {
       if (typeof v === typeof DEFAULT_SETTINGS[k]) (out.settings as unknown as Record<string, unknown>)[k] = v;
     }
     const p = o.profile ?? {};
+    // Saves from before the object search: the objects already won stay found.
+    out.legacyObjects = !!o.profile && !Array.isArray(p.picked);
     const n = (v: unknown) => (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 ? v : 0);
     const strings = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').slice(0, 50) : []);
     out.profile = {
@@ -155,17 +159,21 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     let alive = true;
     (async () => {
       const loaded = await saveStore.load().catch(() => null);
-      let side = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };
+      let side: ReturnType<typeof decodeSide> = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };
       try { if (await deviceFS.exists(SIDE_FILE)) side = decodeSide(await deviceFS.read(SIDE_FILE)); } catch { /* defaults */ }
       if (!alive) return;
       if (loaded) { setState(loaded.state); setReadOnly(loaded.source === 'unavailable'); } else setReadOnly(true);
+      if (side.legacyObjects && loaded) {
+        side.profile = { ...side.profile, picked: [...loaded.state.collectibles].filter((c) => c.startsWith('collectible.')).map((c) => c.slice('collectible.'.length)) };
+        void writeSide(side.settings, side.profile);
+      }
       setSettingsState(side.settings);
       setProfile(side.profile);
       sound.setSettings({ music: side.settings.music, effects: side.settings.effects, haptics: side.settings.haptics, interfaceTaps: false });
       setReady(true);
     })();
     return () => { alive = false; };
-  }, [sound]);
+  }, [sound, writeSide]);
 
   // Day change while the app is open (midnight): the daily puzzle and reminders follow.
   useEffect(() => {
@@ -381,7 +389,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const st = cloneState(stateRef.current);
     const names = creditAchievements(st, p);
     commitProfile(p);
-    if (names.length) { commit(st); names.forEach((n) => showToast(`Succès : ${n}`, 'star')); }
+    if (names.length) { commit(st); showToast(names.length === 1 ? `Succès : ${names[0]}` : `${names.length} succès débloqués : ${names.join(', ')}`, 'star'); }
   }, [commit, commitProfile, creditAchievements, showToast]);
 
   const pickObject = useCallback((roomId: string) => {
@@ -420,7 +428,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<Store>(() => ({
     ready, readOnly, state, engine, settings, profile, session, result, toast, today,
     showToast, openLantern, openDaily, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
-    completeOnboarding, markSeen, noteProfile, pickObject, play: (e) => sound.play(e), enterPlace, haptic, resetProgress, exportProgress, importProgress,
+    completeOnboarding, markSeen, noteProfile, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), enterPlace, haptic, resetProgress, exportProgress, importProgress,
   }), [ready, readOnly, state, settings, profile, session, result, toast, today, showToast, openLantern, openDaily, updateSession, leaveSession, finishSession,
     buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
 

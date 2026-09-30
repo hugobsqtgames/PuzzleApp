@@ -27,13 +27,20 @@ import { ThreadsFamily } from '../../app/src/core/families/threads';
 import { MirrorsFamily } from '../../app/src/core/families/mirrors';
 import { InquiriesFamily } from '../../app/src/core/families/inquiries';
 import { MarquetryFamily, SILHOUETTES } from '../../app/src/core/families/marquetry';
+import { ChimesFamily } from '../../app/src/core/families/chimes';
+import { StainedFamily } from '../../app/src/core/families/stained';
+import { SpotFamily } from '../../app/src/core/families/spot';
+import { ShelfFamily } from '../../app/src/core/families/shelf';
+import { ShadowsFamily } from '../../app/src/core/families/shadows';
+import { SealFamily, sealRuleFor } from '../../app/src/core/families/seal';
+import { DISTRICT_INFO } from '../../app/src/content/vesper';
 import { DailyPlanner } from '../../app/src/core/game/daily';
 import { addDays, dayKey, daysBetween } from '../../app/src/core/game/dayKey';
 import { Fixed, PROTOTYPE_DAILY, PROTOTYPE_ROOM, TUTORIAL } from './fixed';
 
-export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA';
-const ALL: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI'];
-export const FORGE_VERSION = 2;
+export type Code = 'IN' | 'CA' | 'LA' | 'EN' | 'SU' | 'BA' | 'MO' | 'ME' | 'FI' | 'MI' | 'EQ' | 'MA' | 'CR' | 'VI' | 'DI' | 'ET' | 'OM' | 'SC';
+const ALL: Code[] = ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'MO', 'FI', 'IN', 'MI', 'CR', 'VI', 'DI', 'ET', 'OM'];
+export const FORGE_VERSION = 3;
 
 // ---------------------------------------------------------------- families
 
@@ -51,9 +58,11 @@ const THRESHOLDS: Record<Code, TierThresholds> = {
   MI: TierThresholds.standard,
   EQ: TierThresholds.standard,
   MA: new TierThresholds([16, 26, 38, 50, 65]),
+  CR: new ChimesFamily().thresholds, VI: new StainedFamily().thresholds, DI: new SpotFamily().thresholds,
+  ET: new ShelfFamily().thresholds, OM: new ShadowsFamily().thresholds, SC: new SealFamily().thresholds,
 };
 /** Highest tier a family can produce today. */
-export const MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, BA: 5, SU: 3, MO: 4, ME: 5, FI: 4, MI: 5, EQ: 5, MA: 3 };
+export const MAX_TIER: Record<Code, Tier> = { IN: 5, CA: 5, LA: 5, EN: 5, BA: 5, SU: 3, MO: 4, ME: 5, FI: 4, MI: 5, EQ: 5, MA: 3, CR: 5, VI: 5, DI: 5, ET: 5, OM: 5, SC: 4 };
 
 function withThresholds<F extends object>(family: F, t: TierThresholds): F {
   const f = Object.create(family) as F;
@@ -74,6 +83,7 @@ const FAMILIES: Record<Code, PuzzleFamily<any, any, any, any>> = {
   MI: withThresholds(new MirrorsFamily(), THRESHOLDS.MI),
   EQ: withThresholds(new InquiriesFamily(), THRESHOLDS.EQ),
   MA: withThresholds(new MarquetryFamily(), THRESHOLDS.MA),
+  CR: new ChimesFamily(), VI: new StainedFamily(), DI: new SpotFamily(), ET: new ShelfFamily(), OM: new ShadowsFamily(), SC: new SealFamily(),
 };
 const SIL = Object.keys(SILHOUETTES);
 const SMALL_SIL = ['lanterne', 'maison', 'phare', 'horloge'];
@@ -140,6 +150,18 @@ const PARAMS: Record<Code, unknown[][]> = {
     [{ silhouettes: SMALL_SIL, pieceSize: [3, 4] }], [{ silhouettes: SIL, pieceSize: [3, 4] }, { silhouettes: SIL, pieceSize: [4, 5] }],
     [{ silhouettes: SIL, pieceSize: [3, 5], flips: true }, { silhouettes: SIL, pieceSize: [3, 4] }], [{ silhouettes: SIL, pieceSize: [3, 5], flips: true }, { silhouettes: SIL, pieceSize: [4, 5], flips: true }], [], [],
   ],
+  CR: [[{ bells: 3, length: [3, 3] }], [{ bells: 4, length: [4, 4] }], [{ bells: 4, length: [5, 6] }], [{ bells: 5, length: [6, 7] }], [{ bells: 5, length: [8, 8] }], [{ bells: 6, length: [9, 10] }]],
+  VI: [[{ rows: 2, cols: 3 }], [{ rows: 3, cols: 4 }, { rows: 3, cols: 3 }], [{ rows: 4, cols: 4 }], [{ rows: 4, cols: 4 }], [{ rows: 4, cols: 5 }], [{ rows: 5, cols: 5 }]],
+  DI: [
+    [{ items: [8, 9], diffs: 3, kinds: ['missing', 'glyph'] }], [{ items: [10, 11], diffs: 4, kinds: ['missing', 'glyph', 'color'] }], [{ items: [12, 13], diffs: 5 }],
+    [{ items: [12, 13], diffs: 5 }, { items: [13, 15], diffs: 6 }], [{ items: [13, 15], diffs: 6 }, { items: [15, 17], diffs: 7 }], [{ items: [15, 17], diffs: 7 }, { items: [17, 18], diffs: 8, kinds: ['color', 'turn', 'size', 'glyph'] }],
+  ],
+  ET: [[{ n: 3 }, { n: 4 }], [{ n: 4 }, { n: 5 }], [{ n: 5 }, { n: 6 }], [{ n: 6 }, { n: 5 }], [{ n: 7 }, { n: 6 }], [{ n: 7 }]],
+  OM: [
+    [{ cells: [4, 5], options: 3 }], [{ cells: [5, 6], options: 4 }], [{ cells: [6, 6], options: 4, nearMisses: true }],
+    [{ cells: [7, 7], options: 6, nearMisses: true }, { cells: [6, 7], options: 5, nearMisses: true }], [{ cells: [7, 7], options: 6, nearMisses: true }], [{ cells: [8, 9], options: 6, nearMisses: true }],
+  ],
+  SC: [[], [], [], [], [], []],
   BA: [
     [{ unknowns: 2, maxWeight: 20 }],
     [{ unknowns: 2, maxWeight: 20 }],
@@ -176,15 +198,33 @@ interface DistrictPlan { id: string; main: Code[]; guests: Code[]; tiers: number
 
 /** Tier distribution per district, in % (GAME_DESIGN § 4.2). */
 const PLAN: DistrictPlan[] = [
-  { id: 'phare', main: ['IN', 'LA', 'SU'], guests: [], tiers: [70, 30, 0, 0, 0, 0], buildings: 1, rooms: [6, 6, 6, 6], unlock: { kind: 'always' }, lettersFromKeystone4: false },
-  { id: 'biblio', main: ['SU', 'MO'], guests: ['IN', 'LA', 'CA'], tiers: [25, 45, 25, 5, 0, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 14 }, lettersFromKeystone4: true },
-  { id: 'horlo', main: ['EN', 'CA'], guests: ['SU', 'MO', 'LA', 'IN'], tiers: [10, 35, 35, 15, 5, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 110 }, lettersFromKeystone4: true },
-  { id: 'serre', main: ['FI', 'MA'], guests: ['EN', 'LA', 'MO'], tiers: [5, 25, 40, 20, 10, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 206 }, lettersFromKeystone4: true },
-  { id: 'marche', main: ['BA', 'CA'], guests: ['MA', 'FI', 'SU', 'EN'], tiers: [0, 15, 35, 30, 15, 5], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 302 }, lettersFromKeystone4: true },
-  { id: 'theatre', main: ['ME', 'EQ'], guests: ['BA', 'MO', 'FI'], tiers: [0, 10, 30, 30, 20, 10], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 398 }, lettersFromKeystone4: true },
-  { id: 'obs', main: ['MI', 'MO'], guests: ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'FI', 'IN'], tiers: [0, 0, 25, 30, 30, 15], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 494 }, lettersFromKeystone4: true },
-  { id: 'grenier', main: ['EN', 'LA', 'CA', 'IN', 'BA', 'MI', 'ME', 'EQ', 'FI', 'MO'], guests: [], tiers: [0, 0, 0, 25, 45, 30], buildings: 1, rooms: [16], unlock: { kind: 'totalLightsAndLetters', lights: 590, letters: 4 }, lettersFromKeystone4: false },
+  { id: 'phare', main: ['IN', 'LA', 'SU', 'DI', 'CR'], guests: [], tiers: [70, 30, 0, 0, 0, 0], buildings: 1, rooms: [6, 6, 6, 6], unlock: { kind: 'always' }, lettersFromKeystone4: false },
+  { id: 'biblio', main: ['SU', 'MO'], guests: ['IN', 'LA', 'CA', 'ET', 'DI', 'OM'], tiers: [25, 45, 25, 5, 0, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 14 }, lettersFromKeystone4: true },
+  { id: 'horlo', main: ['EN', 'CA', 'CR'], guests: ['SU', 'MO', 'LA', 'IN', 'ET', 'VI'], tiers: [10, 35, 35, 15, 5, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 110 }, lettersFromKeystone4: true },
+  { id: 'serre', main: ['FI', 'MA', 'DI'], guests: ['EN', 'LA', 'MO', 'VI', 'OM', 'CR'], tiers: [5, 25, 40, 20, 10, 0], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 206 }, lettersFromKeystone4: true },
+  { id: 'marche', main: ['BA', 'CA', 'ET'], guests: ['MA', 'FI', 'SU', 'EN', 'DI', 'CR'], tiers: [0, 15, 35, 30, 15, 5], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 302 }, lettersFromKeystone4: true },
+  { id: 'theatre', main: ['ME', 'EQ', 'OM'], guests: ['BA', 'MO', 'FI', 'CR', 'VI', 'DI'], tiers: [0, 10, 30, 30, 20, 10], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 398 }, lettersFromKeystone4: true },
+  { id: 'obs', main: ['MI', 'MO', 'VI'], guests: ['SU', 'LA', 'CA', 'EN', 'MA', 'ME', 'EQ', 'BA', 'FI', 'IN', 'OM', 'DI', 'ET', 'CR'], tiers: [0, 0, 25, 30, 30, 15], buildings: 4, rooms: [10, 10, 10, 9], unlock: { kind: 'totalLights', lights: 494 }, lettersFromKeystone4: true },
+  { id: 'grenier', main: ['EN', 'LA', 'CA', 'IN', 'BA', 'MI', 'ME', 'EQ', 'FI', 'MO', 'VI', 'ET', 'OM', 'DI', 'CR', 'SU'], guests: [], tiers: [0, 0, 0, 25, 45, 30], buildings: 1, rooms: [16], unlock: { kind: 'totalLightsAndLetters', lights: 590, letters: 4 }, lettersFromKeystone4: false },
 ];
+
+/** Rooms whose name calls for a family: three of their lanterns take it (GAME_DESIGN § 3, « chaque salle a ses énigmes »). */
+const SIGNATURE: Record<string, Code> = {
+  'La Cuisine': 'ET', 'La Lanterne': 'MI', 'Le Globe': 'MO', 'Les Portulans': 'FI', 'La Table des vents': 'MI', 'Le Balcon': 'DI',
+  'L’Atelier d’enluminure': 'VI', 'Le Cabinet des brouillons': 'DI', 'Les Rayonnages': 'ET', 'La Réserve': 'ET', 'Les Vitraux': 'VI', 'Le Sommet': 'DI',
+  'La Forge': 'EN', 'Le Magasin': 'ET', 'Le Vestibule': 'CR', 'Les Rouages': 'EN', 'La Salle des Cloches': 'CR', 'Le Cadran': 'CA', 'Le Coucou': 'CR',
+  'Les Poupées': 'DI', 'Le Joueur d’échecs': 'EQ', 'La Danseuse': 'CR', 'Le Cœur de l’automate': 'EN',
+  'Les Orangers': 'DI', 'La Verrière': 'VI', 'Les Nénuphars': 'FI', 'Le Fond du bassin': 'DI', 'Les Semis': 'ET', 'Les Lianes': 'FI', 'La Canopée': 'OM',
+  'Les Étals': 'DI', 'Les Balances': 'BA', 'Les Sacs': 'BA', 'Le Comptoir': 'BA', 'La Cale': 'ET', 'Le Grand Plateau': 'BA', 'Les Étalons': 'BA', 'Le Registre': 'EQ', 'La Criée': 'DI',
+  'Le Vestiaire': 'ET', 'Le Bar': 'ET', 'Les Décors': 'OM', 'Les Accessoires': 'ET', 'La Machinerie': 'EN', 'Le Miroir': 'MI', 'La Malle': 'OM',
+  'La Fosse': 'CR', 'Les Projecteurs': 'VI', 'Le Plateau': 'OM',
+  'Le Polissoir': 'MI', 'Le Prisme': 'VI', 'Les Miroirs': 'MI', 'Le Banc d’optique': 'MI', 'Le Télescope': 'OM', 'Le Mécanisme': 'EN',
+  'Les Almanachs': 'ET', 'Les Globes célestes': 'OM', 'Le Sténopé': 'OM', 'Les Plaques': 'DI', 'Le Bain': 'VI', 'Le Rideau': 'OM',
+};
+function signatureOf(district: string, b: number, r: number): Code | undefined {
+  const info = DISTRICT_INFO.find((d) => d.id === district);
+  return info ? SIGNATURE[info.buildings[b]?.rooms[r]?.name ?? ''] : undefined;
+}
 
 /** Tier at quantile q of a distribution in %. */
 function tierAt(dist: number[], q: number): Tier {
@@ -219,6 +259,8 @@ function planWorld(): DistrictOut[] {
         const pool: Code[] = [];
         for (let i = 0; i < mains; i++) pool.push(d.main[(i + r + b) % d.main.length]);
         for (let i = 0; i < size - mains; i++) pool.push(d.guests[(i + r * 2 + b) % d.guests.length]);
+        const sig = signatureOf(d.id, b, r);
+        if (sig && d.id !== 'phare') for (let i = 0, k = 0; i < pool.length && k < 3; i++) if (pool[pool.length - 1 - i] !== sig) { pool[pool.length - 1 - i] = sig; k++; }
         let fams: Code[] = rng.shuffled(pool);
         for (let guard = 0; guard < 200 && fams.some((f, i) => i >= 2 && f === fams[i - 1] && f === fams[i - 2]); guard++) fams = rng.shuffled(pool);
         const lanterns: LanternOut[] = roomTiers.map((t, i) => ({ id: `${id}.${i + 1}`, family: fams[i], tier: t }));
@@ -243,8 +285,8 @@ function planWorld(): DistrictOut[] {
       const top = Math.max(...tiers);
       const building: BuildingOut = { id: `${d.id}.b${b + 1}`, rooms };
       if (d.buildings === 4) {
-        const keyFamily = d.main.find((f) => MAX_TIER[f] >= Math.min(5, top + 1)) ?? 'LA';
-        building.keystone = { id: `${d.id}.b${b + 1}.key`, family: keyFamily, tier: Math.max(Tier.Blaze, Math.min(Tier.Star, top + 1)) as Tier };
+        // The keystone is the building's seal: the digits of its rooms (see core/families/seal.ts).
+        building.keystone = { id: `${d.id}.b${b + 1}.key`, family: 'SC', tier: Tier.Blaze };
         if (b === 3 && d.lettersFromKeystone4) building.keystoneGivesLetter = true;
       }
       buildings.push(building);
@@ -281,6 +323,15 @@ function main() {
   for (const l of all) {
     const fx = fixed[l.id];
     if (fx?.p !== undefined) { puzzles[l.id] = { f: fx.f, t: fx.t, p: fx.p }; continue; }
+    if (l.family === 'SC') {
+      const b = world.flatMap((d) => d.buildings).find((x) => x.keystone === l)!;
+      const bi = Number(b.id.split('.b')[1]) - 1;
+      const seal = { rooms: b.rooms.map((r) => r.id), rule: sealRuleFor(b.id, bi) };
+      const fam = FAMILIES.SC;
+      l.tier = fam.thresholds.tier(fam.rate(seal, fam.solve(seal, 2)));
+      puzzles[l.id] = { f: 'SC', t: l.tier, p: seal };
+      continue;
+    }
     const g = forgePuzzle(l.family, l.tier, l.id);
     l.tier = g.tier;
     puzzles[l.id] = { f: l.family, t: g.tier, p: g.data };

@@ -14,7 +14,7 @@ import { t } from '../content/strings';
 import { look } from '../game/rewards';
 import { buildingName, infoOf, locateRoom } from '../game/views';
 import { dailyLabel, dateOfDay } from '../ui/dates';
-import { slotObject } from '../ui/art';
+import { roomSlotsOf } from '../ui/scenes';
 import { puzzleFor, dailyPuzzle } from '../game/catalog';
 import { HintLevel } from '../core/puzzlekit/types';
 
@@ -23,7 +23,7 @@ const HINT_ICONS = ['whisper', 'hint', 'light', 'star'];
 
 export default function PuzzleScreen() {
   const store = useStore();
-  const { state, engine, session, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings } = store;
+  const { state, engine, session, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
   const { width } = useWindowDimensions();
   const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | null>(null);
   const [offered, setOffered] = useState(false);
@@ -48,7 +48,7 @@ export default function PuzzleScreen() {
   const backLabel = s.kind === 'daily' ? 'Défi du soir' : where?.room ? `Salle ${roomAt ? roomAt.index + 1 : ''}` : where ? buildingName(where.district, where.district.buildings.indexOf(where.building)) : 'Accueil';
   const subtitle = s.kind === 'daily'
     ? dailyLabel(dateOfDay(s.id.slice(6)))
-    : where?.room && roomAt ? `Lanterne ${where.room.lanterns.findIndex((l) => l.puzzle === s.id) + 1} · ${slotObject(where.room.lanterns.length, where.room.lanterns.findIndex((l) => l.puzzle === s.id))}` : 'Lanterne-clé';
+    : where?.room && roomAt ? `Lanterne ${where.room.lanterns.findIndex((l) => l.puzzle === s.id) + 1} · ${roomSlotsOf(where.room.id, where.room.lanterns.length)[where.room.lanterns.findIndex((l) => l.puzzle === s.id)]?.label ?? ''}` : 'Lanterne-clé';
   const boardWidth = Math.min(width, 600) - 32;
   const later = (fn: () => void, ms: number) => { timers.current.push(setTimeout(fn, ms)); };
 
@@ -150,7 +150,8 @@ export default function PuzzleScreen() {
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
         <Animated.View style={{ transform: [{ translateX: shake }] }}>
-          <Board s={s} width={boardWidth} onPlay={onPlay} tap={() => tap()} />
+          <Board s={s} width={boardWidth} onPlay={onPlay} tap={() => tap()} note={note}
+            visitRoom={(roomId) => { leaveSession(); router.push({ pathname: '/room/[id]', params: { id: roomId } }); }} />
         </Animated.View>
       </ScrollView>
 
@@ -247,6 +248,12 @@ const RULE_DETAILS: Record<string, string> = {
   MI: 'Touche une case vide : miroir /, puis miroir \\, puis rien. Le rayon rebondit sur les miroirs. Les cibles s’allument quand il les traverse.',
   EQ: 'Touche un indice pour le barrer quand tu l’as utilisé. Touche l’objet ou le lieu d’un habitant pour le changer. Chaque objet et chaque lieu ne sert qu’une fois.',
   MA: 'Choisis une pièce en bas, tourne-la si besoin, puis touche une case de la silhouette pour la poser. Touche une pièce posée pour la reprendre.',
+  CR: 'La mélodie joue quand tu arrives. Touche les cloches dans le même ordre. Tu peux la réécouter autant de fois que tu veux ; après une fausse note, recommence du début.',
+  VI: 'Touche le rond au bout d’une ligne ou d’une colonne pour changer son filtre : aucun, rouge, jaune, bleu. Chaque vitre prend la couleur de sa ligne mélangée à celle de sa colonne. Le rond au centre de chaque vitre montre sa couleur d’origine. Les filtres à cadenas sont déjà posés.',
+  DI: 'Compare les deux images. Touche un endroit où quelque chose a changé : une couleur, un objet, sa taille, son sens, ou un objet qui a disparu.',
+  ET: 'Chaque indice parle des objets de gauche à droite. Touche deux objets pour les échanger. Quand l’étagère te semble rangée, Valider.',
+  OM: 'L’ombre peut avoir tourné d’un quart, d’un demi ou de trois quarts de tour. Elle n’est jamais retournée comme dans un miroir.',
+  SC: 'Chaque salle du bâtiment, une fois assez éclairée, montre un chiffre peint dans son décor. Va les chercher, puis compose le code selon la règle du sceau.',
 };
 
 function Row({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {

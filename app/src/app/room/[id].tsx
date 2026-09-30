@@ -1,93 +1,160 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Pressable, Text, View } from 'react-native';
-import { goBack } from '../../ui/nav';
+import React, { useMemo, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { SvgXml } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
+import { goBack } from '../../ui/nav';
 import { useStore } from '../../game/store';
 import { Screen } from '../../ui/Screen';
 import { BackButton, Button, Crumb, GaugeRow, GlyphCircle, Icon, Pill, Sheet, TierBars, tap } from '../../ui/components';
-import { ROOM_H, ROOM_W, roomLanternXml, roomSlots, roomXml, slotObject } from '../../ui/art';
+import { RoomScene } from '../../ui/RoomScene';
+import { introOf, roomSlotsOf } from '../../ui/scenes';
 import { T, type } from '../../ui/theme';
-import { FAMILIES, REWARDS, TIER_NAMES } from '../../game/catalog';
+import { FAMILIES, REWARDS, TIER_NAMES, Code } from '../../game/catalog';
 import { buildingName, collectibleOf, infoOf, locateRoom, roomName } from '../../game/views';
+import { sealDigitOf } from '../../game/seal';
+import { followUps } from '../success';
+import { lightsToOpenNextRoom } from '../../core/game/progression';
 
-function PulseRing({ size }: { size: number }) {
-  const v = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const loop = Animated.loop(Animated.timing(v, { toValue: 1, duration: 1800, easing: Easing.out(Easing.quad), useNativeDriver: true }));
-    loop.start();
-    return () => loop.stop();
-  }, [v]);
-  return <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderColor: T.amber, opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.9, 0] }), transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.8] }) }] }} />;
+const BG = '#0b0d1d';
+/** Lanterns already celebrated in their room (once per lighting). */
+const celebrated = new Set<string>();
+
+function Fade({ top, height }: { top: boolean; height: number }) {
+  const id = top ? 'rfT' : 'rfB';
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, height, [top ? 'top' : 'bottom']: 0 }}>
+      <Svg width="100%" height="100%">
+        <Defs>
+          <LinearGradient id={id} x1="0" y1={top ? '0' : '1'} x2="0" y2={top ? '1' : '0'}>
+            <Stop offset="0" stopColor={BG} stopOpacity="1" />
+            <Stop offset="1" stopColor={BG} stopOpacity="0" />
+          </LinearGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill={`url(#${id})`} />
+      </Svg>
+    </View>
+  );
 }
 
 export default function RoomScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { state, engine, openLantern, settings } = useStore();
+  const { id, search: searchParam, step } = useLocalSearchParams<{ id: string; search?: string; step?: string }>();
+  const { state, engine, openLantern, settings, profile, result, pickObject, play, haptic } = useStore();
   const [box, setBox] = useState({ w: 0, h: 0 });
   const [selected, setSelected] = useState<number | null>(null);
+  const [searching, setSearching] = useState(searchParam === '1');
+  const [feedback, setFeedback] = useState<string | null>(null);
   const at = locateRoom(id ?? '');
   const p = engine.progression;
   const lanterns = at?.room.lanterns ?? [];
   const lit = lanterns.map((l) => state.solved.has(l.puzzle));
   const n = lit.filter(Boolean).length;
-  const slots = roomSlots(lanterns.length);
   const info = at ? infoOf(at.district) : null;
   const complete = n === lanterns.length && lanterns.length > 0;
-  const xml = useMemo(() => (info ? roomXml(info.hue, slots.filter((_, i) => lit[i]), n / Math.max(1, lanterns.length), complete) : ''), [info, n, complete]); // eslint-disable-line react-hooks/exhaustive-deps
+  const lanternKeys = useMemo(() => lanterns.map((l) => ({ key: l.puzzle })), [lanterns]);
+
+  // The lantern just lit in this room (coming back from its success screen) pops once.
+  const justLit = useMemo(() => {
+    if (!result || result.session.kind !== 'lantern' || result.replay || celebrated.has(result.session.id)) return -1;
+    const i = lanterns.findIndex((l) => l.puzzle === result.session.id);
+    if (i >= 0) celebrated.add(result.session.id);
+    return i;
+  }, [result, lanterns]);
+
   if (!at || !info) return <Screen><BackButton label="Vesper" onPress={() => goBack()} /></Screen>;
   const { district: d, buildingIndex: bi, index: ri } = at;
   const rec = lit.findIndex((x) => !x);
-  const k = box.w ? Math.min(box.w / ROOM_W, box.h / ROOM_H) : 0;
-  const ox = (box.w - ROOM_W * k) / 2, oy = (box.h - ROOM_H * k) / 2;
-  const L = 60 * k;
   const object = info.buildings[bi].rooms[ri].object;
-  const found = state.collectibles.has(collectibleOf(at.room.id));
+  const credited = state.collectibles.has(collectibleOf(at.room.id));
+  const picked = profile.picked.includes(at.room.id);
+  const canSearch = complete && credited && !picked;
   const open = p.isPlayable(lanterns[0]?.puzzle ?? '', state);
+  const title = roomName(d, bi, ri);
+  // The building's seal digit appears once the room is 60 % lit (it is then needed by the keystone).
+  const digitShown = sealDigitOf(at.room.id) !== null && n >= lightsToOpenNextRoom(lanterns.length);
 
-  const play = (i: number) => {
+  const play_ = (i: number) => {
     setSelected(null);
     if (openLantern(lanterns[i].puzzle)) router.push('/puzzle');
   };
-  const choose = (i: number) => { tap(); if (settings.direct) play(i); else setSelected(i); };
+  const choose = (i: number) => { tap(); if (settings.direct) play_(i); else setSelected(i); };
   const sel = selected !== null ? lanterns[selected] : null;
+  const fam = (c: string) => FAMILIES[c as Code];
+
+  const found = () => {
+    haptic('success');
+    play('roomCompleted');
+    pickObject(at.room.id);
+    setSearching(false);
+    setFeedback(null);
+    if (step !== undefined) router.replace({ pathname: '/found', params: { step } });
+    else router.push({ pathname: '/found', params: { object: at.room.id } });
+  };
+  const miss = (near: boolean) => {
+    haptic('selection');
+    setFeedback(near ? 'Tout près ! Regarde bien autour.' : 'Pas ici… Cherche ce qui brille un peu.');
+  };
+  const leaveSearch = () => {
+    setSearching(false);
+    setFeedback(null);
+    // Coming from a success: carry on with what comes next (resident, letter, new district…).
+    if (step === undefined) return;
+    const nextStep = Number(step) + 1;
+    if (nextStep < followUps(result).length) router.replace({ pathname: '/found', params: { step: String(nextStep) } });
+    else router.setParams({ search: undefined, step: undefined });
+  };
 
   return (
-    <Screen background="#0b0d1d" style={{ gap: 6 }} place={info.sound}>
-      <BackButton label={buildingName(d, bi)} onPress={() => goBack()} />
-      <Crumb parent={buildingName(d, bi)} current={lanterns.length === 16 ? 'Finale' : `Salle ${ri + 1}`} />
-      <Text style={type.title1}>{roomName(d, bi, ri)}</Text>
-      <GaugeRow n={n} total={lanterns.length} label="Lanternes de la salle" />
-
-      <View style={{ flex: 1, marginHorizontal: -16, marginVertical: 6 }} onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
-        {k > 0 ? (
-          <>
-            <View style={{ position: 'absolute', left: ox, top: oy }}><SvgXml xml={xml} width={ROOM_W * k} height={ROOM_H * k} /></View>
-            {lanterns.map((l, i) => {
-              const [x, y] = slots[i];
-              return (
-                <Pressable key={l.puzzle} accessibilityRole="button"
-                  accessibilityLabel={`Lanterne ${i + 1} sur ${slotObject(lanterns.length, i)} : ${FAMILIES[l.family as keyof typeof FAMILIES].name}, ${TIER_NAMES[l.tier]}, ${lit[i] ? 'allumée' : 'éteinte'}${i === rec ? ', recommandée' : ''}`}
-                  disabled={!open}
-                  onPress={() => choose(i)}
-                  style={{ position: 'absolute', left: ox + x * k - L / 2, top: oy + y * k - L * (34 / 60), width: L, height: L, alignItems: 'center', justifyContent: 'center' }}>
-                  {i === rec && open ? <PulseRing size={34 * k} /> : null}
-                  <SvgXml xml={roomLanternXml(i, lit[i])} width={L} height={L} style={{ position: 'absolute', left: 0, top: 0 }} />
-                </Pressable>
-              );
-            })}
-          </>
-        ) : null}
+    <Screen background={BG} padded={false} place={info.sound}>
+      <View style={{ paddingHorizontal: 16, gap: 6, zIndex: 2 }}>
+        <BackButton label={searching && step !== undefined ? 'Plus tard' : buildingName(d, bi)} onPress={() => (searching && step !== undefined ? leaveSearch() : goBack())} />
+        <Crumb parent={buildingName(d, bi)} current={lanterns.length === 16 ? 'Finale' : `Salle ${ri + 1}`} />
+        <Text style={type.title1} accessibilityRole="header">{title}</Text>
+        <GaugeRow n={n} total={lanterns.length} label="Lanternes de la salle" />
+        <Text style={[type.dialogue, { fontSize: 15, lineHeight: 21, color: T.tx2 }]} numberOfLines={3}>{introOf(at.room.id)}</Text>
+        {digitShown ? <Text style={[type.foot, { color: T.gold }]}>La lumière a fait apparaître un chiffre dans la salle. La lanterne-clé du bâtiment en aura besoin.</Text> : null}
       </View>
 
-      <Pressable accessibilityRole={found ? 'button' : undefined} disabled={!found} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'objets' } })} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-        {found ? <Icon name="star" size={18} color={T.gold} /> : <View style={{ width: 18, height: 18, borderRadius: 9, borderWidth: 1.5, borderStyle: 'dashed', borderColor: T.tx3 }} />}
-        <Text style={type.foot}>{found ? `Objet trouvé : ${object.name}` : `Un objet se cache ici. Allume les ${lanterns.length} lanternes.`}</Text>
-      </Pressable>
-      {rec >= 0
-        ? <Button title={`Allumer la lanterne ${rec + 1} · ${FAMILIES[lanterns[rec].family as keyof typeof FAMILIES].name}`} onPress={() => choose(rec)} style={{ marginTop: 6 }} disabled={!open} />
-        : <Button title="Retour au bâtiment" kind="secondary" onPress={() => goBack()} style={{ marginTop: 6 }} />}
+      <View style={{ flex: 1, marginTop: -8, marginBottom: -8 }} onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
+        {box.w > 0 ? (
+          <RoomScene roomId={at.room.id} w={box.w} h={box.h} lanterns={lanternKeys} lit={lit} recommended={rec} justLit={justLit} open={open}
+            object={object.name} objectFound={picked} digit={digitShown ? sealDigitOf(at.room.id) : null} glow={info.hue}
+            labelOf={(i, sl) => `Lanterne ${i + 1} sur ${sl.label} : ${fam(lanterns[i].family).name}, ${TIER_NAMES[lanterns[i].tier]}, ${lit[i] ? 'allumée' : 'éteinte'}${i === rec ? ', recommandée' : ''}`}
+            onLantern={choose}
+            search={{ active: searching && canSearch, onFound: found, onMiss: miss, hintAfter: 3 }} />
+        ) : null}
+        <Fade top height={28} />
+        <Fade top={false} height={36} />
+      </View>
+
+      <View style={{ paddingHorizontal: 16, gap: 10, paddingTop: 4 }}>
+        {searching && canSearch ? (
+          <View style={{ backgroundColor: 'rgba(255,217,142,0.07)', borderColor: 'rgba(255,217,142,0.35)', borderWidth: 1, borderRadius: 16, padding: 12, gap: 4 }} accessibilityLiveRegion="polite">
+            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+              <Icon name="star" size={18} color={T.gold} />
+              <Text style={[type.headline, { color: T.gold }]}>Quelque chose brille ici</Text>
+            </View>
+            <Text style={type.sub}>Touche l’objet caché dans la salle : <Text style={{ color: T.tx, fontWeight: '600' }}>{object.name}</Text>.</Text>
+            {feedback ? <Text style={[type.foot, { color: T.moon }]}>{feedback}</Text> : null}
+          </View>
+        ) : (
+          <Pressable accessibilityRole={credited ? 'button' : undefined} disabled={!credited}
+            onPress={() => (canSearch ? setSearching(true) : router.push({ pathname: '/carnet', params: { tab: 'objets' } }))}
+            style={{ flexDirection: 'row', gap: 10, alignItems: 'center', minHeight: 32 }}>
+            {picked ? <Icon name="star" size={18} color={T.gold} /> : <View style={{ width: 18, height: 18, borderRadius: 9, borderWidth: 1.5, borderStyle: 'dashed', borderColor: canSearch ? T.gold : T.tx3 }} />}
+            <Text style={[type.foot, canSearch ? { color: T.gold } : null]}>
+              {picked ? `Objet trouvé : ${object.name}` : canSearch ? 'La salle est éclairée : un objet s’y cache. Cherche-le !' : `Un objet se cache ici. Allume les ${lanterns.length} lanternes.`}
+            </Text>
+          </Pressable>
+        )}
+        {searching && canSearch
+          ? (step === undefined ? <Button title="Chercher plus tard" kind="ghost" onPress={() => { setSearching(false); setFeedback(null); }} /> : null)
+          : rec >= 0
+            ? <Button title={`Allumer la lanterne ${rec + 1} · ${fam(lanterns[rec].family).name}`} onPress={() => choose(rec)} disabled={!open} />
+            : canSearch
+              ? <Button title="Chercher l’objet caché" icon="star" onPress={() => { tap(); setSearching(true); }} />
+              : <Button title="Retour au bâtiment" kind="secondary" onPress={() => goBack()} />}
+      </View>
 
       <Sheet visible={sel !== null} onClose={() => setSelected(null)}>
         {sel && selected !== null ? (
@@ -95,8 +162,8 @@ export default function RoomScreen() {
             <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
               <GlyphCircle icon={sel.family} size={56} color={lit[selected] ? T.gold : T.amber} />
               <View style={{ flex: 1 }}>
-                <Text style={type.cap}>Lanterne {selected + 1} · {slotObject(lanterns.length, selected)}</Text>
-                <Text style={type.title2}>{FAMILIES[sel.family as keyof typeof FAMILIES].name}</Text>
+                <Text style={type.cap}>Lanterne {selected + 1} · {slotLabel(at.room.id, lanterns.length, selected)}</Text>
+                <Text style={type.title2}>{fam(sel.family).name}</Text>
               </View>
             </View>
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 16, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -104,8 +171,8 @@ export default function RoomScreen() {
               <Pill icon="shard" iconColor={T.moon}>+{REWARDS[sel.tier]}</Pill>
               {lit[selected] ? <Pill icon="check" iconColor={T.gold} color={T.gold}>Résolue</Pill> : null}
             </View>
-            <Text style={[type.sub, { marginBottom: 16 }]}>{FAMILIES[sel.family as keyof typeof FAMILIES].rule}</Text>
-            <Button title={lit[selected] ? 'Rejouer' : state.inProgress.has(sel.puzzle) ? 'Reprendre' : 'Allumer'} onPress={() => play(selected)} />
+            <Text style={[type.sub, { marginBottom: 16 }]}>{fam(sel.family).rule}</Text>
+            <Button title={lit[selected] ? 'Rejouer' : state.inProgress.has(sel.puzzle) ? 'Reprendre' : 'Allumer'} onPress={() => play_(selected)} />
             <Button title="Plus tard" kind="ghost" onPress={() => setSelected(null)} style={{ marginTop: 4 }} />
           </View>
         ) : null}
@@ -113,3 +180,5 @@ export default function RoomScreen() {
     </Screen>
   );
 }
+
+const slotLabel = (roomId: string, n: number, i: number) => roomSlotsOf(roomId, n)[i]?.label ?? '';

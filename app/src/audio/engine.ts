@@ -162,6 +162,20 @@ export class SoundEngine {
     this.run(this.director.trigger(event, Date.now()));
   }
 
+  /** One bell of the Carillon (0…5), low to high. Follows the "Effets sonores" setting. */
+  note(i: number) {
+    if (!this.unlocked || !this.director.settings.effects) return;
+    const key = `bell_${Math.max(0, Math.min(5, i))}`, src = SFX_FILES[key];
+    if (src === undefined) return;
+    safe(() => {
+      let p = this.sfx.get(key);
+      if (!p) { p = createAudioPlayer(src); this.sfx.set(key, p); }
+      p.volume = 0.9;
+      p.seekTo(0);
+      p.play();
+    });
+  }
+
   private effectKey(event: SoundEvent): string | null {
     const per = PER_PLACE[event];
     if (per) return `${per}_${PLACE_AMBIENCE[this.place]}`;

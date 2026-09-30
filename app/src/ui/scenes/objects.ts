@@ -89,6 +89,8 @@ const G: Record<string, string> = {
   beam: '<path d="M4 20L20 4"/><path d="M4 14l6 6M8 10l6 6M12 6l6 6"/>',
   flame: '<path d="M12 21c-4 0-6-3-6-6 0-4 4-6 3-11 3 2 5 4 5 7 1-1 2-2 2-3 2 2 2 5 2 7 0 3-2 6-6 6z"/>',
   letter: '<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M3 7l9 6 9-6"/>',
+  teapot: '<path d="M6 10h11v4a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M17 11c3 0 3 5 0 5M6 12L3 9M11 10V8h2v2"/>',
+  vase: '<path d="M9 3h6M10 3v3c-3 2-4 5-3 9 1 3 3 5 5 5s4-2 5-5c1-4 0-7-3-9V3"/>',
 };
 
 /** Picture of each object, by name (vesper.ts). */
@@ -122,6 +124,8 @@ const BY_NAME: Record<string, string> = {
 };
 
 export const objectGlyph = (name: string) => G[BY_NAME[name] ?? 'sparkle'];
+/** A drawing by its key (puzzles use them as pictures). */
+export const glyphByKey = (key: string) => G[key] ?? G.sparkle;
 export const glyphKeys = () => Object.keys(G);
 export const glyphOf = (name: string) => BY_NAME[name];
 

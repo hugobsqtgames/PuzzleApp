@@ -18,6 +18,9 @@ import { ScalesPuzzle, ScalesState } from '../core/families/scales';
 import { FAMILIES } from '../game/catalog';
 import { Session } from '../game/session';
 import { Board2 } from './boards2';
+import { Board3, sealRuleText } from './boards3';
+import type { SealPuzzle } from '../core/families/seal';
+import type { SpotPuzzle } from '../core/families/spot';
 
 export interface BoardProps {
   s: Session;
@@ -25,6 +28,10 @@ export interface BoardProps {
   /** New board state from a player action. */
   onPlay: (next: any, countsAsMove?: boolean) => void;
   tap: () => void;
+  /** Plays a bell of the Carillon. */
+  note?: (i: number) => void;
+  /** Leaves the puzzle to look at a room (the seal). */
+  visitRoom?: (roomId: string) => void;
 }
 
 const box = { backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: R.l } as const;
@@ -311,6 +318,7 @@ export function Board(props: BoardProps) {
     case 'CA': return <Lock {...props} />;
     case 'SU': return <Sequence {...props} />;
     case 'BA': return <Scales {...props} />;
+    case 'CR': case 'VI': case 'DI': case 'ET': case 'OM': case 'SC': return <Board3 {...props} />;
     default: return <Board2 {...props} />;
   }
 }
@@ -326,6 +334,8 @@ export function ruleFor(s: Session): string {
     const p = s.data as LocksPuzzle;
     return `Trouve le code : ${p.length} chiffres${p.allowsRepeats ? ', qui peuvent se répéter' : ', tous différents'}.`;
   }
+  if (s.code === 'SC') return sealRuleText(s.data as SealPuzzle);
+  if (s.code === 'DI') return `Trouve les ${(s.data as SpotPuzzle).diffs.length} différences entre les deux images.`;
   return FAMILIES[s.code].rule;
 }
 

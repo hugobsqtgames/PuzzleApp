@@ -27,6 +27,12 @@ export const IC: Record<string, string> = {
   MO: '<rect x="3.5" y="3.5" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="3.5" width="4.5" height="4.5" rx="1"/><rect x="16" y="3.5" width="4.5" height="4.5" rx="1"/><rect x="3.5" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="16" y="9.75" width="4.5" height="4.5" rx="1"/><rect x="3.5" y="16" width="4.5" height="4.5" rx="1"/><rect x="9.75" y="16" width="4.5" height="4.5" rx="1"/><rect x="16" y="16" width="4.5" height="4.5" rx="1" stroke-dasharray="2 2"/>',
   FI: '<path d="M4 19V9a3 3 0 0 1 6 0v6a3 3 0 0 0 6 0V5"/><circle cx="4" cy="19.5" r="1.3"/><circle cx="16" cy="4" r="1.3"/><path d="M20 4v16"/>',
   MI: '<path d="M3 13h8l4-8"/><path d="M8 18l8-8" stroke-width="2.2"/><path d="M15 5l1.6 3.4"/>',
+  CR: '<path d="M6 16V11a6 6 0 0 1 12 0v5"/><path d="M4 16h16M12 16v3"/><circle cx="12" cy="20" r="1"/><path d="M20 5l1-1M4 5L3 4M12 3V2"/>',
+  VI: '<path d="M5 21V10a7 7 0 0 1 14 0v11z"/><path d="M5 14h14M12 3v18"/>',
+  DI: '<rect x="3" y="5" width="8" height="14" rx="1.5"/><rect x="13" y="5" width="8" height="14" rx="1.5"/><circle cx="7" cy="10" r="1.6"/><circle cx="17" cy="14" r="2.4"/>',
+  ET: '<path d="M3 19h18M3 11h18"/><rect x="5" y="5" width="3" height="6" rx=".8"/><rect x="10" y="7" width="4" height="4" rx="2"/><path d="M17 11l1.5-5 1.5 5"/><rect x="6" y="14" width="4" height="5" rx="1"/><rect x="13" y="13" width="3" height="6" rx=".8"/>',
+  OM: '<path d="M4 5h5v5H4zM9 10h5v5H9"/><path d="M14 19h6v-6" stroke-dasharray="2 2"/>',
+  SC: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/>',
   back: '<path d="M15 5l-7 7 7 7"/>', close: '<path d="M6 6l12 12M18 6L6 18"/>',
   pause: '<path d="M9 6v12M15 6v12"/>', undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>', redo: '<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>',
@@ -85,15 +91,21 @@ const COMPANIONS: Record<string, string> = {
   comet: '<path d="M10 50l12-10" stroke="#8FB8F0" stroke-width="3" stroke-linecap="round" opacity=".5"/><path d="M22 36l1.3 2.7 3 .4-2.2 2 .6 3-2.7-1.5-2.7 1.5.6-3-2.2-2 3-.4z" fill="#FFD98E"/>',
 };
 
-export function niloXml(mood: Mood = 'neutral', look: Look = {}): string {
+/** Pivots of Nilo's moving parts, in its 132 × 120 drawing. */
+export const NILO_PIVOTS = { tail: [84, 96], flame: [104, 31], earL: [43, 50], earR: [73, 50], body: [58, 106], eyes: [58, 66] } as const;
+
+export interface NiloParts { back: string; tail: string; flame: string; earL: string; earR: string; body: string; eyes: string; deco: string }
+
+/** Nilo in separate layers (same drawing as the prototype), so that each part can move on its own. */
+export function niloParts(mood: Mood = 'neutral', look: Look = {}): NiloParts {
   const fc = flameColor(look.flame);
   const id = uid('n');
   const body = '#1E2347', hi = '#2C3266', inner = '#3A4180';
   const M = ({
-    neutral: { el: 0, er: 0, fs: 1 }, curious: { el: -8, er: 14, fs: 1.05, tilt: -6 }, think: { el: -14, er: -14, fs: 0.8 },
+    neutral: { el: 0, er: 0, fs: 1 }, curious: { el: -8, er: 14, fs: 1.05 }, think: { el: -14, er: -14, fs: 0.8 },
     joy: { el: 8, er: -8, fs: 1.4 }, oops: { el: -28, er: 28, fs: 0.85 }, hint: { el: 0, er: -16, fs: 1.15 },
     wonder: { el: 12, er: -12, fs: 1.5 }, sleep: { el: -32, er: 32, fs: 0.6 },
-  } as Record<Mood, { el: number; er: number; fs: number; tilt?: number }>)[mood];
+  } as Record<Mood, { el: number; er: number; fs: number }>)[mood];
   const fcol = mood === 'sleep' ? '#E8744A' : mood === 'wonder' && !look.flame ? '#BFE6F0' : fc;
   const ey = '#FFE6B0';
   let eyes: string;
@@ -102,30 +114,34 @@ export function niloXml(mood: Mood = 'neutral', look: Look = {}): string {
   else if (mood === 'oops') eyes = `<path d="M43 62l7 4.5-7 4.5M73 62l-7 4.5 7 4.5" stroke="${ey}" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
   else {
     const ry = ({ think: 2.6, wonder: 9, curious: 8 } as Record<string, number>)[mood] ?? 7, rx = mood === 'wonder' ? 6 : 5;
-    eyes = `<ellipse cx="47" cy="66" rx="${rx}" ry="${ry}" fill="${ey}"/><ellipse cx="69" cy="66" rx="${rx}" ry="${ry}" fill="${ey}"/><ellipse cx="47" cy="66" rx="${rx + 4}" ry="${ry + 4}" fill="${ey}" opacity=".12"/><ellipse cx="69" cy="66" rx="${rx + 4}" ry="${ry + 4}" fill="${ey}" opacity=".12"/>`;
+    eyes = `<ellipse cx="47" cy="66" rx="${rx + 4}" ry="${ry + 4}" fill="${ey}" opacity=".12"/><ellipse cx="69" cy="66" rx="${rx + 4}" ry="${ry + 4}" fill="${ey}" opacity=".12"/><ellipse cx="47" cy="66" rx="${rx}" ry="${ry}" fill="${ey}"/><ellipse cx="69" cy="66" rx="${rx}" ry="${ry}" fill="${ey}"/><circle cx="48.5" cy="${66 - ry * 0.35}" r="1.5" fill="#FFFFFF" opacity=".75"/><circle cx="70.5" cy="${66 - ry * 0.35}" r="1.5" fill="#FFFFFF" opacity=".75"/>`;
   }
   const sparkle = mood === 'joy' || mood === 'wonder'
     ? `<g fill="${T.gold}"><path d="M120 14l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z"/><path d="M90 12l.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z"/><path d="M124 44l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></g>` : '';
-  const tilt = M.tilt ? `transform="rotate(${M.tilt} 58 104)"` : '';
-  const fs = M.fs;
   const zz = mood === 'sleep' ? `<text x="84" y="40" fill="${T.tx2}" font-family="Georgia,serif" font-style="italic" font-size="12">z</text><text x="92" y="30" fill="${T.tx2}" font-family="Georgia,serif" font-style="italic" font-size="9">z</text>` : '';
-  return `<svg viewBox="0 0 132 120">
-  <defs><radialGradient id="${id}g"><stop offset="0" stop-color="${fcol}" stop-opacity=".75"/><stop offset=".45" stop-color="${fcol}" stop-opacity=".25"/><stop offset="1" stop-color="${fcol}" stop-opacity="0"/></radialGradient>
-  <linearGradient id="${id}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${hi}"/><stop offset=".55" stop-color="${body}"/></linearGradient></defs>
-  ${COMPANIONS[look.comp ?? 'none'] ?? ''}
-  <g ${tilt}>
-   <path d="M84 94c18 2 28-14 22-30-4-10-6-18-2-24" stroke="${body}" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-   <g transform="rotate(${M.el} 43 46)"><path d="M36 54Q30 30 30 18q1-4 5-1q9 9 15 21z" fill="${body}"/><path d="M38 48Q34 32 34 24q6 7 10 16z" fill="${inner}"/></g>
-   <g transform="rotate(${M.er} 73 46)"><path d="M80 54Q86 30 86 18q-1-4-5-1q-9 9-15 21z" fill="${body}"/><path d="M78 48Q82 32 82 24q-6 7-10 16z" fill="${inner}"/></g>
-   <path d="M58 34c22 0 32 22 32 42s-14 28-32 28-32-8-32-28 10-42 32-42z" fill="url(#${id}b)"/>
-   <ellipse cx="58" cy="90" rx="17" ry="11" fill="${hi}" opacity=".6"/><ellipse cx="47" cy="104" rx="7" ry="3.2" fill="${hi}"/><ellipse cx="69" cy="104" rx="7" ry="3.2" fill="${hi}"/>
-   ${eyes}${SCARVES[look.scarf ?? 'none'] ?? ''}${HATS[look.hat ?? 'none'] ?? ''}
-  </g>
-  <circle cx="104" cy="31" r="${24 * fs}" fill="url(#${id}g)"/>
-  <circle cx="104" cy="31" r="${9 * fs}" fill="${fcol}"/>
-  <circle cx="104" cy="31" r="${4 * fs}" fill="#FFF3D6"/>
-  ${sparkle}${zz}
- </svg>`;
+  const fs = M.fs;
+  const svg = (inner: string) => `<svg viewBox="0 0 132 120">${inner}</svg>`;
+  return {
+    back: svg(COMPANIONS[look.comp ?? 'none'] ?? ''),
+    tail: svg(`<path d="M84 94c18 2 28-14 22-30-4-10-6-18-2-24" stroke="${body}" stroke-width="5.5" fill="none" stroke-linecap="round"/>`),
+    flame: svg(`<defs><radialGradient id="${id}g"><stop offset="0" stop-color="${fcol}" stop-opacity=".75"/><stop offset=".45" stop-color="${fcol}" stop-opacity=".25"/><stop offset="1" stop-color="${fcol}" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="104" cy="31" r="${24 * fs}" fill="url(#${id}g)"/><circle cx="104" cy="31" r="${9 * fs}" fill="${fcol}"/><circle cx="104" cy="31" r="${4 * fs}" fill="#FFF3D6"/>`),
+    earL: svg(`<g transform="rotate(${M.el} 43 50)"><path d="M36 54Q30 30 30 18q1-4 5-1q9 9 15 21z" fill="${body}"/><path d="M38 48Q34 32 34 24q6 7 10 16z" fill="${inner}"/></g>`),
+    earR: svg(`<g transform="rotate(${M.er} 73 50)"><path d="M80 54Q86 30 86 18q-1-4-5-1q-9 9-15 21z" fill="${body}"/><path d="M78 48Q82 32 82 24q-6 7-10 16z" fill="${inner}"/></g>`),
+    body: svg(`<defs><linearGradient id="${id}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${hi}"/><stop offset=".55" stop-color="${body}"/></linearGradient></defs>
+      <path d="M58 34c22 0 32 22 32 42s-14 28-32 28-32-8-32-28 10-42 32-42z" fill="url(#${id}b)"/>
+      <ellipse cx="58" cy="90" rx="17" ry="11" fill="${hi}" opacity=".6"/><ellipse cx="47" cy="104" rx="7" ry="3.2" fill="${hi}"/><ellipse cx="69" cy="104" rx="7" ry="3.2" fill="${hi}"/>${SCARVES[look.scarf ?? 'none'] ?? ''}`),
+    eyes: svg(eyes + (HATS[look.hat ?? 'none'] ?? '')),
+    deco: svg(sparkle + zz),
+  };
+}
+
+/** The whole of Nilo in one drawing (thumbnails, store). */
+export function niloXml(mood: Mood = 'neutral', look: Look = {}): string {
+  const p = niloParts(mood, look);
+  const inner = (x: string) => x.replace(/^<svg viewBox="0 0 132 120">/, '').replace(/<\/svg>$/, '');
+  const tilt = mood === 'curious' ? 'transform="rotate(-6 58 104)"' : '';
+  return `<svg viewBox="0 0 132 120">${inner(p.back)}<g ${tilt}>${inner(p.tail)}${inner(p.earL)}${inner(p.earR)}${inner(p.body)}${inner(p.eyes)}</g>${inner(p.flame)}${inner(p.deco)}</svg>`;
 }
 
 // MARK: - Vesper building blocks

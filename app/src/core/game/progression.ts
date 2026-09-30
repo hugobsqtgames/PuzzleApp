@@ -46,7 +46,9 @@ export class Progression {
   }
   isKeystoneOpen(b: Building, s: GameState) {
     const regular = regularLanterns(b);
-    return this.lights(regular, s) >= Math.min(this.rules.keystoneLights, regular.length);
+    // The keystone is a seal made of the rooms' digits: each room must show its digit (60 % lit).
+    return this.lights(regular, s) >= Math.min(this.rules.keystoneLights, regular.length)
+      && b.rooms.every((r) => this.lights(r.lanterns, s) >= lightsToOpenNextRoom(r.lanterns.length, this.rules));
   }
 
   playableLanterns(s: GameState): Lantern[] {

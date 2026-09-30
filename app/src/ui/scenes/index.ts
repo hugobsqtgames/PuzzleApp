@@ -45,6 +45,13 @@ export function auditScenes(counts: Record<string, number>): string[] {
     if (sl.length < n) out.push(`${id}: ${sl.length}/${n} anchors`);
     sl.forEach((a, i) => sl.slice(i + 1).forEach((b) => { if (Math.hypot(a.x - b.x, a.y - b.y) < 36) out.push(`${id}: « ${a.label} » and « ${b.label} » overlap`); }));
     sl.forEach((a) => { if (a.x < 24 || a.x > W - 24 || a.y < 48 || a.y > H - 40) out.push(`${id}: « ${a.label} » off screen (${a.x}, ${a.y})`); });
+    const sp = spotsOf(id, n);
+    for (const [what, pt] of [['objet caché', sp.hide], ['chiffre du sceau', sp.secret]] as const) {
+      const near = sl.find((a) => Math.hypot(a.x - pt[0], a.y - pt[1]) < 34);
+      if (near) out.push(`${id}: ${what} under « ${near.label} »`);
+      if (pt[0] < 24 || pt[0] > W - 24 || pt[1] < 60 || pt[1] > H - 40) out.push(`${id}: ${what} off screen`);
+    }
+    if (Math.hypot(sp.hide[0] - sp.secret[0], sp.hide[1] - sp.secret[1]) < 40) out.push(`${id}: object and digit together`);
     const labels = sl.map((a) => a.label);
     labels.forEach((l, i) => { if (labels.indexOf(l) !== i) out.push(`${id}: label « ${l} » twice`); });
   }
@@ -150,9 +157,10 @@ export function sceneXml(roomId: string, n: number, o: SceneOpts): string {
   s += archXml(g, spec.arch, spec.ao);
   for (const [p, x, y, sc, po] of spec.props) s += p(g, x, y, sc, po).s;
   // The object, hidden in plain sight: barely visible in the dark, a soft glint once lit.
-  if (o.object && !o.objectFound) s += objectInScene(o.object, spec.hide[0], spec.hide[1], 18, glow === '#F4B45E' ? '#FFD98E' : '#FFE6B0', o.complete ? 0.55 : 0.12);
-  if (o.digit != null && o.complete) {
-    s += `<g opacity=".85"><circle cx="${spec.secret[0]}" cy="${spec.secret[1]}" r="15" fill="#FFD98E" opacity=".12"/><text x="${spec.secret[0]}" y="${r1(spec.secret[1] + 7)}" text-anchor="middle" font-family="Georgia,serif" font-size="21" font-style="italic" fill="#FFD98E">${o.digit}</text></g>`;
+  const sp = spotsOf(roomId, n);
+  if (o.object && !o.objectFound) s += objectInScene(o.object, sp.hide[0], sp.hide[1], 18, glow === '#F4B45E' ? '#FFD98E' : '#FFE6B0', o.complete ? 0.55 : 0.12);
+  if (o.digit != null) {
+    s += `<g opacity=".85"><circle cx="${sp.secret[0]}" cy="${sp.secret[1]}" r="15" fill="#FFD98E" opacity=".12"/><text x="${sp.secret[0]}" y="${r1(sp.secret[1] + 7)}" text-anchor="middle" font-family="Georgia,serif" font-size="21" font-style="italic" fill="#FFD98E">${o.digit}</text></g>`;
   }
   for (const [p, x, y, sc, po] of spec.front ?? []) s += p(g, x, y, sc, po).s;
   s += `<rect width="${W}" height="${H}" fill="url(#${vid})"/>`;
@@ -162,5 +170,29 @@ export function sceneXml(roomId: string, n: number, o: SceneOpts): string {
 }
 
 export const introOf = (roomId: string) => ROOM_SPECS[roomId]?.intro ?? '';
-export const hideOf = (roomId: string) => ROOM_SPECS[roomId]?.hide ?? null;
-export const secretOf = (roomId: string) => ROOM_SPECS[roomId]?.secret ?? null;
+
+/** The nearest free spot to `want`: away from every lantern (and from `avoid`), inside the screen. */
+function freeSpot(want: [number, number], slots: Slot[], avoid?: [number, number]): [number, number] {
+  const ok = (x: number, y: number) => x >= 30 && x <= W - 30 && y >= 70 && y <= H - 44
+    && slots.every((sl) => Math.hypot(sl.x - x, sl.y - y) >= 42) && (!avoid || Math.hypot(avoid[0] - x, avoid[1] - y) >= 46);
+  if (ok(want[0], want[1])) return want;
+  for (let r = 8; r < 260; r += 8) for (let a = 0; a < 16; a++) {
+    const x = Math.round(want[0] + r * Math.cos((a * Math.PI) / 8)), y = Math.round(want[1] + r * Math.sin((a * Math.PI) / 8));
+    if (ok(x, y)) return [x, y];
+  }
+  return want;
+}
+const spots = new Map<string, { hide: [number, number]; secret: [number, number] }>();
+function spotsOf(roomId: string, n: number) {
+  const key = `${roomId}:${n}`;
+  const hit = spots.get(key);
+  if (hit) return hit;
+  const spec = ROOM_SPECS[roomId];
+  const slots = roomSlotsOf(roomId, n);
+  const hide = freeSpot(spec.hide, slots);
+  const out = { hide, secret: freeSpot(spec.secret, slots, hide) };
+  spots.set(key, out);
+  return out;
+}
+export const hideOf = (roomId: string, n: number) => (ROOM_SPECS[roomId] ? spotsOf(roomId, n).hide : null);
+export const secretOf = (roomId: string, n: number) => (ROOM_SPECS[roomId] ? spotsOf(roomId, n).secret : null);

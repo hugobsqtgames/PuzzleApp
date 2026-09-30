@@ -147,11 +147,63 @@ export const FR: Record<string, string> = {
   'marquetry.hint.insight': 'La pièce {0} est posée à sa place.',
   'marquetry.hint.wrong': 'La pièce {0} empêche de tout remplir.',
   'marquetry.hint.solution': 'Voici la silhouette remplie.',
+  // Sceau
+  'seal.wrong.up': 'Le sceau ne bouge pas. Les chiffres se lisent de la Salle 1 à la Salle 4.',
+  'seal.wrong.down': 'Le sceau ne bouge pas. Les chiffres se lisent de la Salle 4 à la Salle 1.',
+  'seal.wrong.sum': 'Le sceau ne bouge pas. Il attend la somme des chiffres des salles.',
+  'seal.wrong.pairs': 'Le sceau ne bouge pas. Additionne les salles deux par deux, et garde le dernier chiffre.',
+  'seal.hint.whisper': 'Chaque salle éclairée montre un chiffre peint dans son décor. Va les chercher.',
+  'seal.hint.lead': 'Le chiffre de la Salle {0} est {1}.',
+  'seal.hint.insight': 'Les chiffres des salles : {0}.',
+  'seal.hint.solution': 'Le code du sceau est {0}.',
+  // Carillon
+  'chimes.wrong': 'La note n° {0} n’est pas la bonne. Écoute encore, puis recommence.',
+  'chimes.hint.whisper': 'La mélodie compte {0} notes. Écoute-la autant de fois que tu veux.',
+  'chimes.hint.lead': 'La note n° {0} est sur cette cloche.',
+  'chimes.hint.insight': 'Nilo joue la note n° {0} pour toi.',
+  'chimes.hint.solution': 'Voici toute la mélodie.',
+  // Vitraux
+  'stained.error.extra': 'Ce vitrail a une couleur en trop.',
+  'stained.hint.whisper': 'Le vert vient du jaune et du bleu, l’orange du rouge et du jaune, le violet du rouge et du bleu.',
+  'stained.hint.lead.row': 'Regarde la ligne {0} : que partagent toutes ses vitres ?',
+  'stained.hint.lead.col': 'Regarde la colonne {0} : que partagent toutes ses vitres ?',
+  'stained.hint.insight.row': 'La ligne {0} prend {1}.',
+  'stained.hint.insight.col': 'La colonne {0} prend {1}.',
+  'stained.hint.solution': 'Voici le vitrail rallumé.',
+  'stained.filter.0': 'aucun filtre', 'stained.filter.1': 'le filtre rouge', 'stained.filter.2': 'le filtre jaune', 'stained.filter.4': 'le filtre bleu',
+  // Différences
+  'spot.hint.whisper': 'Il reste {0} différence(s). Regarde {1}.',
+  'spot.hint.lead': 'Une différence se cache dans ce cercle.',
+  'spot.hint.insight.color': 'Cet objet a changé de couleur.',
+  'spot.hint.insight.missing': 'Cet objet a disparu.',
+  'spot.hint.insight.glyph': 'Cet objet a été remplacé.',
+  'spot.hint.insight.turn': 'Cet objet a tourné.',
+  'spot.hint.insight.size': 'Cet objet a changé de taille.',
+  'spot.hint.solution': 'Voici toutes les différences.',
+  'spot.zone.top.left': 'en haut à gauche', 'spot.zone.top.middle': 'en haut, au milieu', 'spot.zone.top.right': 'en haut à droite',
+  'spot.zone.bottom.left': 'en bas à gauche', 'spot.zone.bottom.middle': 'en bas, au milieu', 'spot.zone.bottom.right': 'en bas à droite',
+  // Étagère
+  'shelf.wrong': 'L’indice {0} n’est pas respecté.',
+  'shelf.hint.whisper': 'Commence par les indices qui placent un objet à un endroit précis.',
+  'shelf.hint.whisper.clue': 'Commence par l’indice {0}.',
+  'shelf.hint.lead': 'La place n° {0} n’a pas le bon objet.',
+  'shelf.hint.insight': '{0} va à la place n° {1}.',
+  'shelf.hint.solution': 'Voici l’étagère rangée.',
+  // Ombres
+  'shadows.wrong.flipped': 'Presque : cette ombre est retournée, comme dans un miroir. Une ombre tourne, elle ne se retourne pas.',
+  'shadows.wrong.other': 'Compte les carrés et regarde leurs coins : cette ombre n’a pas la même forme.',
+  'shadows.hint.whisper': 'Une ombre tourne, elle ne se retourne jamais. Méfie-toi des images en miroir.',
+  'shadows.hint.lead': 'Nilo écarte une ombre qui ne va pas.',
+  'shadows.hint.insight': 'Nilo écarte deux ombres qui ne vont pas.',
+  'shadows.hint.solution': 'Voici la bonne ombre.',
   // Paliers
   'tier.spark': 'Étincelle', 'tier.glow': 'Lueur', 'tier.flame': 'Flamme', 'tier.blaze': 'Brasier', 'tier.beacon': 'Fanal', 'tier.star': 'Astre',
 };
 
 import { CHARACTERS } from '../core/families/liars';
+/** Objects of the Étagère (same order as ui/boards3 SHELF_ART). */
+export const SHELF_NAMES = ['le sablier', 'la théière', 'le livre', 'la bougie', 'la clé', 'le coquillage', 'la loupe', 'le vase', 'la boussole', 'la plume'];
+SHELF_NAMES.forEach((n, i) => { FR[`shelf.item.${i}`] = n; });
 import { OBJECTS, PEOPLE, PLACES } from '../core/families/inquiries';
 CHARACTERS.forEach((n, i) => { FR[`liars.name.${i}`] = n; });
 PEOPLE.forEach((n, i) => { FR[`inquiries.person.${i}`] = n; });

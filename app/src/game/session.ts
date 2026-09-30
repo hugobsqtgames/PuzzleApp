@@ -76,7 +76,7 @@ export function isComplete(s: Session): boolean {
 
 export function canSubmit(s: Session): boolean {
   if (!FAMILIES[s.code].answer || s.solved) return false;
-  if (s.code === 'SU' || s.code === 'MO') return s.state.selected !== null;
+  if (s.code === 'SU' || s.code === 'MO' || s.code === 'OM') return s.state.selected !== null;
   if (s.code === 'ME') return s.state.marks.every((m: boolean | null) => m !== null);
   if (s.code === 'EQ') return s.state.object.every((x: number | null) => x !== null) && s.state.place.every((x: number | null) => x !== null);
   if (s.code === 'BA') return s.state.entry !== '';
@@ -90,7 +90,7 @@ export function submit(s: Session): { session: Session; correct: boolean } {
   if (v.kind === 'incomplete') return { session: s, correct: false };
   const issue = v.issues[0];
   let state = s.state;
-  if (s.code === 'SU' || s.code === 'MO') state = { ...state, ruledOut: [...state.ruledOut, state.selected], selected: null };
+  if (s.code === 'SU' || s.code === 'MO' || s.code === 'OM') state = { ...state, ruledOut: [...state.ruledOut, state.selected], selected: null };
   if (s.code === 'BA') state = { ...state, entry: '' };
   return {
     session: { ...s, state, wrongAnswers: s.wrongAnswers + 1, error: { text: issue ? t(issue.message) : '', focus: issue?.cells ?? [] } },

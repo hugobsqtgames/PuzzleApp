@@ -34,6 +34,12 @@ export const SFX_FILES: Record<string, number> = {
   "hint_horlo": require("../../assets/audio/sfx_hint_horlo.m4a"),
   "hint_marche": require("../../assets/audio/sfx_hint_marche.m4a"),
   "hint_serre": require("../../assets/audio/sfx_hint_serre.m4a"),
+  "bell_0": require("../../assets/audio/sfx_bell_0.m4a"),
+  "bell_1": require("../../assets/audio/sfx_bell_1.m4a"),
+  "bell_2": require("../../assets/audio/sfx_bell_2.m4a"),
+  "bell_3": require("../../assets/audio/sfx_bell_3.m4a"),
+  "bell_4": require("../../assets/audio/sfx_bell_4.m4a"),
+  "bell_5": require("../../assets/audio/sfx_bell_5.m4a"),
 };
 export const AMBIENCE_FILES: Record<string, number> = {
   "nuit": require("../../assets/audio/amb_nuit.m4a"),

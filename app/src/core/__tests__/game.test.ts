@@ -45,14 +45,18 @@ describe('Progression', () => {
     expect([lightsToOpenNextRoom(10), lightsToOpenNextRoom(6), lightsToOpenNextRoom(9)]).toEqual([6, 4, 6]);
     expect(p.playableLanterns(newGameState()).map((l) => l.puzzle)).toEqual([1, 2, 3, 4, 5, 6].map((i) => `phare.b1.r1.${i}`));
   });
-  test('Bibliothèque à 14 lumières, clé à 30', () => {
+  test('Bibliothèque à 14 lumières, clé à 30 avec chaque salle à 60 %', () => {
     const phare = FIXTURE_WORLD.districts[0].buildings[0].rooms.flatMap((r) => r.lanterns.map((l) => l.puzzle));
     const biblio = FIXTURE_WORLD.districts[1];
     expect(p.isDistrictUnlocked(biblio, p.totalLights(solving(phare.slice(0, 13))), 0)).toBe(false);
     expect(p.isDistrictUnlocked(biblio, p.totalLights(solving(phare.slice(0, 14))), 0)).toBe(true);
     const b = biblio.buildings[0], ids = b.rooms.flatMap((r) => r.lanterns.map((l) => l.puzzle));
     expect(p.isKeystoneOpen(b, solving(ids.slice(0, 29)))).toBe(false);
-    expect(p.isKeystoneOpen(b, solving(ids.slice(0, 30)))).toBe(true);
+    // 30 lights, but the last room is still dark: its digit is not shown yet.
+    expect(p.isKeystoneOpen(b, solving(ids.slice(0, 30)))).toBe(false);
+    const spread = b.rooms.flatMap((r, i) => r.lanterns.slice(0, i < 3 ? 8 : 6).map((l) => l.puzzle));
+    expect(spread).toHaveLength(30);
+    expect(p.isKeystoneOpen(b, solving(spread))).toBe(true);
   });
   test.each([0, 1, 2, 3])('jamais bloqué : partie simulée complète (graine %i)', (seed) => {
     const rng = new SeededRNG(BigInt(seed));

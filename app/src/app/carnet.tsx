@@ -7,11 +7,11 @@ import { SvgXml } from 'react-native-svg';
 import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
 import { BackButton, Card, Gauge, Icon, Nilo, Sheet, tap } from '../ui/components';
-import { objectIconXml } from '../ui/art';
+import { objectSvg } from '../ui/scenes/objects';
 import { T, SERIF, type } from '../ui/theme';
 import { CODES, FAMILIES, TIER_NAMES, WORLD } from '../game/catalog';
 import { achievementContext, achievementStatus, look } from '../game/rewards';
-import { allRooms, collectibleOf, districtViews, infoOf, unlockText } from '../game/views';
+import { allRooms, collectibleOf, districtViews, infoOf, roomName, unlockText } from '../game/views';
 import { LETTERS } from '../content/vesper';
 import { districtLanterns, worldLanterns } from '../core/game/world';
 import { isClairvoyant } from '../core/game/state';
@@ -40,11 +40,13 @@ export default function Carnet() {
 }
 
 function Objects() {
-  const { state, engine } = useStore();
+  const { state, engine, profile } = useStore();
   const [open, setOpen] = useState<number | null>(null);
   const [letter, setLetter] = useState<number | null>(null);
   const rooms = useMemo(() => allRooms(), []);
-  const found = rooms.map((r) => state.collectibles.has(collectibleOf(r.room.id)));
+  // Found = picked up in the lit room. Lit but not picked yet = it glints there, waiting.
+  const found = rooms.map((r) => profile.picked.includes(r.room.id));
+  const waiting = rooms.map((r, i) => !found[i] && state.collectibles.has(collectibleOf(r.room.id)));
   const count = found.filter(Boolean).length;
   const p = engine.progression;
   const letterOwned = (from: string) => {
@@ -54,7 +56,7 @@ function Objects() {
     return !!key && state.solved.has(key.puzzle);
   };
   const letters = LETTERS.map((l, i) => ({ ...l, i, owned: letterOwned(l.from) }));
-  if (count === 0) {
+  if (count === 0 && !waiting.some(Boolean)) {
     return (
       <View style={{ alignItems: 'center', gap: 14, paddingVertical: 40 }}>
         <Nilo size={150} mood="sleep" look={look(state)} />
@@ -64,25 +66,31 @@ function Objects() {
     );
   }
   // Found objects first, then the next unknown ones.
-  const firstUnknown = found.indexOf(false);
-  const visible = rooms.map((r, i) => ({ r, i })).filter(({ i }) => found[i] || i === firstUnknown || (i < firstUnknown + 6 && i > firstUnknown));
+  const firstUnknown = found.findIndex((f, i) => !f && !waiting[i]);
+  const visible = rooms.map((r, i) => ({ r, i })).filter(({ i }) => found[i] || waiting[i] || (firstUnknown >= 0 && i >= firstUnknown && i < firstUnknown + 6));
   return (
     <>
-      <Text style={type.sub}>{count} / 101 objets trouvés</Text>
+      <Text style={type.sub}>{count} / {rooms.length} objets trouvés{waiting.some(Boolean) ? ` · ${waiting.filter(Boolean).length} à chercher dans leur salle` : ''}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {visible.map(({ r, i }) => (
-          <Pressable key={r.room.id} accessibilityRole={found[i] ? 'button' : undefined} disabled={!found[i]} onPress={() => setOpen(i)}
-            style={{ width: '31.5%', minHeight: 120, borderRadius: 24, borderWidth: 1, borderColor: T.line, borderStyle: found[i] ? 'solid' : 'dashed', backgroundColor: found[i] ? T.s1 : 'transparent', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8 }}>
+          <Pressable key={r.room.id} accessibilityRole={found[i] || waiting[i] ? 'button' : undefined} disabled={!found[i] && !waiting[i]}
+            accessibilityLabel={waiting[i] ? `Objet à chercher dans ${roomName(r.district, r.bi, r.ri)}` : undefined}
+            onPress={() => (found[i] ? setOpen(i) : router.push({ pathname: '/room/[id]', params: { id: r.room.id, search: '1' } }))}
+            style={{ width: '31.5%', minHeight: 120, borderRadius: 24, borderWidth: 1, borderColor: waiting[i] ? 'rgba(255,217,142,0.45)' : T.line, borderStyle: found[i] || waiting[i] ? 'solid' : 'dashed', backgroundColor: found[i] ? T.s1 : 'transparent', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8 }}>
             {found[i] ? (
               <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,217,142,0.1)', alignItems: 'center', justifyContent: 'center' }}>
-                <SvgXml xml={objectIconXml(i)} width={28} height={28} />
+                <SvgXml xml={objectSvg(r.object.name, T.gold)} width={28} height={28} />
+              </View>
+            ) : waiting[i] ? (
+              <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,217,142,0.06)', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="star" size={24} color={T.gold} />
               </View>
             ) : (
               <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: '#12152c', alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={{ fontFamily: SERIF, fontSize: 24, color: T.tx3 }}>?</Text>
               </View>
             )}
-            <Text style={{ color: found[i] ? T.tx : T.tx2, fontSize: found[i] ? 13 : 12, textAlign: 'center' }}>{found[i] ? r.object.name : `${infoOf(r.district).short}`}</Text>
+            <Text style={{ color: found[i] ? T.tx : waiting[i] ? T.gold : T.tx2, fontSize: found[i] ? 13 : 12, textAlign: 'center' }}>{found[i] ? r.object.name : waiting[i] ? `À chercher : ${roomName(r.district, r.bi, r.ri)}` : `${infoOf(r.district).short}`}</Text>
           </Pressable>
         ))}
       </View>
@@ -101,7 +109,7 @@ function Objects() {
       <Sheet visible={open !== null} onClose={() => setOpen(null)}>
         {open !== null ? (
           <View style={{ alignItems: 'center', gap: 10 }}>
-            <SvgXml xml={objectIconXml(open)} width={64} height={64} />
+            <SvgXml xml={objectSvg(rooms[open].object.name, T.gold, 1.4)} width={64} height={64} />
             <Text style={type.title2}>{rooms[open].object.name}</Text>
             <Text style={[type.dialogue, { textAlign: 'center' }]}>{rooms[open].object.story}</Text>
             <Text style={type.foot}>{infoOf(rooms[open].district).short} · {infoOf(rooms[open].district).buildings[rooms[open].bi].name}</Text>

@@ -8,30 +8,37 @@ import { SvgXml } from 'react-native-svg';
 
 import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
-import { Button, Nilo, Pill, ShardPill } from '../ui/components';
-import { districtXml, letterArtXml, objectArtXml } from '../ui/art';
+import { Button, Icon, Nilo, Pill, ShardPill } from '../ui/components';
+import { districtXml, letterArtXml } from '../ui/art';
+import { objectSvg } from '../ui/scenes/objects';
 import { T, type } from '../ui/theme';
 import { LETTERS } from '../content/vesper';
 import { achievementContext, COSMETICS, look } from '../game/rewards';
-import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoom } from '../game/views';
+import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoom, roomName } from '../game/views';
 import { WORLD } from '../game/catalog';
 import { followUps } from './success';
 
+const kindOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step ?? 0))] ?? '').split(':')[0];
+const idOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step ?? 0))] ?? '').split(':')[1] ?? '';
+
 export default function Found() {
-  const { step } = useLocalSearchParams<{ step: string }>();
+  const { step, object: objectParam } = useLocalSearchParams<{ step?: string; object?: string }>();
   const { state, engine, profile, result, play, equip, openLantern } = useStore();
   const { width } = useWindowDimensions();
-  const steps = useMemo(() => followUps(result), [result]);
+  const steps = useMemo(() => (objectParam ? [`object:${objectParam}`] : followUps(result)), [result, objectParam]);
   const i = Math.max(0, Number(step ?? 0));
   const [kind, id] = (steps[i] ?? '').split(':');
+  const pickedHere = kindOf(steps, step) === 'object' && profile.picked.includes(idOf(steps, step));
+
   useEffect(() => {
-    if (kind === 'object') play('roomCompleted');
+    if (kind === 'object' && pickedHere) play('roomCompleted');
     if (kind === 'resident' || kind === 'keeper') play('unlock');
     if (kind === 'district') play('newDistrict');
     if (kind === 'letter') play('hint');
-  }, [kind, id, play]);
+  }, [kind, id, play, pickedHere]);
 
   const next = () => {
+    if (objectParam) { router.back(); return; }
     if (i + 1 < steps.length) { router.replace({ pathname: '/found', params: { step: String(i + 1) } }); return; }
     const cur = engine.progression.recommended(state);
     if (kind === 'district' || kind === 'keeper' || !cur) { router.dismissTo('/'); return; }
@@ -43,19 +50,45 @@ export default function Found() {
 
   if (kind === 'object') {
     const at = locateRoom(id);
-    const index = allRooms().findIndex((r) => r.room.id === id);
     if (at) {
-      const obj = infoOf(at.district).buildings[at.buildingIndex].rooms[at.index].object;
-      body = (
-        <>
-          <SvgXml xml={objectArtXml(index, infoOf(at.district).hue)} width={220} height={176} />
-          <Text style={[type.cap, { color: T.gold }]}>{at.room.lanterns.length === 16 ? 'Le Grenier' : `Salle ${at.index + 1}`} · entièrement éclairée</Text>
-          <Text style={type.title1}>Objet trouvé</Text>
-          <Text style={[type.title3, { textAlign: 'center' }]}>{obj.name}</Text>
-          <Text style={[type.sub, { maxWidth: 300, textAlign: 'center' }]}>{obj.story} Rangé dans ton Carnet.</Text>
-          <View style={{ flexDirection: 'row', gap: 8 }}><ShardPill n="+20" /><Pill icon="book">Carnet · {state.collectibles.size} / 101</Pill></View>
-        </>
-      );
+      const info = infoOf(at.district);
+      const obj = info.buildings[at.buildingIndex].rooms[at.index].object;
+      const where = at.room.lanterns.length === 16 ? 'Le Grenier' : `Salle ${at.index + 1} · ${roomName(at.district, at.buildingIndex, at.index)}`;
+      if (!pickedHere) {
+        // The room is lit: its object glints somewhere in the scenery. The player finds it.
+        body = (
+          <>
+            <View style={{ width: 150, height: 150, alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ position: 'absolute', width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(255,217,142,0.08)' }} />
+              <Icon name="star" size={56} color={T.gold} sw={1.2} />
+            </View>
+            <Text style={[type.cap, { color: T.gold }]}>{where}</Text>
+            <Text style={[type.title1, { textAlign: 'center' }]}>La salle est éclairée</Text>
+            <Text style={[type.sub, { maxWidth: 320, textAlign: 'center' }]}>Maintenant que tout est allumé, quelque chose brille dans le décor. Retrouve l’objet caché.</Text>
+          </>
+        );
+        buttons = (
+          <>
+            <Button title="Chercher l’objet" icon="star" onPress={() => router.replace({ pathname: '/room/[id]', params: { id, search: '1', step: String(i) } })} />
+            <Button title="Plus tard" kind="ghost" onPress={next} />
+          </>
+        );
+      } else {
+        body = (
+          <>
+            <View style={{ width: 200, height: 170, alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: 'rgba(255,217,142,0.10)' }} />
+              <View style={{ position: 'absolute', width: 110, height: 110, borderRadius: 55, backgroundColor: info.hue, opacity: 0.12 }} />
+              <SvgXml xml={objectSvg(obj.name, T.gold, 1.4)} width={96} height={96} />
+            </View>
+            <Text style={[type.cap, { color: T.gold }]}>{where}</Text>
+            <Text style={type.title1}>Objet trouvé</Text>
+            <Text style={[type.title3, { textAlign: 'center' }]}>{obj.name}</Text>
+            <Text style={[type.dialogue, { maxWidth: 320, textAlign: 'center', color: T.tx2 }]}>{obj.story}</Text>
+            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}><ShardPill n="+20" /><Pill icon="book">Carnet · {profile.picked.length} / {allRooms().length}</Pill></View>
+          </>
+        );
+      }
     }
   }
 
