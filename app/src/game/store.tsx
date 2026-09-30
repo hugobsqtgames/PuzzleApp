@@ -8,7 +8,7 @@ import { AppState } from 'react-native';
 import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 
-import { GameEngine, Celebration } from '../core/game/engine';
+import { GameEngine, Celebration, WELCOME_SHARDS } from '../core/game/engine';
 import { GameState, cloneState, credit, debit, decodeState, encodeState, newGameState } from '../core/game/state';
 import { SaveStore } from '../core/persistence/saveStore';
 import { localDayKey, DayKey } from '../core/game/dayKey';
@@ -377,8 +377,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (stateRef.current.onboardingDone) return;
     const next = cloneState(stateRef.current);
     next.onboardingDone = true;
+    // A welcome gift: the first Piste is never out of reach (credited once, by its id).
+    if (credit(next.wallet, WELCOME_SHARDS, 'gift:welcome')) commitProfile(addHistory(profileRef.current, 'Cadeau de bienvenue', WELCOME_SHARDS));
     commit(next);
-  }, [commit]);
+  }, [commit, commitProfile]);
 
   const markSeen = useCallback((key: string) => {
     if (stateRef.current.seenDialogue.has(key)) return;

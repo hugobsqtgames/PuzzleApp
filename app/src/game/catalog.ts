@@ -31,6 +31,7 @@ import { RibbonsFamily } from '../core/families/ribbons';
 import { FirefliesFamily } from '../core/families/fireflies';
 import { BridgesFamily } from '../core/families/bridges';
 import { DailyPlanner } from '../core/game/daily';
+import { STANDARD_ECONOMY } from '../core/game/engine';
 import { DayKey, daysBetween } from '../core/game/dayKey';
 import { Building, District, Lantern, Room, World } from '../core/game/world';
 import { DistrictId, DISTRICT_BY_ID } from '../content/vesper';
@@ -80,7 +81,8 @@ export const FAMILIES: Record<Code, FamilyInfo> = {
 };
 
 export const TIER_NAMES = ['Étincelle', 'Lueur', 'Flamme', 'Brasier', 'Fanal', 'Astre'] as const;
-export const REWARDS = [5, 8, 12, 16, 20, 25] as const;
+/** Shards for a first light, by tier (the economy's own table). */
+export const REWARDS = STANDARD_ECONOMY.tierRewards;
 
 interface PackLantern { id: string; family: Code; tier: Tier }
 interface PackBuilding { id: string; rooms: { id: string; lanterns: PackLantern[] }[]; keystone?: PackLantern; keystoneGivesLetter?: boolean }

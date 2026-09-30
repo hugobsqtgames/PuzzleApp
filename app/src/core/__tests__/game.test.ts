@@ -2,7 +2,7 @@ import { SeededRNG } from '../puzzlekit/rng';
 import { HintLevel } from '../puzzlekit/types';
 import { addDays, dayKey, dayKeyIn, daysBetween, fromOrdinal, isoWeekday, ordinal, parseDayKey } from '../game/dayKey';
 import { DailyPlanner, StreakKeeper } from '../game/daily';
-import { GameEngine } from '../game/engine';
+import { GameEngine, STANDARD_ECONOMY as E } from '../game/engine';
 import { Progression, lightsToOpenNextRoom } from '../game/progression';
 import { GameState, WalletError, cloneState, credit, debit, decodeState, encodeState, newDailyState, newGameState, newWallet } from '../game/state';
 import { duplicatePuzzleIDs, worldLanterns } from '../game/world';
@@ -95,9 +95,11 @@ describe('Économie et moteur', () => {
   });
   test('récompenses, Clairvoyance, double résolution sans effet', () => {
     const s = newGameState();
-    expect(engine.puzzleSolved('phare.b1.r1.1', rec(), s)).toEqual([{ kind: 'lanternLit', puzzle: 'phare.b1.r1.1', shards: 8, clairvoyanceBonus: 4 }]);
+    // The first lantern of the fixture is a Lueur (tier 1); a clean solve earns half again.
+    const base = E.tierRewards[1], bonus = Math.floor((base * E.clairvoyancePercent) / 100);
+    expect(engine.puzzleSolved('phare.b1.r1.1', rec(), s)).toEqual([{ kind: 'lanternLit', puzzle: 'phare.b1.r1.1', shards: base, clairvoyanceBonus: bonus }]);
     expect(engine.puzzleSolved('phare.b1.r1.1', rec(), s)).toEqual([]);
-    expect(s.wallet.balance).toBe(12);
+    expect(s.wallet.balance).toBe(base + bonus);
   });
   test('lanterne verrouillée ou inconnue refusée', () => {
     const s = newGameState();
@@ -112,7 +114,7 @@ describe('Économie et moteur', () => {
     expect(all.filter((c) => c.kind === 'buildingCompleted')).toHaveLength(1);
     expect(all.filter((c) => c.kind === 'districtCompleted')).toHaveLength(1);
     expect(all).toContainEqual({ kind: 'districtUnlocked', districtID: 'biblio' });
-    expect(s.wallet.balance).toBe(24 * 8 + 4 * 20 + 50 + 100);
+    expect(s.wallet.balance).toBe(24 * E.tierRewards[1] + 4 * E.roomBonus + E.buildingBonus + E.districtBonus);
   });
   test('indice acheté une fois par étape', () => {
     const s = newGameState();
@@ -176,7 +178,8 @@ describe('Défi du jour et série', () => {
     const s = newGameState();
     const noon = new Date(Date.UTC(2026, 8, 29, 12));
     for (let i = 0; i < 20; i++) engine.dailySolved('2026-09-29', noon, noon, s);
-    expect(s.wallet.balance).toBe(16);
+    // The reward, plus the streak bonus of a first evening.
+    expect(s.wallet.balance).toBe(E.dailyReward + 1);
     expect(s.daily.streak).toBe(1);
   });
 });

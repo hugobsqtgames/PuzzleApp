@@ -83,12 +83,18 @@ const HATS: Record<string, string> = {
   loupe: '<path d="M79 60q6-10 4-22" stroke="#6b5a3c" stroke-width="2" fill="none"/><circle cx="69" cy="66" r="11" fill="#8FD3E0" opacity=".18"/><circle cx="69" cy="66" r="11" fill="none" stroke="#D8B56A" stroke-width="3"/>',
   straw: '<ellipse cx="59" cy="39" rx="25" ry="5" fill="#D9B45E"/><path d="M47 39q2-14 12-14t12 14z" fill="#E7C774"/><path d="M47.5 36h23" stroke="#B5553F" stroke-width="3"/>',
   mask: '<path d="M44 42q15-9 30 0q-2 8-8 7q-4-4-7 0q-3-4-7 0q-6 1-8-7z" fill="#EFE8D8"/><ellipse cx="52" cy="43" rx="3" ry="2" fill="#1E2347"/><ellipse cx="66" cy="43" rx="3" ry="2" fill="#1E2347"/>',
+  crown: '<path d="M46 40l3-11 5 7 5-9 5 9 5-7 3 11z" fill="#FFD98E" stroke="#D9953F" stroke-width="1" stroke-linejoin="round"/><circle cx="59" cy="31" r="1.6" fill="#E88A8A"/>',
+  beret: '<ellipse cx="61" cy="38" rx="15" ry="6" fill="#B5553F"/><path d="M47 40q14 4 28 0" stroke="#8a3d2d" stroke-width="1.5" fill="none"/><path d="M61 32v-4" stroke="#B5553F" stroke-width="2" stroke-linecap="round"/>',
+  top: '<rect x="49" y="18" width="20" height="21" rx="2" fill="#1B1F3A"/><rect x="43" y="37" width="32" height="4" rx="2" fill="#1B1F3A"/><rect x="49" y="31" width="20" height="4" fill="#F4B45E"/>',
 };
 const SCARVES: Record<string, string> = {
   none: '',
   knit: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#B5553F"/><path d="M70 88l6 16-7 1-4-15z" fill="#B5553F"/><path d="M34 86q24 10 49 0" stroke="#E8894A" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/>',
   spice: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#C98A2E"/><path d="M40 90l-8 14 8-2 5-10z" fill="#C98A2E"/><g fill="#EE8A6B"><circle cx="45" cy="89" r="1.6"/><circle cx="58" cy="91" r="1.6"/><circle cx="71" cy="89" r="1.6"/></g>',
   ribbon: '<path d="M32 84q26 11 52 0l.5 5q-26 11-53 0z" fill="#8E5BA6"/><path d="M58 92l-9-7v12zM58 92l9-7v12z" fill="#C39BD3"/><circle cx="58" cy="92" r="2.6" fill="#8E5BA6"/>',
+  stripes: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#3A4D8A"/><path d="M70 88l6 16-7 1-4-15z" fill="#3A4D8A"/><path d="M38 86l-1 8M48 88l-1 8M58 89v8M68 88l1 8M78 86l1 7" stroke="#EFE8D8" stroke-width="2"/>',
+  star: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#22264A"/><path d="M40 90l-8 14 8-2 5-10z" fill="#22264A"/><g fill="#FFD98E"><circle cx="42" cy="88" r="1.3"/><circle cx="52" cy="91" r="1.8"/><circle cx="63" cy="90" r="1.3"/><circle cx="74" cy="88" r="1.8"/></g>',
+  gold: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#D9953F"/><path d="M70 88l6 16-7 1-4-15z" fill="#D9953F"/><path d="M33 84q25 11 51 0" stroke="#FFE6B0" stroke-width="1.4" fill="none"/>',
 };
 const COMPANIONS: Record<string, string> = {
   none: '',
@@ -97,6 +103,9 @@ const COMPANIONS: Record<string, string> = {
   gear: '<g transform="translate(18 40)"><circle r="6.5" fill="none" stroke="#D8B56A" stroke-width="3" stroke-dasharray="3 2"/><circle r="2" fill="#D8B56A"/></g>',
   moth: '<g transform="translate(18 40)"><path d="M0 0q-9-8-10 1q4 5 10-1zM0 0q9-8 10 1q-4 5-10-1z" fill="#C8B8A0"/><path d="M0-3v7" stroke="#6b5a3c" stroke-width="1.6" stroke-linecap="round"/></g>',
   comet: '<path d="M10 50l12-10" stroke="#8FB8F0" stroke-width="3" stroke-linecap="round" opacity=".5"/><path d="M22 36l1.3 2.7 3 .4-2.2 2 .6 3-2.7-1.5-2.7 1.5.6-3-2.2-2 3-.4z" fill="#FFD98E"/>',
+  kite: '<path d="M12 28l8-8 8 8-8 10z" fill="#E88A8A"/><path d="M12 28h16M20 20v18" stroke="#b5553f" stroke-width=".8"/><path d="M20 38q-4 7 1 13q4 5 0 10" stroke="#EFE8D8" stroke-width="1" fill="none"/>',
+  fish: '<g transform="translate(18 42)"><ellipse rx="7" ry="4" fill="#BFE6F0"/><path d="M6 0l5-4v8z" fill="#BFE6F0"/><circle cx="-3" cy="-1" r="1" fill="#0D0F1E"/></g>',
+  lantern: '<g transform="translate(18 38)"><circle r="9" fill="#F4B45E" opacity=".25"/><rect x="-4" y="-6" width="8" height="11" rx="2.5" fill="#F4B45E"/><rect x="-2.5" y="-9" width="5" height="3" fill="#6b5a3c"/><circle cy="-1" r="1.8" fill="#FFF3D6"/></g>',
 };
 
 /** Pivots of Nilo's moving parts, in its 132 × 120 drawing. */

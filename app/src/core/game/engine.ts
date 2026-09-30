@@ -13,10 +13,18 @@ export interface EconomyRules {
   tierRewards: number[]; clairvoyancePercent: number; roomBonus: number; buildingBonus: number; districtBonus: number;
   dailyReward: number; dailyStreakBonusCap: number; hintCosts: number[];
 }
+/**
+ * Balanced with a simulation of the 1000 lanterns (three kinds of players):
+ * nobody is kept waiting for a hint, and shards keep a value to the end,
+ * with Nilo's wardrobe as the long-term wish.
+ */
 export const STANDARD_ECONOMY: EconomyRules = {
-  tierRewards: [5, 8, 12, 16, 20, 25], clairvoyancePercent: 50, roomBonus: 20, buildingBonus: 50, districtBonus: 100,
-  dailyReward: 15, dailyStreakBonusCap: 10, hintCosts: [0, 5, 10, 20],
+  tierRewards: [3, 4, 5, 7, 9, 12], clairvoyancePercent: 50, roomBonus: 10, buildingBonus: 30, districtBonus: 80,
+  dailyReward: 10, dailyStreakBonusCap: 5, hintCosts: [0, 5, 10, 20],
 };
+
+/** Shards given when the tutorial ends: the first Piste is never out of reach. */
+export const WELCOME_SHARDS = 25;
 
 export type Celebration =
   | { kind: 'lanternLit'; puzzle: string; shards: number; clairvoyanceBonus: number }
