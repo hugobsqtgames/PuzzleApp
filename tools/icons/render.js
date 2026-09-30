@@ -1,6 +1,6 @@
 // Renders Lampion's app icon (prototype/index.html, appIconSVG) and its variants
 // to the PNG files Expo needs: iOS icon, Android adaptive icon (foreground,
-// background, monochrome), splash image and favicon.
+// background, monochrome), iOS dark and tinted icons, splash image and favicon.
 //   node tools/icons/render.js
 const fs = require('fs');
 const path = require('path');
@@ -19,6 +19,9 @@ const FL = '#F4B45E', BODY = '#151936';
 const files = {
   // iOS: square, opaque (the system rounds the corners).
   'icon.png': [1024, `<svg viewBox="0 0 100 100">${glow(FL)}<rect width="100" height="100" fill="url(#b)"/>${flame(FL)}${nilo(FL, BODY)}${core(FL)}</svg>`],
+  // iOS 18 dark and tinted icons: no background (the system draws it), a tinted one in greys only.
+  'icon-dark.png': [1024, `<svg viewBox="0 0 100 100">${glow(FL)}${flame(FL)}${nilo(FL, '#2A3068')}${core(FL)}</svg>`],
+  'icon-tinted.png': [1024, `<svg viewBox="0 0 100 100">${glow('#FFFFFF')}${flame('#FFFFFF')}${nilo('#FFFFFF', '#8C8C8C')}${core('#FFFFFF')}</svg>`],
   // Android adaptive: the foreground must fit the inner 66 % safe zone.
   'android-icon-foreground.png': [1024, `<svg viewBox="-25 -25 150 150">${glow(FL)}${flame(FL)}${nilo(FL, BODY)}${core(FL)}</svg>`],
   'android-icon-background.png': [1024, `<svg viewBox="0 0 100 100">${glow(FL)}<rect width="100" height="100" fill="url(#b)"/></svg>`],
@@ -33,7 +36,7 @@ const files = {
   for (const [name, [size, svg]] of Object.entries(files)) {
     const pg = await b.newPage({ viewport: { width: size, height: size }, deviceScaleFactor: 1 });
     await pg.setContent(`<html><body style="margin:0;background:transparent">${svg.replace('<svg ', `<svg width="${size}" height="${size}" `)}</body></html>`);
-    await pg.screenshot({ path: path.join(OUT, name), omitBackground: !name.startsWith('icon') && !name.includes('background') });
+    await pg.screenshot({ path: path.join(OUT, name), omitBackground: !(name === 'icon.png' || name === 'favicon.png' || name.includes('background')) });
     await pg.close();
     console.log('wrote', name, size);
   }

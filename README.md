@@ -16,6 +16,18 @@ npm run typecheck
 npx expo start      # puis scanner le QR code avec Expo Go sur le téléphone
 ```
 
+### Voir la vraie icône et l'écran de démarrage
+
+Expo Go est une seule app : sur l'écran d'accueil, c'est toujours son logo, quel que soit le projet ouvert. L'icône de Lampion (avec ses variantes sombre et teintée d'iOS 18) et son écran de démarrage n'apparaissent que dans une vraie build :
+
+```
+cd app
+npx eas-cli@latest login
+npx eas-cli@latest build --profile preview --platform ios   # build installable sur ton iPhone (compte Apple Developer requis)
+```
+
+`eas.json` contient deux profils : `preview` (installation directe sur tes appareils enregistrés) et `production` (App Store / TestFlight, avec `npx eas-cli@latest submit`).
+
 Contenu de l'app :
 
 - **17 familles de puzzles** pour les lanternes : Interrupteurs, Cadenas, Lampes, Engrenages, Suites, Balances, Motifs, Menteurs, Fil, Miroirs, Enquêtes, Marqueterie, Carillon (mélodie à rejouer), Vitraux (filtres de couleur à déduire), Différences, Étagère (rangement par indices), Ombres (rotation sans retournement). Plus le **Sceau** des lanternes-clés : un code fait des chiffres cachés dans le décor des salles du bâtiment.
