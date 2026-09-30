@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '../ui/Text';
-import { useContentSize } from '../ui/layout';
+import { useContentSize, useWide } from '../ui/layout';
+import { Scaled } from '../ui/Scaled';
 import { useAnimatedValue } from '../ui/motion';
 import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
@@ -23,10 +24,14 @@ import { HintLevel } from '../core/puzzlekit/types';
 const HINT_NAMES = ['Murmure', 'Piste', 'Éclairage', 'Solution'];
 const HINT_ICONS = ['whisper', 'hint', 'light', 'star'];
 
+/** iPad: width of the left pane, and the phone width the board is drawn at. */
+const SIDE_W = 340, BOARD_BASE = 400;
+
 export default function PuzzleScreen() {
   const store = useStore();
   const { state, engine, session, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
   const { width } = useContentSize();
+  const { wide, width: wideWidth } = useWide();
   const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | null>(null);
   const [offered, setOffered] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
@@ -52,7 +57,9 @@ export default function PuzzleScreen() {
   const subtitle = s.kind === 'daily'
     ? dailyLabel(dateOfDay(s.id.slice(6)))
     : where?.room && roomAt ? `Lanterne ${where.room.lanterns.findIndex((l) => l.puzzle === s.id) + 1} · ${roomSlotsOf(where.room.id, where.room.lanterns.length)[where.room.lanterns.findIndex((l) => l.puzzle === s.id)]?.label ?? ''}` : 'Lanterne-clé';
-  const boardWidth = Math.min(width, 600) - 32;
+  // On iPad the board is drawn at its phone size, then scaled up: taps scale with it.
+  const boardScale = wide ? Math.min(1.5, (wideWidth - 56 - SIDE_W - 32) / BOARD_BASE) : 1;
+  const boardWidth = wide ? BOARD_BASE : Math.min(width, 600) - 32;
   const later = (fn: () => void, ms: number) => { timers.current.push(setTimeout(fn, ms)); };
 
   const end = (q: Session, delay: number) => {
@@ -125,58 +132,85 @@ export default function PuzzleScreen() {
   const mood = celebrating ? 'joy' : oops ? 'oops' : s.hint.level > 0 && !s.hint.stale ? 'hint' : 'think';
   const hintButton = <IconButton name="hint" label="Indices" size={52} color={T.moon} borderColor="#3d4f7a" onPress={() => setSheet('hints')} />;
 
+  const topBar = (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <BackButton label={backLabel} onPress={leave} />
+      <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+        <ShardPill n={state.wallet.balance} />
+        <IconButton name="pause" label="Pause" onPress={() => setSheet('pause')} />
+      </View>
+    </View>
+  );
+  const header = (
+    <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+      <GlyphCircle icon={s.code} size={40} />
+      <View style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Text style={type.headline}>{fam.name}</Text>
+          <TierBars tier={s.tier} />
+          <Text style={type.foot}>{TIER_NAMES[s.tier]}</Text>
+        </View>
+        <Text style={type.foot}>{subtitle}</Text>
+      </View>
+    </View>
+  );
+  const rule = (
+    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+      <Text style={[type.body, { flex: 1 }]}>{s.id === 'phare.b1.r1.1' ? 'Chaque lanterne inverse ses voisines. Allume les quatre.' : ruleFor(s)}</Text>
+      <IconButton name="info" label="Règle complète" onPress={() => setSheet('rule')} />
+    </View>
+  );
+  const board = (
+    <Animated.View style={{ transform: [{ translateX: shake }] }}>
+      <Board s={s} width={boardWidth} onPlay={onPlay} tap={() => tap()} note={note}
+        visitRoom={(roomId) => { leaveSession(); router.push({ pathname: '/room/[id]', params: { id: roomId } }); }} />
+    </Animated.View>
+  );
+  const controls = fam.answer ? (
+    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+      {hintButton}
+      <View style={{ flex: 1 }}><Button title="Valider" disabled={!canSubmit(s)} onPress={onSubmit} /></View>
+    </View>
+  ) : (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <IconButton name="undo" label="Annuler" disabled={!s.history.length} onPress={() => updateSession(undo(s))} />
+        <IconButton name="redo" label="Rétablir" disabled={!s.future.length} onPress={() => { const q = redo(s); updateSession(q); if (isComplete(q)) end(q, 0); }} />
+      </View>
+      <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+        <Nilo size={64} mood={mood} look={look(state)} />
+        {hintButton}
+      </View>
+    </View>
+  );
+
   return (
-    <Screen style={{ gap: 12 }} place={s.kind === 'daily' ? 'market' : info?.sound ?? 'lighthouse'}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <BackButton label={backLabel} onPress={leave} />
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <ShardPill n={state.wallet.balance} />
-          <IconButton name="pause" label="Pause" onPress={() => setSheet('pause')} />
-        </View>
-      </View>
-
-      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-        <GlyphCircle icon={s.code} size={40} />
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-            <Text style={type.headline}>{fam.name}</Text>
-            <TierBars tier={s.tier} />
-            <Text style={type.foot}>{TIER_NAMES[s.tier]}</Text>
+    <Screen wide={wide} style={{ gap: 12 }} place={s.kind === 'daily' ? 'market' : info?.sound ?? 'lighthouse'}>
+      {topBar}
+      {wide ? (
+        // iPad: the words on the left, the board large on the right.
+        <View style={{ flex: 1, flexDirection: 'row', gap: 32 }}>
+          <View style={{ width: SIDE_W, gap: 16 }}>
+            {header}
+            {rule}
+            <View style={{ flex: 1 }} />
+            <View style={{ minHeight: 48, justifyContent: 'center' }}>{feedback}</View>
+            {controls}
           </View>
-          <Text style={type.foot}>{subtitle}</Text>
-        </View>
-      </View>
-
-      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
-        <Text style={[type.body, { flex: 1 }]}>{s.id === 'phare.b1.r1.1' ? 'Chaque lanterne inverse ses voisines. Allume les quatre.' : ruleFor(s)}</Text>
-        <IconButton name="info" label="Règle complète" onPress={() => setSheet('rule')} />
-      </View>
-
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
-        <Animated.View style={{ transform: [{ translateX: shake }] }}>
-          <Board s={s} width={boardWidth} onPlay={onPlay} tap={() => tap()} note={note}
-            visitRoom={(roomId) => { leaveSession(); router.push({ pathname: '/room/[id]', params: { id: roomId } }); }} />
-        </Animated.View>
-      </ScrollView>
-
-      <View style={{ minHeight: 48, justifyContent: 'center' }}>{feedback}</View>
-
-      {fam.answer ? (
-        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-          {hintButton}
-          <View style={{ flex: 1 }}><Button title="Valider" disabled={!canSubmit(s)} onPress={onSubmit} /></View>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
+            <Scaled base={BOARD_BASE} k={boardScale}>{board}</Scaled>
+          </ScrollView>
         </View>
       ) : (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <IconButton name="undo" label="Annuler" disabled={!s.history.length} onPress={() => updateSession(undo(s))} />
-            <IconButton name="redo" label="Rétablir" disabled={!s.future.length} onPress={() => { const q = redo(s); updateSession(q); if (isComplete(q)) end(q, 0); }} />
-          </View>
-          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-            <Nilo size={64} mood={mood} look={look(state)} />
-            {hintButton}
-          </View>
-        </View>
+        <>
+          {header}
+          {rule}
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
+            {board}
+          </ScrollView>
+          <View style={{ minHeight: 48, justifyContent: 'center' }}>{feedback}</View>
+          {controls}
+        </>
       )}
 
       <Sheet visible={sheet === 'hints'} onClose={() => setSheet(null)}>

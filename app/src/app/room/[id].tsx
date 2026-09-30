@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { useWide } from '../../ui/layout';
 import { Text } from '../../ui/Text';
 import { router, useLocalSearchParams } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -41,6 +42,7 @@ function Fade({ top, height }: { top: boolean; height: number }) {
 }
 
 export default function RoomScreen() {
+  const { wide } = useWide();
   const { id, search: searchParam, step } = useLocalSearchParams<{ id: string; search?: string; step?: string }>();
   const { state, engine, openLantern, settings, profile, result, pickObject, play, haptic } = useStore();
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -114,8 +116,7 @@ export default function RoomScreen() {
     else router.setParams({ search: undefined, step: undefined });
   };
 
-  return (
-    <Screen background={BG} padded={false} place={info.sound} scroll style={{ flexGrow: 1, gap: 0 }}>
+  const headerBlock = (
       <View style={{ paddingHorizontal: 16, gap: 6, zIndex: 2 }}>
         <BackButton label={searching && step !== undefined ? 'Plus tard' : buildingName(d, bi)} onPress={() => (searching && step !== undefined ? leaveSearch() : goBack())} />
         <Crumb parent={buildingName(d, bi)} current={lanterns.length === 16 ? 'Finale' : `Salle ${ri + 1}`} />
@@ -124,8 +125,9 @@ export default function RoomScreen() {
         <Text style={[type.dialogue, { fontSize: 15, lineHeight: 21, color: T.tx2 }]} numberOfLines={3}>{introOf(at.room.id)}</Text>
         {digitShown && !sealOpened ? <Text style={[type.foot, { color: T.gold }]}>Un chiffre est apparu dans le décor : la lanterne-clé en aura besoin.</Text> : null}
       </View>
-
-      <View style={{ flex: 1, minHeight: 470, marginTop: -8, marginBottom: -8 }} onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
+  );
+  const sceneBlock = (
+      <View style={{ flex: 1, minHeight: wide ? 0 : 470, marginTop: wide ? 0 : -8, marginBottom: wide ? 0 : -8, borderRadius: wide ? 24 : 0, overflow: 'hidden' }} onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
         {box.w > 0 ? (
           <RoomScene roomId={at.room.id} w={box.w} h={box.h} lanterns={lanternKeys} lit={lit} recommended={rec} justLit={justLit} open={open}
             object={object.name} objectFound={picked} digit={digitShown ? sealDigitOf(at.room.id) : null} glow={info.hue}
@@ -136,7 +138,8 @@ export default function RoomScreen() {
         <Fade top height={28} />
         <Fade top={false} height={36} />
       </View>
-
+  );
+  const bottomBlock = (
       <View style={{ paddingHorizontal: 16, gap: 10, paddingTop: 4 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Nilo size={50} look={look(state)} mood={searching && canSearch && niloMood === 'neutral' ? 'curious' : complete && niloMood === 'neutral' ? 'joy' : niloMood} onPress={() => { tap(); setNiloMood((m) => (m === 'joy' ? 'curious' : 'joy')); }} />
@@ -172,6 +175,23 @@ export default function RoomScreen() {
               ? <Button title="Chercher l’objet caché" icon="star" onPress={() => { tap(); setSearching(true); }} />
               : <Button title="Retour au bâtiment" kind="secondary" onPress={() => goBack()} />}
       </View>
+  );
+
+  return (
+    <Screen background={BG} padded={false} place={info.sound} scroll={!wide} wide={wide} style={{ flexGrow: 1, gap: 0 }}>
+      {wide ? (
+        // iPad: the room large on the left, its story and its object on the right.
+        <View style={{ flex: 1, flexDirection: 'row', gap: 24, paddingHorizontal: 12, paddingBottom: 8 }}>
+          {sceneBlock}
+          <View style={{ width: 360, gap: 16, justifyContent: 'space-between' }}>{headerBlock}{bottomBlock}</View>
+        </View>
+      ) : (
+        <>
+          {headerBlock}
+          {sceneBlock}
+          {bottomBlock}
+        </>
+      )}
 
       <Sheet visible={sel !== null} onClose={() => setSelected(null)}>
         {sel && selected !== null ? (
