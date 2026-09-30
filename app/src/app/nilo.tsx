@@ -19,6 +19,7 @@ export default function NiloScreen() {
   const { state, engine, showToast, noteProfile } = useStore();
   const [mood, setMood] = useState<Mood>('curious');
   const [hatFell, setHatFell] = useState(false);
+  const [showMood, setShowMood] = useState(false);
   const taps = useRef<number[]>([]);
   const lk = look(state);
 
@@ -36,7 +37,8 @@ export default function NiloScreen() {
     }
     const next = MOODS[(MOODS.indexOf(mood) + 1) % MOODS.length];
     setMood(next);
-    showToast(tr('Nilo : {0}', [MOOD_FR[next]]), 'light');
+    // Shown under Nilo, not as a toast: quick taps would queue a toast each.
+    setShowMood(true);
   };
 
   return (
@@ -49,7 +51,7 @@ export default function NiloScreen() {
         <Text style={type.title1}>{tr('Nilo')}</Text>
         <Text style={[type.dialogue, { color: T.tx2 }]}>{tr('Apprenti de l’Allumeur. Dernière flamme de Vesper.')}</Text>
         <Text style={type.sub}>{tr('Vous avez allumé')} <Text style={{ color: T.tx, fontWeight: '700' }}>{engine.progression.totalLights(state)}</Text> {tr('lanternes ensemble.')}</Text>
-        <Text style={type.foot}>{tr('Touche Nilo pour voir ses humeurs.')}</Text>
+        <Text style={type.foot} accessibilityLiveRegion="polite">{showMood ? tr('Nilo : {0}', [MOOD_FR[mood]]) : tr('Touche Nilo pour voir ses humeurs.')}</Text>
       </View>
       <Button title={tr('Personnaliser')} onPress={() => router.push('/custom')} />
       <Button title={tr('Retour')} kind="ghost" onPress={() => goBack()} />

@@ -39,7 +39,7 @@ export default function Ending() {
   useEffect(() => {
     markSeen(ENDING_SEEN);
     enterPlace('lighthouse');
-    if (reduce) { Animated.loop(Animated.sequence([Animated.timing(answer, { toValue: 1, duration: 500, useNativeDriver: true }), Animated.timing(answer, { toValue: 0.3, duration: 700, useNativeDriver: true })])).start(); return; }
+    if (reduce) { const soft = Animated.loop(Animated.sequence([Animated.timing(answer, { toValue: 1, duration: 500, useNativeDriver: true }), Animated.timing(answer, { toValue: 0.3, duration: 700, useNativeDriver: true })])); soft.start(); return () => soft.stop(); }
     const t = (v: Animated.Value, to: number, duration: number, delay = 0) => Animated.timing(v, { toValue: to, duration, delay, easing: Easing.inOut(Easing.sin), useNativeDriver: true });
     const blink = Animated.sequence([t(answer, 1, 260), t(answer, 0.15, 420), t(answer, 1, 260), t(answer, 0.15, 420), t(answer, 1, 260)]);
     Animated.sequence([
@@ -50,8 +50,10 @@ export default function Ending() {
       t(outro, 1, 1000, 600),
     ]).start(({ finished }) => { if (finished) { setDone(true); play('roomCompleted'); } });
     // The far light keeps answering, softly.
-    const id = setTimeout(() => Animated.loop(Animated.sequence([t(answer, 0.35, 1400), t(answer, 1, 900)])).start(), 9800);
-    return () => clearTimeout(id);
+    const glow = Animated.loop(Animated.sequence([t(answer, 0.35, 1400), t(answer, 1, 900)]));
+    const id = setTimeout(() => glow.start(), 9800);
+    // Leaving the scene stops everything it started.
+    return () => { clearTimeout(id); glow.stop(); beam.stopAnimation(); answer.stopAnimation(); outro.stopAnimation(); texts.forEach((v) => v.stopAnimation()); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The beam turns from the town towards the sea.

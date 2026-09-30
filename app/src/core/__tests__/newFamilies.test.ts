@@ -1,6 +1,7 @@
 import { CandidatePipeline } from '../puzzlekit/pipeline';
 import { SeededRNG } from '../puzzlekit/rng';
 import { HintLevel } from '../puzzlekit/types';
+import { SliderFamily, movable, tapTile } from '../families/slider';
 import { GearsFamily, gearsLight, orientations } from '../families/gears';
 import { EXPLAINERS, SequencesFamily, predictions } from '../families/sequences';
 import { ScalesFamily, assignments } from '../families/scales';
@@ -104,4 +105,29 @@ describe('scales', () => {
     expect(f.parse({ shapes: ['circle'], balances: [{ left: [{ shape: 3 }], right: [{ weight: 2 }] }], question: 0, maxWeight: 9 })).toBeNull();
     expect(f.parse(null)).toBeNull();
   });
+});
+
+test('Taquin: a hint is found at once and leads home, even far from the goal', () => {
+  const e = new SliderFamily();
+  let seed = 99;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+  const p = { rows: 3, cols: 4, tiles: [5, 1, 2, 3, 9, 6, 7, 4, 0, 10, 11, 8] };
+  let worst = 0;
+  for (let run = 0; run < 6; run++) {
+    // A player tapping anywhere for a while.
+    let t = p.tiles.slice();
+    for (let k = 0; k < 200; k++) { const m = movable(3, 4, t); t = tapTile(3, 4, t, m[Math.floor(rnd() * m.length)]); }
+    let s = { tiles: t }, n = 0;
+    while (n < 400 && e.validate(p, s).kind !== 'correct') {
+      const t0 = Date.now();
+      const h = e.hint(p, s, HintLevel.Insight);
+      worst = Math.max(worst, Date.now() - t0);
+      if (!h?.resultingState) break;
+      s = h.resultingState;
+      n++;
+    }
+    expect(e.validate(p, s).kind).toBe('correct');
+  }
+  // Generous for a slow test machine; about 40 ms here (it was seconds before the budget).
+  expect(worst).toBeLessThan(600);
 });

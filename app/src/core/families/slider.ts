@@ -54,8 +54,11 @@ function heuristic(rows: number, cols: number, t: number[]): number {
   return h;
 }
 
-/** Shortest sequence of tiles to slide (A*), or null past the node budget. */
-export function shortestSlides(rows: number, cols: number, start: number[], budget = 250_000): { path: number[] | null; nodes: number } {
+/**
+ * Shortest sequence of tiles to slide (A*), or null past the node budget.
+ * `weight` > 1 trades the shortest path for a much faster search (a good path, not the best).
+ */
+export function shortestSlides(rows: number, cols: number, start: number[], budget = 250_000, weight = 1): { path: number[] | null; nodes: number } {
   const key = (t: number[]) => t.join(',');
   // Binary heap on f = g + h.
   const heap: [number, number, number[]][] = [];
@@ -63,7 +66,7 @@ export function shortestSlides(rows: number, cols: number, start: number[], budg
   const pop = () => { const top = heap[0], last = heap.pop()!; if (heap.length) { heap[0] = last; let i = 0; for (;;) { const l = 2 * i + 1, r = l + 1; let m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
   const best = new Map<string, number>([[key(start), 0]]);
   const prev = new Map<string, [string, number]>();
-  push(heuristic(rows, cols, start), 0, start);
+  push(weight * heuristic(rows, cols, start), 0, start);
   let nodes = 0;
   while (heap.length && nodes < budget) {
     const [, g, t] = pop();
@@ -77,10 +80,19 @@ export function shortestSlides(rows: number, cols: number, start: number[], budg
     }
     for (const i of movable(rows, cols, t)) {
       const n = swapGap(t, i), nk = key(n);
-      if (g + 1 < (best.get(nk) ?? Infinity)) { best.set(nk, g + 1); prev.set(nk, [k, t[i]]); push(g + 1 + heuristic(rows, cols, n), g + 1, n); }
+      if (g + 1 < (best.get(nk) ?? Infinity)) { best.set(nk, g + 1); prev.set(nk, [k, t[i]]); push(g + 1 + weight * heuristic(rows, cols, n), g + 1, n); }
     }
   }
   return { path: null, nodes };
+}
+
+/**
+ * The way a hint follows, found fast enough for a phone: the shortest one when it is near,
+ * else a good one (a player who wandered far from the goal still gets a next move, at once).
+ */
+function hintPath(p: SliderPuzzle, tiles: number[]): { path: number[] | null; shortest: boolean } {
+  const near = shortestSlides(p.rows, p.cols, tiles, 20_000).path;
+  return near ? { path: near, shortest: true } : { path: shortestSlides(p.rows, p.cols, tiles, 40_000, 3).path, shortest: false };
 }
 
 export class SliderFamily implements PuzzleFamily<SliderPuzzle, SliderState, SliderParams, number[]> {
@@ -123,8 +135,9 @@ export class SliderFamily implements PuzzleFamily<SliderPuzzle, SliderState, Sli
     if (isGoal(s.tiles)) return null;
     const goal = goalOf(p.rows * p.cols);
     if (level === HintLevel.Solution) return { level, text: tpl('slider.hint.solution'), focus: [], resultingState: { tiles: goal } };
-    const { path } = shortestSlides(p.rows, p.cols, s.tiles);
-    if (level === HintLevel.Whisper) return { level, text: tpl(path ? 'slider.hint.whisper' : 'slider.hint.whisper.far', path ? [String(path.length)] : []), focus: [] };
+    const { path, shortest } = hintPath(p, s.tiles);
+    // The count is only told when it is the true shortest one.
+    if (level === HintLevel.Whisper) return { level, text: tpl(shortest && path ? 'slider.hint.whisper' : 'slider.hint.whisper.far', shortest && path ? [String(path.length)] : []), focus: [] };
     if (!path || !path.length) return { level, text: tpl('slider.hint.solution'), focus: [], resultingState: { tiles: goal } };
     const i = s.tiles.indexOf(path[0]);
     const focus = [cell(Math.floor(i / p.cols), i % p.cols)];
