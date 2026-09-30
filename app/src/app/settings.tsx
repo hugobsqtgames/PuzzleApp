@@ -81,6 +81,7 @@ export default function Settings() {
         {settings.reminder ? <LinkRow label={`Heure : ${hh(settings.reminderHour)} h ${hh(settings.reminderMinute)}`} onPress={() => setSheet('time')} /> : null}
       </Group>
       <Group title="Accessibilité">
+        <ToggleRow icon="eye" label="Aide aux couleurs" sub="Motifs sur les vitraux, traits sur les différences" value={settings.colorAid} onChange={(v) => setSettings({ colorAid: v })} />
         <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, borderBottomWidth: 1, borderBottomColor: T.line, gap: 12 }}>
           <Icon name="light" size={20} color={T.tx2} />
           <View style={{ flex: 1 }}><Text style={type.body}>Réduire les animations</Text><Text style={type.foot}>Suit le réglage du téléphone</Text></View>

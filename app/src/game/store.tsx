@@ -32,9 +32,10 @@ export interface Settings {
   reminderMinute: number;
   /** The reminder was offered once (after the first daily puzzle). */
   reminderOffered: boolean;
-  highContrast: boolean;
+  /** Colour-blind aid: patterns on the stained glass, dashes on the spot-the-difference pictures. */
+  colorAid: boolean;
 }
-export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, highContrast: false };
+export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false };
 
 export interface Result {
   session: Session;

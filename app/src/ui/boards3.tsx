@@ -17,17 +17,18 @@ import { SHELF_NAMES } from '../content/strings';
 import { WORLD } from '../game/catalog';
 import { roomName } from '../game/views';
 import type { BoardProps } from './boards';
+import { useStore } from '../game/store';
 
 const box = { backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: R.l } as const;
 const focusOf = (s: BoardProps['s']): CellRef[] => [...(s.hint.focus ?? []), ...(s.error?.focus ?? [])];
 const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
 
 /** A glyph from the object drawings, stroked, in a box of `size`. */
-function Glyph({ k, size, color, sw = 1.7 }: { k: string; size: number; color: string; sw?: number }) {
+function Glyph({ k, size, color, sw = 1.7, dash }: { k: string; size: number; color: string; sw?: number; dash?: string }) {
   const d = glyphByKey(k);
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <G fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+      <G fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dash}>
         {/* The drawings are small SVG fragments: parse the few element kinds they use. */}
         {parseFragment(d)}
       </G>
@@ -143,10 +144,29 @@ export const GLASS: Record<number, string> = { 0: '#2a2f55', 1: '#E0625A', 2: '#
 const FILTER_NAME: Record<number, string> = { 0: 'aucun filtre', 1: 'rouge', 2: 'jaune', 4: 'bleu' };
 const NEXT_FILTER: Record<number, number> = { 0: 1, 1: 2, 2: 4, 4: 0 };
 
-function FilterButton({ f, given, focus, onPress, label, size }: { f: number; given: boolean; focus: boolean; onPress: () => void; label: string; size: number }) {
+/**
+ * Colour-blind aid: each filter has its own mark, and a mix shows both.
+ * Red = diagonal stripes, yellow = dots, blue = horizontal lines.
+ */
+export function GlassMarks({ bits, size, round = false }: { bits: number; size: number; round?: boolean }) {
+  if (!bits) return null;
+  const ink = 'rgba(13,15,30,0.55)', n = 4, step = size / n, sw = Math.max(1.2, size / 26);
+  const marks: React.ReactNode[] = [];
+  if (bits & 1) for (let i = -n; i <= n; i++) marks.push(<Path key={`r${i}`} d={`M${i * step} ${size}L${i * step + size} 0`} stroke={ink} strokeWidth={sw} />);
+  if (bits & 4) for (let i = 1; i < n; i++) marks.push(<Path key={`b${i}`} d={`M0 ${i * step}H${size}`} stroke={ink} strokeWidth={sw} />);
+  if (bits & 2) for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) marks.push(<Circle key={`y${i}.${j}`} cx={(i + 0.5) * step} cy={(j + 0.5) * step} r={Math.max(1.1, size / 22)} fill={ink} />);
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, width: size, height: size, borderRadius: round ? size / 2 : 0, overflow: 'hidden' }}>
+      <Svg width={size} height={size}>{marks}</Svg>
+    </View>
+  );
+}
+
+function FilterButton({ f, given, focus, onPress, label, size, aid }: { f: number; given: boolean; focus: boolean; onPress: () => void; label: string; size: number; aid: boolean }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${label} : ${FILTER_NAME[f]}${given ? ', fixé' : '. Toucher pour changer.'}`} disabled={given} onPress={onPress}
       style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: f ? GLASS[f] : 'transparent', borderWidth: focus ? 3 : 2, borderColor: focus ? T.gold : given ? '#8a8fa8' : T.line, alignItems: 'center', justifyContent: 'center', borderStyle: f ? 'solid' : 'dashed' }}>
+      {aid ? <GlassMarks bits={f} size={size - 4} round /> : null}
       {given ? <Icon name="lock" size={size * 0.4} color={f ? '#0D0F1E' : T.tx3} /> : null}
     </Pressable>
   );
@@ -154,6 +174,7 @@ function FilterButton({ f, given, focus, onPress, label, size }: { f: number; gi
 
 function Stained({ s, width, onPlay, tap }: BoardProps) {
   const p = s.data as StainedPuzzle, st = s.state as StainedState;
+  const aid = useStore().settings.colorAid;
   const focus = focusOf(s);
   const sel = Math.min(40, (width - 40) / (p.cols + 1.4));
   const pane = Math.min(74, (width - 40 - sel - 12) / p.cols - 6);
@@ -168,14 +189,14 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
       <View style={{ flexDirection: 'row', gap: 6, marginLeft: sel + 12, marginBottom: 8 }}>
         {st.colF.map((f, c) => (
           <View key={c} style={{ width: pane, alignItems: 'center' }}>
-            <FilterButton f={f} size={sel} given={p.givenCols[c] !== null} focus={focus.some((x) => x.row === -1 && x.column === c)} onPress={() => set('c', c)} label={`Colonne ${c + 1}`} />
+            <FilterButton f={f} size={sel} given={p.givenCols[c] !== null} focus={focus.some((x) => x.row === -1 && x.column === c)} onPress={() => set('c', c)} label={`Colonne ${c + 1}`} aid={aid} />
           </View>
         ))}
       </View>
       {st.rowF.map((rf, r) => (
         <View key={r} style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginBottom: 6 }}>
           <View style={{ width: sel, marginRight: 6 }}>
-            <FilterButton f={rf} size={sel} given={p.givenRows[r] !== null} focus={focus.some((x) => x.row === r && x.column === -1)} onPress={() => set('r', r)} label={`Ligne ${r + 1}`} />
+            <FilterButton f={rf} size={sel} given={p.givenRows[r] !== null} focus={focus.some((x) => x.row === r && x.column === -1)} onPress={() => set('r', r)} label={`Ligne ${r + 1}`} aid={aid} />
           </View>
           {st.colF.map((cf, c) => {
             const now = rf | cf, want = p.target[r * p.cols + c], ok = now === want, bad = focus.some((x) => x.row === r && x.column === c);
@@ -184,6 +205,7 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
               <View key={c} accessible accessibilityLabel={`Vitre ligne ${r + 1}, colonne ${c + 1} : voilée, maintenant ${colorWord(now)}`}
                 style={{ width: pane, height: pane * 1.15, borderRadius: 10, overflow: 'hidden', backgroundColor: '#0a0c1e', borderWidth: 2, borderColor: '#3a3f6a', borderStyle: 'dashed' }}>
                 <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: GLASS[now], opacity: now ? 0.5 : 0.25 }} />
+                {aid ? <GlassMarks bits={now} size={pane * 1.15} /> : null}
                 <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(220,226,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                   <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: pane * 0.34, fontWeight: '800' }}>?</Text>
                 </View>
@@ -193,8 +215,10 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
               <View key={c} accessible accessibilityLabel={`Vitre ligne ${r + 1}, colonne ${c + 1} : modèle ${colorWord(want)}, maintenant ${colorWord(now)}`}
                 style={{ width: pane, height: pane * 1.15, borderRadius: 10, overflow: 'hidden', backgroundColor: '#0a0c1e', borderWidth: 2, borderColor: bad ? T.coral : ok ? '#c9a563' : '#3a3f6a' }}>
                 <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: GLASS[now], opacity: now ? 0.92 : 0.35 }} />
+                {aid ? <GlassMarks bits={now} size={pane * 1.15} /> : null}
                 {/* The window as it was: its colour, in the middle. */}
                 <View style={{ position: 'absolute', left: pane / 2 - pane * 0.19, top: pane * 0.575 - pane * 0.19, width: pane * 0.38, height: pane * 0.38, borderRadius: pane, backgroundColor: GLASS[want], borderWidth: 2, borderColor: ok ? '#FFE6B0' : '#0D0F1E', alignItems: 'center', justifyContent: 'center' }}>
+                  {aid ? <GlassMarks bits={want} size={pane * 0.38 - 4} round /> : null}
                   {ok ? <Icon name="check" size={pane * 0.22} color="#0D0F1E" sw={2.4} /> : null}
                 </View>
               </View>
@@ -203,9 +227,15 @@ function Stained({ s, width, onPlay, tap }: BoardProps) {
         </View>
       ))}
       <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 6 }}>
-        {[[3, 'rouge + jaune'], [6, 'jaune + bleu'], [5, 'rouge + bleu']].map(([c, l]) => (
-          <View key={c as number} style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}><View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: GLASS[c as number] }} /><Text style={{ color: T.tx2, fontSize: 12 }}>{l as string}</Text></View>
-        ))}
+        {(aid ? [[1, 'rouge'], [2, 'jaune'], [4, 'bleu'], [3, 'rouge + jaune'], [6, 'jaune + bleu'], [5, 'rouge + bleu']] : [[3, 'rouge + jaune'], [6, 'jaune + bleu'], [5, 'rouge + bleu']]).map(([c, l]) => {
+          const d = aid ? 20 : 12;
+          return (
+            <View key={c as number} style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+              <View style={{ width: d, height: d, borderRadius: d / 2, backgroundColor: GLASS[c as number], overflow: 'hidden' }}>{aid ? <GlassMarks bits={c as number} size={d} round /> : null}</View>
+              <Text style={{ color: T.tx2, fontSize: 12 }}>{l as string}</Text>
+            </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -214,9 +244,12 @@ const colorWord = (c: number) => ({ 0: 'clair', 1: 'rouge', 2: 'jaune', 4: 'bleu
 
 // ---------------------------------------------------------------- Différences
 const SPOT_KEYS = ['key', 'feather', 'hourglass', 'bell', 'moon', 'orange', 'drop', 'fish', 'lantern', 'crown', 'mask', 'candle', 'compass', 'book', 'shell', 'flower'];
-const SPOT_PAL = ['#FFD98E', '#E88A8A', '#8FB8F0', '#9CCB8A', '#B79CE0', '#F0924A'];
+// Okabe–Ito colours, lightened for the night: told apart by most colour-blind players.
+const SPOT_PAL = ['#F0E442', '#E0622A', '#56B4E9', '#2BB08A', '#D98CBF', '#E69F00'];
+/** Colour-blind aid: each colour also has its own stroke. */
+const SPOT_DASH = [undefined, '3 1.6', '0.2 1.8', '5 1.4 1 1.4', '1.6 1.6', '6 2.4'];
 
-function SpotPicture({ items, w, found, p, hintAt, onTap, label }: { items: (SpotItem | null)[]; w: number; found: number[]; p: SpotPuzzle; hintAt: CellRef | null; onTap: (x: number, y: number) => void; label: string }) {
+function SpotPicture({ items, w, found, p, hintAt, onTap, label, aid }: { items: (SpotItem | null)[]; w: number; found: number[]; p: SpotPuzzle; hintAt: CellRef | null; onTap: (x: number, y: number) => void; label: string; aid: boolean }) {
   const k = w / SPOT_W, h = SPOT_H * k;
   const tapHere = (e: GestureResponderEvent) => onTap(e.nativeEvent.locationX / k, e.nativeEvent.locationY / k);
   return (
@@ -224,7 +257,7 @@ function SpotPicture({ items, w, found, p, hintAt, onTap, label }: { items: (Spo
       <View style={{ position: 'absolute', left: 0, right: 0, top: h * 0.52, height: 2, backgroundColor: '#2a2f55' }} />
       {items.map((it, i) => it ? (
         <View key={i} pointerEvents="none" style={{ position: 'absolute', left: (it.x - 5 * it.s) * k, top: (it.y - 5 * it.s) * k, width: 10 * it.s * k, height: 10 * it.s * k, transform: [{ rotate: `${it.r}deg` }] }}>
-          <Glyph k={SPOT_KEYS[it.g]} size={10 * it.s * k} color={SPOT_PAL[it.c]} />
+          <Glyph k={SPOT_KEYS[it.g]} size={10 * it.s * k} color={SPOT_PAL[it.c]} dash={aid ? SPOT_DASH[it.c] : undefined} sw={aid ? 2 : 1.7} />
         </View>
       ) : null)}
       {found.map((d) => { const it = p.items[p.diffs[d].i]; return <View key={`f${d}`} pointerEvents="none" style={{ position: 'absolute', left: (it.x - 8) * k, top: (it.y - 8) * k, width: 16 * k, height: 16 * k, borderRadius: 8 * k, borderWidth: 2.5, borderColor: T.gold }} />; })}
@@ -235,6 +268,7 @@ function SpotPicture({ items, w, found, p, hintAt, onTap, label }: { items: (Spo
 
 function Spot({ s, width, onPlay, tap }: BoardProps) {
   const p = s.data as SpotPuzzle, st = s.state as SpotState;
+  const aid = useStore().settings.colorAid;
   const after = useMemo(() => changed(p), [p]);
   // Both pictures on screen at once, whatever the phone: the height decides.
   const w = Math.min(width - 28, 196 / (SPOT_H / SPOT_W));
@@ -248,12 +282,12 @@ function Spot({ s, width, onPlay, tap }: BoardProps) {
   return (
     <View style={[box, { padding: 14, gap: 8, alignItems: 'center' }]}>
       <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600', alignSelf: 'flex-start' }}>AVANT</Text>
-      <SpotPicture items={p.items} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label="Première image. Toucher une différence." />
+      <SpotPicture items={p.items} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label="Première image. Toucher une différence." aid={aid} />
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', alignSelf: 'stretch' }}>
         <Text style={{ color: T.tx2, fontSize: 12, letterSpacing: 1.2, fontWeight: '600' }}>MAINTENANT</Text>
         <Text style={{ color: T.gold, fontSize: 14, fontWeight: '700' }} accessibilityLiveRegion="polite">{st.found.length} / {p.diffs.length}{miss ? '' : ''}</Text>
       </View>
-      <SpotPicture items={after} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label="Seconde image. Toucher une différence." />
+      <SpotPicture items={after} w={w} found={st.found} p={p} hintAt={hint} onTap={onTap} label="Seconde image. Toucher une différence." aid={aid} />
     </View>
   );
 }
