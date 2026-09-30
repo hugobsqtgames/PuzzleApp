@@ -33,6 +33,58 @@ type Haptic = (kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactM
 
 const safe = (f: () => void) => { try { f(); } catch { /* audio is never worth a crash */ } };
 
+/**
+ * Plays a player from its start. Rewinding is asynchronous: playing at once
+ * could start from the end of the last play, and nothing would be heard.
+ */
+function playFromStart(p: AudioPlayer, volume: number) {
+  safe(() => {
+    p.volume = volume;
+    let at = 0;
+    safe(() => { at = p.currentTime; });
+    if (at < 0.01) { p.play(); return; }
+    p.pause();
+    p.seekTo(0).then(() => safe(() => p.play()), () => safe(() => p.play()));
+  });
+}
+
+/**
+ * A few players per sound, loaded ahead: creating a player loads its file
+ * (a stall, and a silent first note), and one player cannot ring twice at once.
+ */
+class SoundPool {
+  private pools = new Map<string, { players: AudioPlayer[]; next: number }>();
+  constructor(private size: (key: string) => number) {}
+  preload(keys: string[]) { for (const k of keys) this.get(k); }
+  play(key: string, volume: number) {
+    const pool = this.get(key);
+    if (!pool) return;
+    // Round robin, preferring a player that is not sounding.
+    let i = pool.next;
+    for (let k = 0; k < pool.players.length; k++) {
+      const j = (pool.next + k) % pool.players.length;
+      let busy = true;
+      safe(() => { busy = pool.players[j].playing; });
+      if (!busy) { i = j; break; }
+    }
+    pool.next = (i + 1) % pool.players.length;
+    playFromStart(pool.players[i], volume);
+  }
+  pauseAll() { this.pools.forEach((pool) => pool.players.forEach((p) => safe(() => p.pause()))); }
+  private get(key: string) {
+    const hit = this.pools.get(key);
+    if (hit) return hit;
+    const src = SFX_FILES[key];
+    if (src === undefined) return null;
+    const players: AudioPlayer[] = [];
+    for (let k = 0; k < this.size(key); k++) safe(() => { players.push(createAudioPlayer(src)); });
+    if (!players.length) return null;
+    const pool = { players, next: 0 };
+    this.pools.set(key, pool);
+    return pool;
+  }
+}
+
 class AmbienceLoop {
   private players: AudioPlayer[] = [];
   private active = 0;
@@ -51,7 +103,7 @@ class AmbienceLoop {
 
   start(fadeMs: number) {
     const p = this.players[this.active];
-    safe(() => { p.seekTo(0); p.play(); });
+    playFromStart(p, 0);
     this.fade(p, 0, this.target, fadeMs);
     this.schedule(AMBIENCE_LOOP_SECONDS * 1000);
   }
@@ -64,7 +116,8 @@ class AmbienceLoop {
       const from = this.players[this.active];
       this.active = 1 - this.active;
       const to = this.players[this.active];
-      safe(() => { to.seekTo(0); to.volume = 0; to.play(); });
+      // The other player ended its last turn at the end of the file: it must rewind before playing.
+      playFromStart(to, 0);
       const overlap = AMBIENCE_OVERLAP_SECONDS * 1000;
       this.fade(to, 0, this.target, overlap);
       this.fade(from, this.target, 0, overlap, () => safe(() => from.pause()));
@@ -125,7 +178,8 @@ class AmbienceLoop {
 export class SoundEngine {
   readonly director: AudioDirector;
   private ambience: AmbienceLoop | null = null;
-  private sfx = new Map<string, AudioPlayer>();
+  // Bells can ring fast, one after the other: three players each; two for the other effects.
+  private sfx = new SoundPool((key) => (key.startsWith('bell_') ? 3 : 2));
   private place: AmbiencePlace = 'lighthouse';
   private appState: AppStateStatus = AppState.currentState;
   /** Browsers block audio until the first interaction; phones do not. */
@@ -155,8 +209,13 @@ export class SoundEngine {
 
   enter(place: AmbiencePlace) {
     this.place = place;
+    // The effects of this place are loaded now, not at their first use.
+    if (this.unlocked) this.sfx.preload([...Object.keys(PER_PLACE).map((e) => this.effectKey(e as SoundEvent)!), ...Object.values(SHARED)]);
     this.run(this.director.enter(place));
   }
+
+  /** Loads the Carillon's bells before its melody plays. */
+  preloadBells() { if (this.unlocked) this.sfx.preload([0, 1, 2, 3, 4, 5].map((i) => `bell_${i}`)); }
 
   play(event: SoundEvent) {
     this.run(this.director.trigger(event, Date.now()));
@@ -165,15 +224,7 @@ export class SoundEngine {
   /** One bell of the Carillon (0…5), low to high. Follows the "Effets sonores" setting. */
   note(i: number) {
     if (!this.unlocked || !this.director.settings.effects) return;
-    const key = `bell_${Math.max(0, Math.min(5, i))}`, src = SFX_FILES[key];
-    if (src === undefined) return;
-    safe(() => {
-      let p = this.sfx.get(key);
-      if (!p) { p = createAudioPlayer(src); this.sfx.set(key, p); }
-      p.volume = 0.9;
-      p.seekTo(0);
-      p.play();
-    });
+    this.sfx.play(`bell_${Math.max(0, Math.min(5, i))}`, 0.9);
   }
 
   private effectKey(event: SoundEvent): string | null {
@@ -201,15 +252,7 @@ export class SoundEngine {
           break;
         case 'playEffect': {
           const key = this.effectKey(c.event);
-          const src = key ? SFX_FILES[key] : undefined;
-          if (src === undefined) break;
-          safe(() => {
-            let p = this.sfx.get(key!);
-            if (!p) { p = createAudioPlayer(src); this.sfx.set(key!, p); }
-            p.volume = c.volume;
-            p.seekTo(0);
-            p.play();
-          });
+          if (key) this.sfx.play(key, c.volume);
           break;
         }
         case 'haptic':
@@ -217,7 +260,7 @@ export class SoundEngine {
           break;
         case 'suspend':
           this.ambience?.pause();
-          this.sfx.forEach((p) => safe(() => p.pause()));
+          this.sfx.pauseAll();
           break;
         case 'resume':
           this.ambience?.resume();

@@ -15,6 +15,7 @@ import { look } from '../game/rewards';
 import { askPermission } from '../game/reminders';
 import { TUTORIAL_LANTERN } from './welcome';
 import { tr, trn } from '../i18n';
+import { nextStep } from '../game/views';
 
 /** Slow rays of light behind the lantern. */
 function Rays() {
@@ -113,9 +114,11 @@ export default function Success() {
       return;
     }
     if (isTutorial) { showToast(tr('Tu peux revenir ici quand tu veux.'), 'light'); }
-    const cur = engine.progression.recommended(state);
-    if (!cur) { router.dismissTo('/'); return; }
-    if (openLantern(cur.puzzle)) router.replace('/puzzle');
+    const step = nextStep(engine.progression, state, s.id);
+    if (step.kind === 'puzzle' && openLantern(step.puzzle)) { router.replace('/puzzle'); return; }
+    if (step.kind === 'room') { router.replace({ pathname: '/room/[id]', params: { id: step.id } }); return; }
+    if (step.kind === 'building') { router.replace({ pathname: '/building/[id]', params: { id: step.id } }); return; }
+    router.dismissTo('/');
   };
   const reminderAnswer = async (yes: boolean) => {
     setOffer(false);

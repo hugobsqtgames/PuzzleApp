@@ -16,7 +16,7 @@ import { HintLevel } from '../core/puzzlekit/types';
 import { AudioSettings, SoundEvent } from '../core/audio/director';
 import { SoundEngine } from '../audio/engine';
 import { WORLD, dailyPuzzle, puzzleFor, FAMILIES, CONTENT_VERSION } from './catalog';
-import { Session, giveHint, progressOf, record, startSession, HINT_COSTS } from './session';
+import { Session, giveHint, hintCost, progressOf, record, startSession } from './session';
 import { ACHIEVEMENTS, COSMETICS, Profile, Slot, achievementContext, achievementStatus, newProfile, owns } from './rewards';
 import { SAVE_DIRECTORY, deviceFS } from './files';
 import { scheduleReminders } from './reminders';
@@ -57,7 +57,6 @@ interface Store {
   engine: GameEngine;
   settings: Settings;
   profile: Profile;
-  session: Session | null;
   result: Result | null;
   toast: { text: string; icon?: string } | null;
   today: DayKey;
@@ -88,6 +87,11 @@ interface Store {
 }
 
 const Ctx = createContext<Store | null>(null);
+/**
+ * The puzzle being played, on its own: it changes at every move, and only the
+ * puzzle screen reads it (the screens behind it are not redrawn at each tap).
+ */
+const SessionCtx = createContext<Session | null>(null);
 const engine = new GameEngine(WORLD);
 const saveStore = new SaveStore(deviceFS, SAVE_DIRECTORY, `content-${CONTENT_VERSION}`);
 const SIDE_FILE = `${SAVE_DIRECTORY}/profile.json`;
@@ -244,18 +248,20 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (!p || !engine.progression.isPlayable(id, s)) return false;
     const place = engine.progression.locate(id);
     if (place && !profileRef.current.visited.includes(place.district.id)) commitProfile({ ...profileRef.current, visited: [...profileRef.current.visited, place.district.id] });
+    if (p.code === 'CR') sound.preloadBells(); // loaded before the melody plays
     setSession(startSession(p, 'lantern', new Date(), s.inProgress.get(id)));
     setResult(null);
     return true;
-  }, [commitProfile]);
+  }, [commitProfile, sound]);
 
   const openDaily = useCallback((day: DayKey) => {
     const p = dailyPuzzle(day);
     if (!p) return false;
+    if (p.code === 'CR') sound.preloadBells();
     setSession({ ...startSession(p, 'daily', new Date()), id: `daily.${day}` });
     setResult(null);
     return true;
-  }, []);
+  }, [sound]);
 
   const updateSession = useCallback((s: Session) => { sessionRef.current = s; setSession(s); }, []);
 
@@ -331,24 +337,26 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, [commit, commitProfile, creditAchievements]);
 
   const buyHint = useCallback((s: Session, level: HintLevel) => {
-    const cost = HINT_COSTS[level - 1];
-    const now = Date.now();
+    const cost = hintCost(s, level);
+    // Every Murmure counts for « Chut », free or not.
+    const noteWhisper = () => { if (level === HintLevel.Whisper) commitProfile({ ...profileRef.current, murmures: profileRef.current.murmures + 1 }); };
     if (cost === 0) {
-      const next = giveHint(s, level, now);
+      const next = giveHint(s, level, 0);
       if (!next) return null;
-      commitProfile({ ...profileRef.current, murmures: profileRef.current.murmures + 1 });
+      noteWhisper();
       setSession(next);
       return { session: next };
     }
     const st = cloneState(stateRef.current);
-    const purchase = engine.buyHint(level, s.id, s.hint.stale ? s.hint.step + 1 : s.hint.step, st);
+    const purchase = engine.buyHint(level, s.id, s.hint.stale ? s.hint.step + 1 : s.hint.step, st, cost);
     if (purchase.kind === 'insufficientBalance') return { missing: purchase.missing };
-    const next = giveHint(s, level, now);
+    const next = giveHint(s, level, cost);
     if (!next) return null;
     if (purchase.kind === 'granted') {
       commit(st);
       commitProfile(addHistory(profileRef.current, () => `${['Murmure', 'Piste', 'Éclairage', 'Solution'][level - 1]} · ${FAMILIES[s.code].name}`, -purchase.cost));
     }
+    noteWhisper();
     setSession(next);
     return { session: next };
   }, [commit, commitProfile]);
@@ -447,14 +455,17 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, [commit, commitProfile]);
 
   const value = useMemo<Store>(() => ({
-    ready, readOnly, state, engine, settings, profile, session, result, toast, today,
+    ready, readOnly, state, engine, settings, profile, result, toast, today,
     showToast, openLantern, openDaily, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
     completeOnboarding, markSeen, noteProfile, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), enterPlace, haptic, resetProgress, exportProgress, importProgress,
-  }), [ready, readOnly, state, settings, profile, session, result, toast, today, showToast, openLantern, openDaily, updateSession, leaveSession, finishSession,
+  }), [ready, readOnly, state, settings, profile, result, toast, today, showToast, openLantern, openDaily, updateSession, leaveSession, finishSession,
     buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={value}><SessionCtx.Provider value={session}>{children}</SessionCtx.Provider></Ctx.Provider>;
 }
+
+/** The puzzle being played (null outside a puzzle). */
+export const useSession = () => useContext(SessionCtx);
 
 export function useStore(): Store {
   const v = useContext(Ctx);

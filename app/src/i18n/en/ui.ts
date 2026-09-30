@@ -459,4 +459,11 @@ export const EN_UI: Record<string, string> = {
   'Recommencer ce puzzle ?': 'Restart this puzzle?',
   'La grille revient à son état de départ. Les indices déjà utilisés restent comptés.': 'The board goes back to how it started. Hints already used still count.',
   'Recommencer': 'Restart',
+  'Visiter {0}': 'Visit {0}',
+  // Hints: any level at once, three free Murmures per puzzle.
+  'Il te manque {0} Éclats.': 'You need {0} more Shards.',
+  'Encore {0} Murmure gratuit sur ce puzzle.': '{0} free Whisper left on this puzzle.',
+  'Encore {0} Murmures gratuits sur ce puzzle.': '{0} free Whispers left on this puzzle.',
+  'Les Murmures gratuits de ce puzzle sont utilisés.': 'The free Whispers of this puzzle are used up.',
+  'Il te manque {0} Éclats. Tu peux jouer une autre lanterne pour en gagner.': 'You need {0} more Shards. Play another lantern to earn some.',
 };

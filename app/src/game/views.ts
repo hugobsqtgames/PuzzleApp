@@ -118,6 +118,19 @@ export function roomRows(p: Progression, s: GameState, d: District, bi: number, 
   return rows;
 }
 
+/**
+ * Where « Suivant » leads after a lantern: straight into the next puzzle when it is in the
+ * same room; otherwise to the room (or building) where it is, so the player sees where they go.
+ */
+export function nextStep(p: Progression, s: GameState, fromPuzzle: string | null): { kind: 'puzzle'; puzzle: string } | { kind: 'room'; id: string } | { kind: 'building'; id: string } | { kind: 'home' } {
+  const next = p.recommended(s);
+  if (!next) return { kind: 'home' };
+  const to = p.locate(next.puzzle), from = fromPuzzle ? p.locate(fromPuzzle) : null;
+  if (!to) return { kind: 'home' };
+  if (from && to.room && from.room && to.room.id === from.room.id) return { kind: 'puzzle', puzzle: next.puzzle };
+  return to.room ? { kind: 'room', id: to.room.id } : { kind: 'building', id: to.building.id };
+}
+
 /** Collectible id of a room (as credited by the engine). */
 export const collectibleOf = (roomId: string) => `collectible.${roomId}`;
 

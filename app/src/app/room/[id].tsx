@@ -143,7 +143,7 @@ export default function RoomScreen() {
   const bottomBlock = (
       <View style={{ paddingHorizontal: 16, gap: 10, paddingTop: 4 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Nilo size={50} look={look(state)} mood={searching && canSearch && niloMood === 'neutral' ? 'curious' : complete && niloMood === 'neutral' ? 'joy' : niloMood} onPress={() => { tap(); setNiloMood((m) => (m === 'joy' ? 'curious' : 'joy')); }} />
+          <Nilo size={68} look={look(state)} mood={searching && canSearch && niloMood === 'neutral' ? 'curious' : complete && niloMood === 'neutral' ? 'joy' : niloMood} onPress={() => { tap(); setNiloMood((m) => (m === 'joy' ? 'curious' : 'joy')); }} />
           <View style={{ flex: 1 }}>
         {searching && canSearch ? (
           <View style={{ backgroundColor: 'rgba(255,217,142,0.07)', borderColor: 'rgba(255,217,142,0.35)', borderWidth: 1, borderRadius: 16, padding: 12, gap: 4 }} accessibilityLiveRegion="polite">

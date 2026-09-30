@@ -1,5 +1,5 @@
 import { CODES, FAMILIES, WORLD, dailyPuzzle, dailyRange, puzzleFor } from '../../game/catalog';
-import { canSubmit, giveHint, isComplete, nextHintLevel, play, redo, startSession, submit, undo } from '../../game/session';
+import { canSubmit, giveHint, hintAvailable, hintCost, isComplete, play, redo, startSession, submit, undo } from '../../game/session';
 import { reminderDates } from '../../game/reminders';
 import { worldLanterns, regularLanterns } from '../game/world';
 import { GameEngine } from '../game/engine';
@@ -80,8 +80,10 @@ describe('content pack', () => {
       while (guard++ < 1100) {
         const open = e.progression.playableUnsolved(s);
         if (open.length === 0) break;
-        // Keep at least 3 choices while the game is not over (GAME_DESIGN § 3).
-        if (s.solved.size < 990) expect(open.length).toBeGreaterThanOrEqual(3);
+        // Keep at least 3 choices while the game is not over (GAME_DESIGN § 3); the Phare's last
+        // lanterns are the exception: the Bibliothèque waits for the whole Phare to be lit.
+        const phareEnd = s.solved.size >= 22 && s.solved.size < 24;
+        if (s.solved.size < 990 && !phareEnd) expect(open.length).toBeGreaterThanOrEqual(3);
         const l = rng.pick(open);
         e.puzzleSolved(l.puzzle, { solvedAt: new Date().toISOString(), paidHints: 0, wrongAnswers: 0, usedSolution: false }, s);
       }
@@ -100,9 +102,8 @@ describe('sessions on real puzzles', () => {
     for (let guard = 0; guard < 30; guard++) {
       if (isComplete(s)) break;
       if (FAMILIES[code].answer && canSubmit(s) && submit(s).correct) break;
-      const level = nextHintLevel(s);
-      if (level === null) break;
-      const next = giveHint(s, HintLevel.Solution, Date.now());
+      if (!hintAvailable(s, HintLevel.Solution)) break;
+      const next = giveHint(s, HintLevel.Solution, 20);
       expect(next).not.toBeNull();
       s = next!;
     }
@@ -119,10 +120,28 @@ describe('sessions on real puzzles', () => {
     s = play(s, e.rotate(p.data as never, s.state, 0));
     expect(undo(s).state).toEqual(s0);
     expect(redo(undo(s)).state).toEqual(s.state);
+    // Any level can be taken at once, never twice for the same position.
+    expect(hintAvailable(s, HintLevel.Lead)).toBe(true);
     s = giveHint(s, HintLevel.Whisper, 0)!;
-    expect(nextHintLevel(s)).toBe(HintLevel.Lead);
+    expect(hintAvailable(s, HintLevel.Whisper)).toBe(false);
+    expect(hintAvailable(s, HintLevel.Lead)).toBe(true);
     s = play(s, e.rotate(p.data as never, s.state, 1));
-    expect(nextHintLevel(s)).toBe(HintLevel.Whisper); // moved on: next deduction starts over
+    expect(hintAvailable(s, HintLevel.Whisper)).toBe(true); // moved on: next deduction starts over
+  });
+
+  test('three free Murmures per puzzle, then they cost a little', () => {
+    const p = puzzleFor(lanterns.find((x) => x.family === 'EN')!.puzzle)!;
+    const e = FAMILIES.EN.engine as any;
+    let s = startSession(p, 'lantern', now);
+    for (let k = 0; k < 3; k++) {
+      expect(hintCost(s, HintLevel.Whisper)).toBe(0);
+      s = giveHint(s, HintLevel.Whisper, 0)!;
+      s = play(s, e.rotate(p.data as never, s.state, k + 1));
+    }
+    expect(hintCost(s, HintLevel.Whisper)).toBe(3);
+    expect(s.paidHints).toBe(0);
+    s = giveHint(s, HintLevel.Whisper, 3)!;
+    expect(s.paidHints).toBe(1); // a paid Murmure costs the Clairvoyance bonus, like any paid hint
   });
 
   test('wrong answers are explained and counted', () => {

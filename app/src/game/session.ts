@@ -15,7 +15,6 @@ import { Code, FAMILIES, PlayablePuzzle } from './catalog';
 export type SessionKind = 'lantern' | 'daily';
 /** What each hint level costs: the engine's table, so the sheet always shows what is charged. */
 export const HINT_COSTS = STANDARD_ECONOMY.hintCosts;
-export const MURMURE_COOLDOWN_MS = 20_000;
 
 export interface Session {
   id: string;
@@ -28,7 +27,11 @@ export interface Session {
   future: any[];
   moves: number;
   /** Hints of the current step: texts already bought, level reached, highlighted cells. */
-  hint: { step: number; level: number; texts: string[]; focus: CellRef[]; stale: boolean; murmureAt: number | null };
+  /**
+   * Hints of the current position: the highest level taken, the texts by level (index level − 1),
+   * the free Murmures used on this puzzle.
+   */
+  hint: { step: number; level: number; texts: (string | undefined)[]; focus: CellRef[]; stale: boolean; freeWhispers: number };
   paidHints: number;
   wrongAnswers: number;
   usedSolution: boolean;
@@ -46,7 +49,7 @@ export function startSession(p: PlayablePuzzle, kind: SessionKind, now: Date, sa
   if (p.code === 'CA') state = { ...state, symbols: state.symbols.map(() => 0) };
   const s: Session = {
     id: p.id, code: p.code, tier: p.tier, kind, data: p.data, state, history: [], future: [], moves: 0,
-    hint: { step: 0, level: 0, texts: [], focus: [], stale: false, murmureAt: null },
+    hint: { step: 0, level: 0, texts: [], focus: [], stale: false, freeWhispers: 0 },
     paidHints: 0, wrongAnswers: 0, usedSolution: false, error: null, startedAt: now.toISOString(), solved: false,
   };
   return saved ? restoreProgress(s, saved) : s;
@@ -100,31 +103,38 @@ export function submit(s: Session): { session: Session; correct: boolean } {
   };
 }
 
-/** Level the next hint purchase would give (1–4), or null when there is nothing left to say. */
-export function nextHintLevel(s: Session): HintLevel | null {
-  if (s.solved) return null;
-  const level = s.hint.stale ? 1 : s.hint.level + 1;
-  return level <= 4 ? (level as HintLevel) : null;
+/** Levels that can be taken at this position: any level above the ones already taken (no order to follow). */
+export function hintAvailable(s: Session, level: HintLevel): boolean {
+  if (s.solved) return false;
+  return level > (s.hint.stale ? 0 : s.hint.level);
 }
 
-export function murmureWait(s: Session, now: number): number {
-  if (s.hint.murmureAt === null) return 0;
-  return Math.max(0, MURMURE_COOLDOWN_MS - (now - s.hint.murmureAt));
+/** Level shown for the current position (0: none). */
+export const shownHint = (s: Session) => (s.hint.stale ? 0 : s.hint.level);
+
+/** Price of a hint for this puzzle: the first Murmures are free, then they cost a little. */
+export function hintCost(s: Session, level: HintLevel): number {
+  if (level === HintLevel.Whisper) return s.hint.freeWhispers < STANDARD_ECONOMY.freeWhispers ? 0 : STANDARD_ECONOMY.whisperPrice;
+  return HINT_COSTS[level - 1];
 }
 
 /**
  * Gives the hint of `level` for the current position (the caller has already
- * paid). Returns null when the engine has nothing to say (already solved).
+ * paid `cost`). Returns null when the engine has nothing to say (already solved).
  */
-export function giveHint(s: Session, level: HintLevel, now: number): Session | null {
+export function giveHint(s: Session, level: HintLevel, cost: number): Session | null {
   const h = engine(s).hint(s.data, s.state, level);
   if (!h) return null;
   const newStep = s.hint.stale;
-  const base = newStep ? { step: s.hint.step + 1, texts: [] as string[] } : { step: s.hint.step, texts: s.hint.texts };
+  const texts = newStep ? [] : s.hint.texts.slice();
+  texts[level - 1] = t(h.text);
   let next: Session = {
     ...s,
-    hint: { step: base.step, level, texts: [...base.texts, t(h.text)], focus: h.focus, stale: false, murmureAt: level === 1 ? now : s.hint.murmureAt },
-    paidHints: s.paidHints + (HINT_COSTS[level - 1] > 0 ? 1 : 0),
+    hint: {
+      step: newStep ? s.hint.step + 1 : s.hint.step, level, texts, focus: h.focus, stale: false,
+      freeWhispers: s.hint.freeWhispers + (level === HintLevel.Whisper && cost === 0 ? 1 : 0),
+    },
+    paidHints: s.paidHints + (cost > 0 ? 1 : 0),
     usedSolution: s.usedSolution || level === HintLevel.Solution,
     error: null,
   };
@@ -142,7 +152,7 @@ export function record(s: Session, now: Date): SolveRecord {
 
 /** What is kept when the player leaves a puzzle (GameState.inProgress). */
 export function progressOf(s: Session): unknown {
-  return { v: 1, fp: fingerprintOf(s), state: s.state, moves: s.moves, paidHints: s.paidHints, wrongAnswers: s.wrongAnswers, usedSolution: s.usedSolution, startedAt: s.startedAt };
+  return { v: 1, fp: fingerprintOf(s), state: s.state, moves: s.moves, paidHints: s.paidHints, wrongAnswers: s.wrongAnswers, usedSolution: s.usedSolution, startedAt: s.startedAt, whispers: s.hint.freeWhispers };
 }
 
 /**
@@ -157,7 +167,7 @@ function fingerprintOf(s: Session): string {
 }
 
 function restoreProgress(s: Session, raw: unknown): Session {
-  const o = raw as { v?: unknown; fp?: unknown; state?: unknown; moves?: unknown; paidHints?: unknown; wrongAnswers?: unknown; usedSolution?: unknown; startedAt?: unknown } | null;
+  const o = raw as { v?: unknown; fp?: unknown; state?: unknown; moves?: unknown; paidHints?: unknown; wrongAnswers?: unknown; usedSolution?: unknown; startedAt?: unknown; whispers?: unknown } | null;
   if (!o || o.v !== 1 || o.state === undefined) return s;
   // A board belongs to one puzzle: after a content update, the lantern may hold another one.
   if (o.fp !== fingerprintOf(s)) return s;
@@ -166,6 +176,7 @@ function restoreProgress(s: Session, raw: unknown): Session {
   const n = (v: unknown) => (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 ? v : 0);
   return {
     ...s, state: o.state, moves: n(o.moves), paidHints: n(o.paidHints), wrongAnswers: n(o.wrongAnswers), usedSolution: o.usedSolution === true,
+    hint: { ...s.hint, freeWhispers: n(o.whispers) },
     startedAt: typeof o.startedAt === 'string' && !Number.isNaN(Date.parse(o.startedAt)) ? o.startedAt : s.startedAt,
   };
 }

@@ -91,3 +91,9 @@ test('released content never changes (tools/forge/released.json, written at rele
   expect(changed).toEqual([]);
   expect(days).toEqual([]);
 });
+
+test('the Bibliothèque opens when the whole Phare is lit, never in the middle of it', () => {
+  const [phare, biblio] = pack.world.districts;
+  const phareLanterns = phare.buildings.reduce((n: number, b: any) => n + b.rooms.reduce((m: number, r: any) => m + r.lanterns.length, 0) + (b.keystone ? 1 : 0), 0);
+  expect(biblio.unlock).toEqual({ kind: 'totalLights', lights: phareLanterns });
+});

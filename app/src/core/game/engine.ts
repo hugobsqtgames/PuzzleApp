@@ -12,6 +12,8 @@ import { World, buildingLanterns, districtLanterns } from './world';
 export interface EconomyRules {
   tierRewards: number[]; clairvoyancePercent: number; roomBonus: number; buildingBonus: number; districtBonus: number;
   dailyReward: number; dailyStreakBonusCap: number; hintCosts: number[];
+  /** Free Murmures per puzzle; past them, a Murmure costs `whisperPrice`. */
+  freeWhispers: number; whisperPrice: number;
 }
 /**
  * Balanced with a simulation of the 1000 lanterns (three kinds of players):
@@ -20,7 +22,7 @@ export interface EconomyRules {
  */
 export const STANDARD_ECONOMY: EconomyRules = {
   tierRewards: [3, 4, 5, 7, 9, 12], clairvoyancePercent: 50, roomBonus: 10, buildingBonus: 30, districtBonus: 80,
-  dailyReward: 10, dailyStreakBonusCap: 5, hintCosts: [0, 5, 10, 20],
+  dailyReward: 10, dailyStreakBonusCap: 5, hintCosts: [0, 5, 10, 20], freeWhispers: 3, whisperPrice: 3,
 };
 
 /** Shards given when the tutorial ends: the first Piste is never out of reach. */
@@ -80,8 +82,8 @@ export class GameEngine {
     return out;
   }
 
-  buyHint(level: HintLevel, puzzle: string, step: number, s: GameState): HintPurchase {
-    const cost = this.economy.hintCosts[level - 1];
+  /** `cost`: the price of this hint for this player (a Murmure past the free ones), else the table's. */
+  buyHint(level: HintLevel, puzzle: string, step: number, s: GameState, cost = this.economy.hintCosts[level - 1]): HintPurchase {
     const id = `hint:${puzzle}:${step}:${level}`;
     if (s.wallet.appliedTransactions.has(id)) return { kind: 'alreadyOwned' };
     try {

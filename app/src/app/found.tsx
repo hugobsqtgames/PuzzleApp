@@ -16,7 +16,7 @@ import { objectSvg } from '../ui/scenes/objects';
 import { T, type } from '../ui/theme';
 import { LETTERS } from '../content/vesper';
 import { achievementContext, COSMETICS, look } from '../game/rewards';
-import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoom, roomName } from '../game/views';
+import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoom, lowerArticle, nextStep, roomName } from '../game/views';
 import { WORLD } from '../game/catalog';
 import { followUps } from './success';
 import { inFrench, tr } from '../i18n';
@@ -45,9 +45,12 @@ export default function Found() {
     // The last letter leads to the top of the Phare.
     if (steps[i + 1]?.startsWith('ending')) { router.replace('/ending'); return; }
     if (i + 1 < steps.length) { router.replace({ pathname: '/found', params: { step: String(i + 1) } }); return; }
-    const cur = engine.progression.recommended(state);
-    if (kind === 'district' || kind === 'keeper' || !cur) { router.dismissTo('/'); return; }
-    if (openLantern(cur.puzzle)) router.replace('/puzzle'); else router.dismissTo('/');
+    // Carry on where the player was (a new district waits on the map, it never takes them away).
+    const step = nextStep(engine.progression, state, result?.session.kind === 'lantern' ? result.session.id : null);
+    if (step.kind === 'puzzle' && openLantern(step.puzzle)) { router.replace('/puzzle'); return; }
+    if (step.kind === 'room') { router.replace({ pathname: '/room/[id]', params: { id: step.id } }); return; }
+    if (step.kind === 'building') { router.replace({ pathname: '/building/[id]', params: { id: step.id } }); return; }
+    router.dismissTo('/');
   };
 
   let body: React.ReactNode = null;
@@ -166,8 +169,9 @@ export default function Found() {
     );
     buttons = (
       <>
-        <Button title={tr('Entrer')} onPress={() => { router.dismissTo('/'); router.push({ pathname: '/district/[id]', params: { id: d.id === 'grenier' ? 'phare' : d.id } }); }} />
-        {i + 1 < steps.length ? <Button title={tr('Continuer')} kind="ghost" onPress={next} /> : <Button title={tr('Plus tard')} kind="ghost" onPress={() => router.dismissTo('/')} />}
+        {/* Continuing is the main way: the new district waits on the map. */}
+        <Button title={tr('Continuer')} onPress={next} />
+        <Button title={tr('Visiter {0}', [lowerArticle(info.name)])} kind="ghost" onPress={() => { router.dismissTo('/'); router.push({ pathname: '/district/[id]', params: { id: d.id === 'grenier' ? 'phare' : d.id } }); }} />
       </>
     );
   }

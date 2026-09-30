@@ -45,11 +45,12 @@ function parseFragment(d: string): React.ReactNode[] {
   while ((m = re.exec(d))) {
     const attrs: Record<string, string> = {};
     m[2].replace(/([\w-]+)="([^"]*)"/g, (_, k: string, v: string) => { attrs[k.replace(/-([a-z])/g, (__, c: string) => c.toUpperCase())] = v; return ''; });
-    const props: any = { key: i++, ...attrs };
-    if (m[1] === 'path') out.push(<Path {...props} />);
-    else if (m[1] === 'circle') out.push(<Circle {...props} />);
-    else if (m[1] === 'rect') out.push(<Rect {...props} />);
-    else out.push(<Circle key={props.key} cx={attrs.cx} cy={attrs.cy} r={attrs.rx} />);
+    // React wants the key given directly, never inside spread props.
+    const key = i++, props: any = attrs;
+    if (m[1] === 'path') out.push(<Path key={key} {...props} />);
+    else if (m[1] === 'circle') out.push(<Circle key={key} {...props} />);
+    else if (m[1] === 'rect') out.push(<Rect key={key} {...props} />);
+    else out.push(<Circle key={key} cx={attrs.cx} cy={attrs.cy} r={attrs.rx} />);
   }
   return out;
 }
