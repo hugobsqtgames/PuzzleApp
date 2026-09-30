@@ -34,7 +34,7 @@ export default function BuildingScreen() {
   const xml = coupeXml(info.hue, cells, rects);
 
   const openRow = (r: RoomRow) => {
-    if (r.state === 'locked') { tap('error'); play('locked'); showToast(`Verrouillée : ${r.lockText}.`, 'lock'); return; }
+    if (r.state === 'locked') { tap('error'); play('locked'); showToast(`Salle verrouillée. ${r.lockText}.`, 'lock'); return; }
     tap();
     if (r.key && b.keystone) { if (openLantern(b.keystone.puzzle)) router.push('/puzzle'); return; }
     if (r.room) router.push({ pathname: '/room/[id]', params: { id: r.room.id } });

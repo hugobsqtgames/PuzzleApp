@@ -29,6 +29,13 @@ export default function Shards() {
         <Card style={{ flex: 1 }}><Text style={type.foot}>Dépensés</Text><Text style={type.title3}>{w.spent}</Text></Card>
       </View>
       <Text style={type.sub}>Les Éclats se gagnent en jouant. Ils servent aux indices et à la personnalisation de Nilo. Ils ne se perdent jamais et n’ouvrent aucun lieu : seule la lumière fait avancer.</Text>
+      <Text style={[type.cap, { marginTop: 4 }]}>Historique</Text>
+      {!history.length ? (
+        <Card style={{ alignItems: 'center', gap: 8, paddingVertical: 22 }}>
+          <Icon name="shard" size={26} color={T.tx3} />
+          <Text style={[type.sub, { textAlign: 'center' }]}>Rien pour l’instant. Chaque lanterne allumée, chaque défi du soir et chaque succès apparaîtront ici.</Text>
+        </Card>
+      ) : null}
       {history.length ? (
         <Card style={{ paddingVertical: 4 }}>
           {history.map((h, i) => (

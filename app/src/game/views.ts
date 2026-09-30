@@ -66,6 +66,16 @@ export function unlockText(d: District, total: number, letters: number): string 
   return parts.length ? `Il manque encore ${parts.join(' et ')}.` : '';
 }
 
+const MASCULINE = new Set(['Scriptorium', 'Bassin aux Nénuphars', 'Palmarium', 'Pont des Épices', 'Quai des Lampions', 'Foyer']);
+const PLURAL = new Set(['Coulisses']);
+/** « à la Tour du Carillon », « au Foyer », « à l’Orangerie », « aux Coulisses ». */
+export function atPlace(name: string): string {
+  if (/^(Le|La|Les|L’) /.test(name) || name.startsWith('L’')) return `à ${name.replace(/^Le /, 'le ').replace(/^La /, 'la ').replace(/^Les /, 'les ').replace(/^L’/, 'l’')}`.replace(/^à le /, 'au ').replace(/^à les /, 'aux ');
+  if (/^[AEIOUÉÈHaeiouéè]/.test(name)) return `à l’${name}`;
+  if (PLURAL.has(name)) return `aux ${name}`;
+  return MASCULINE.has(name) ? `au ${name}` : `à la ${name}`;
+}
+
 export interface BuildingRow { building: Building; index: number; name: string; open: boolean; lit: number; total: number; lockText: string; complete: boolean }
 
 export function buildingRows(p: Progression, s: GameState, d: District): BuildingRow[] {
@@ -76,7 +86,7 @@ export function buildingRows(p: Progression, s: GameState, d: District): Buildin
     const prev = i > 0 ? buildingName(d, i - 1) : '';
     return {
       building: b, index: i, name: buildingName(d, i), open, lit, total: all.length, complete: lit === all.length,
-      lockText: !unlocked ? unlockText(d, p.totalLights(s), p.letters(s)) : open ? '' : `Allume ${p.rules.previousBuildingLights} lanternes à ${prev}`,
+      lockText: !unlocked ? unlockText(d, p.totalLights(s), p.letters(s)) : open ? '' : `Allume ${p.rules.previousBuildingLights} lanternes ${atPlace(prev)}`,
     };
   });
 }
@@ -92,12 +102,12 @@ export function roomRows(p: Progression, s: GameState, d: District, bi: number, 
     return {
       room: r, index: ri, label: b.rooms.length === 1 ? roomName(d, bi, ri) : `Salle ${ri + 1}`, lit, total: r.lanterns.length, key: false,
       state: !open ? 'locked' : lit === r.lanterns.length ? 'done' : isCurrent ? 'current' : 'open',
-      lockText: open || !prev ? '' : `${lightsToOpenNextRoom(prev.lanterns.length, p.rules)} lanternes en Salle ${ri}`,
+      lockText: open || !prev ? '' : `Allume ${lightsToOpenNextRoom(prev.lanterns.length, p.rules)} lanternes en Salle ${ri}`,
     };
   });
   if (b.keystone) {
     const open = p.isKeystoneOpen(b, s), lit = s.solved.has(b.keystone.puzzle) ? 1 : 0;
-    rows.push({ room: null, index: rows.length, label: 'Lanterne-clé', lit, total: 1, key: true, state: !open ? 'locked' : lit ? 'done' : 'open', lockText: open ? '' : `${Math.min(p.rules.keystoneLights, regularLanterns(b).length)} lanternes dans le bâtiment` });
+    rows.push({ room: null, index: rows.length, label: 'Lanterne-clé', lit, total: 1, key: true, state: !open ? 'locked' : lit ? 'done' : 'open', lockText: open ? '' : `Allume ${Math.min(p.rules.keystoneLights, regularLanterns(b).length)} lanternes dans le bâtiment` });
   }
   return rows;
 }

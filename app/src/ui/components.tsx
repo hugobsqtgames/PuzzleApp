@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle,
 } from 'react-native';
@@ -178,12 +178,24 @@ export function Sheet({ visible, onClose, children }: { visible: boolean; onClos
 }
 
 export function Toast({ text, icon = 'moonI' }: { text: string | null; icon?: string }) {
-  if (!text) return null;
+  // Keeps the last text while sliding out, so the card never empties mid-animation.
+  const [shown, setShown] = useState<{ text: string; icon: string } | null>(null);
+  const v = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (text) {
+      setShown({ text, icon });
+      v.setValue(0);
+      Animated.spring(v, { toValue: 1, friction: 8, tension: 90, useNativeDriver: true }).start();
+    } else {
+      Animated.timing(v, { toValue: 0, duration: 180, easing: Easing.in(Easing.quad), useNativeDriver: true }).start(({ finished }) => { if (finished) setShown(null); });
+    }
+  }, [text, icon, v]);
+  if (!shown) return null;
   return (
-    <View style={s.toast} accessibilityLiveRegion="polite" pointerEvents="none">
-      <Icon name={icon} size={20} color={T.moon} />
-      <Text style={{ color: T.tx, fontSize: 15, flex: 1 }}>{text}</Text>
-    </View>
+    <Animated.View style={[s.toast, { opacity: v, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [-16, 0] }) }] }]} accessibilityLiveRegion="polite" pointerEvents="none">
+      <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(143,211,224,0.1)', alignItems: 'center', justifyContent: 'center' }}><Icon name={shown.icon} size={18} color={T.moon} /></View>
+      <Text style={{ color: T.tx, fontSize: 15, flex: 1, lineHeight: 20 }}>{shown.text}</Text>
+    </Animated.View>
   );
 }
 
@@ -195,7 +207,7 @@ export function ToggleRow({ icon, label, value, onChange, sub }: { icon: string;
         <Text style={type.body}>{label}</Text>
         {sub ? <Text style={type.foot}>{sub}</Text> : null}
       </View>
-      <Switch accessibilityLabel={label} value={value} onValueChange={onChange} trackColor={{ false: T.line, true: T.amber }} thumbColor={T.tx} />
+      <Switch accessibilityLabel={label} value={value} onValueChange={onChange} trackColor={{ false: T.line, true: T.amber }} thumbColor={T.tx} {...({ activeThumbColor: T.tx } as object)} />
     </View>
   );
 }
@@ -221,5 +233,5 @@ export const s = StyleSheet.create({
   sheetBackdrop: { flex: 1, backgroundColor: 'rgba(5,6,15,0.6)' },
   sheet: { backgroundColor: T.s2, borderTopLeftRadius: R.xl, borderTopRightRadius: R.xl, paddingTop: 10, paddingHorizontal: 20, paddingBottom: 34 },
   grab: { width: 40, height: 5, borderRadius: 3, backgroundColor: T.line, alignSelf: 'center', marginBottom: 14 },
-  toast: { position: 'absolute', left: 16, right: 16, top: 58, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, borderRadius: R.m, paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', gap: 10, alignItems: 'center', zIndex: 40 },
+  toast: { position: 'absolute', left: 16, right: 16, top: 58, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, borderRadius: R.m, paddingVertical: 10, paddingHorizontal: 12, flexDirection: 'row', gap: 10, alignItems: 'center', zIndex: 40, shadowColor: '#000', shadowOpacity: 0.45, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
 });

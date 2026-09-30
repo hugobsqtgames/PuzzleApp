@@ -20,8 +20,10 @@ export interface Profile {
   durations: number[][];
   /** Shard history for the Éclats screen (last 30). */
   history: { label: string; amount: number; at: string }[];
+  /** Rooms whose object the player has found by searching the lit room. */
+  picked: string[];
 }
-export const newProfile = (): Profile => ({ murmures: 0, oops: 0, thrifty: 0, catchUps: 0, hatDrops: 0, themes: [], visited: [], durations: [[], [], [], [], [], []], history: [] });
+export const newProfile = (): Profile => ({ murmures: 0, oops: 0, thrifty: 0, catchUps: 0, hatDrops: 0, themes: [], visited: [], durations: [[], [], [], [], [], []], history: [], picked: [] });
 
 export interface Achievement { id: string; name: string; description: string; reward: number; hidden?: boolean; progress: (c: Ctx) => [number, number] }
 interface Ctx { s: GameState; p: Progression; profile: Profile; solvedByFamily: Record<string, Lantern[]> }

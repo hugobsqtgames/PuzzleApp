@@ -4,6 +4,7 @@
  * SaveStore (atomic, backed up, checksummed). The state is always changed
  * before any animation, so leaving the app mid-celebration loses nothing.
  */
+import { AppState } from 'react-native';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 
@@ -69,6 +70,8 @@ interface Store {
   completeOnboarding(): void;
   markSeen(key: string): void;
   noteProfile(patch: (p: Profile) => Profile): void;
+  /** The player found the room's object in the lit scene. */
+  pickObject(roomId: string): void;
   play(event: SoundEvent): void;
   enterPlace(place: Parameters<SoundEngine['enter']>[0]): void;
   haptic(kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium'): void;
@@ -97,6 +100,7 @@ function decodeSide(text: string): { settings: Settings; profile: Profile } {
       murmures: n(p.murmures), oops: n(p.oops), thrifty: n(p.thrifty), catchUps: n(p.catchUps), hatDrops: n(p.hatDrops),
       themes: strings(p.themes), visited: strings(p.visited),
       durations: Array.isArray(p.durations) && p.durations.length === 6 ? p.durations.map((d) => (Array.isArray(d) ? d.filter((x) => typeof x === 'number' && x > 0 && x < 86400).slice(-100) : [])) : newProfile().durations,
+      picked: Array.isArray(p.picked) ? p.picked.filter((x): x is string => typeof x === 'string').slice(0, 200) : [],
       history: Array.isArray(p.history) ? p.history.filter((h): h is Profile['history'][number] => !!h && typeof h.label === 'string' && typeof h.amount === 'number' && typeof h.at === 'string').slice(-30) : [],
     };
   } catch { /* defaults */ }
@@ -187,11 +191,19 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     void writeSide(settingsRef.current, next);
   }, [writeSide]);
 
-  const showToast = useCallback((text: string, icon?: string) => {
-    setToast({ text, icon });
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 2800);
+  // Toasts are queued: two messages never overwrite each other.
+  const toastQueue = useRef<{ text: string; icon?: string }[]>([]);
+  const nextToast = useCallback(() => {
+    const t = toastQueue.current.shift() ?? null;
+    setToast(t);
+    toastTimer.current = t ? setTimeout(nextToast, 2600 + Math.min(1400, t.text.length * 18)) : null;
   }, []);
+  const showToast = useCallback((text: string, icon?: string) => {
+    if (toastQueue.current.some((t) => t.text === text)) return;
+    toastQueue.current.push({ text, icon });
+    if (!toastTimer.current) nextToast();
+  }, [nextToast]);
+  useEffect(() => () => { if (toastTimer.current) clearTimeout(toastTimer.current); }, []);
 
   /** Credits newly completed achievements (once each). Returns their names. */
   const creditAchievements = useCallback((s: GameState, p: Profile): string[] => {
@@ -238,6 +250,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       commit(next);
     }
   }, [commit]);
+
+  // Leaving the app mid-puzzle (home button, call, app killed later) keeps the board.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (st) => { if (st !== 'active') leaveSession(); });
+    return () => sub.remove();
+  }, [leaveSession]);
 
   const finishSession = useCallback((s: Session): Result | null => {
     if (s.solved) return null;
@@ -366,6 +384,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (names.length) { commit(st); names.forEach((n) => showToast(`Succès : ${n}`, 'star')); }
   }, [commit, commitProfile, creditAchievements, showToast]);
 
+  const pickObject = useCallback((roomId: string) => {
+    if (profileRef.current.picked.includes(roomId)) return;
+    commitProfile({ ...profileRef.current, picked: [...profileRef.current.picked, roomId] });
+  }, [commitProfile]);
+
   const enterPlace = useCallback((place: Parameters<SoundEngine['enter']>[0]) => {
     sound.enter(place);
     if (settingsRef.current.music && !profileRef.current.themes.includes(place)) {
@@ -397,9 +420,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<Store>(() => ({
     ready, readOnly, state, engine, settings, profile, session, result, toast, today,
     showToast, openLantern, openDaily, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
-    completeOnboarding, markSeen, noteProfile, play: (e) => sound.play(e), enterPlace, haptic, resetProgress, exportProgress, importProgress,
+    completeOnboarding, markSeen, noteProfile, pickObject, play: (e) => sound.play(e), enterPlace, haptic, resetProgress, exportProgress, importProgress,
   }), [ready, readOnly, state, settings, profile, session, result, toast, today, showToast, openLantern, openDaily, updateSession, leaveSession, finishSession,
-    buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
+    buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
