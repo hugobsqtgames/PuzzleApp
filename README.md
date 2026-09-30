@@ -16,15 +16,26 @@ npm run typecheck
 npx expo start      # puis scanner le QR code avec Expo Go sur le téléphone
 ```
 
-Contenu de l'app : les 12 familles de puzzles (Interrupteurs, Cadenas, Lampes, Engrenages, Suites, Balances, Motifs, Menteurs, Fil, Miroirs, Enquêtes, Marqueterie), les 7 quartiers de Vesper et le Grenier (1000 lanternes, contenu généré à l'avance par `tools/forge`), le défi du soir jusqu'à fin 2028 (puis généré sur l'appareil), les indices, l'annulation, la pause, la réussite, les objets, habitants, gardiens et lettres, le carnet (succès, statistiques, Vesper), les éclats et la personnalisation de Nilo, les réglages, l'introduction et le tutoriel, le son (effets et ambiances, rendus depuis la maquette par `tools/audio`), les rappels locaux. La progression est sauvegardée sur l'appareil.
+Contenu de l'app :
 
-Limites actuelles : français seulement ; toutes les salles réutilisent le même décor teinté ; les lanternes-clés sont des puzzles générés, pas des énigmes écrites à la main ; la police des titres est Georgia (système).
+- **17 familles de puzzles** pour les lanternes : Interrupteurs, Cadenas, Lampes, Engrenages, Suites, Balances, Motifs, Menteurs, Fil, Miroirs, Enquêtes, Marqueterie, Carillon (mélodie à rejouer), Vitraux (filtres de couleur à déduire), Différences, Étagère (rangement par indices), Ombres (rotation sans retournement). Plus le **Sceau** des lanternes-clés : un code fait des chiffres cachés dans le décor des salles du bâtiment.
+- **101 salles, toutes dessinées différemment** (`app/src/ui/scenes/`) : 23 architectures, une centaine d'accessoires, une courte histoire par salle ; le décor s'éclaire à mesure que ses lanternes s'allument, puis révèle un chiffre et un objet caché à chercher soi-même.
+- Les 7 quartiers de Vesper et le Grenier : 1000 lanternes générées et vérifiées à l'avance par `tools/forge`, le défi du soir jusqu'à fin 2028 (puis généré sur l'appareil).
+- **Nilo vivant** : calques animés (respiration, clignements, regards, oreilles, queue, flamme), humeurs et réactions au jeu et au toucher ; respecte « Réduire les animations ».
+- Indices, annulation, pause, réussite, objets, habitants, gardiens et lettres, carnet (objets, succès, statistiques, Vesper), éclats et personnalisation de Nilo, réglages, introduction et tutoriel, son (effets, cloches et ambiances rendus par `tools/audio`), rappels locaux. La progression est sauvegardée sur l'appareil.
+- Sur iPad, les écrans gardent une colonne centrée de 600 pt.
+
+Images App Store : `store/iphone-6.9/` et `store/ipad-13/`, régénérables avec [`tools/store`](tools/store/README.md).
+
+Qualité : `npm test` (226 tests : puzzles, solution unique, progression, sauvegarde, scènes sans zones tactiles qui se chevauchent), `npm run typecheck`, `npx expo lint`, `npx expo-doctor`.
+
+Limites actuelles : français seulement ; la police des titres est Georgia (système) ; l'identifiant `app.lampion.game` est à remplacer par le vôtre avant publication ; l'app a été testée sur le build web et par export natif, **pas encore sur un vrai iPhone**.
 
 | Document | Contenu |
 |---|---|
 | [PRODUCT_DISCOVERY.md](PRODUCT_DISCOVERY.md) | Vision, marché, concept, différenciation, naming, risques, roadmap |
 | [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Identité de marque, direction artistique « Encre & Lueur », tokens, composants, Nilo, icône |
-| [GAME_DESIGN.md](GAME_DESIGN.md) | Monde, déblocages, difficulté, 12 familles de puzzles, indices, économie, défi du jour, succès |
+| [GAME_DESIGN.md](GAME_DESIGN.md) | Monde, déblocages, difficulté, familles de puzzles (conception d'origine : 12), indices, économie, défi du jour, succès |
 | [TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md) | Modules Swift, moteur de puzzles, pipeline de contenu, sauvegarde, tests, confidentialité |
 | [WIREFRAMES.md](WIREFRAMES.md) | Les 24 écrans, leurs états et la navigation |
 | [VALIDATION.md](VALIDATION.md) | Revue critique de la conception et corrections appliquées |

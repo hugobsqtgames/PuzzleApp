@@ -2,7 +2,8 @@
 // resident who wakes up, the district keeper, a letter of the Allumeur, a
 // new district.
 import React, { useEffect, useMemo } from 'react';
-import { Text, View, useWindowDimensions } from 'react-native';
+import { Text, View } from 'react-native';
+import { useContentSize } from '../ui/layout';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
@@ -24,7 +25,7 @@ const idOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step 
 export default function Found() {
   const { step, object: objectParam } = useLocalSearchParams<{ step?: string; object?: string }>();
   const { state, engine, profile, result, play, equip, openLantern } = useStore();
-  const { width } = useWindowDimensions();
+  const { width } = useContentSize();
   const steps = useMemo(() => (objectParam ? [`object:${objectParam}`] : followUps(result)), [result, objectParam]);
   const i = Math.max(0, Number(step ?? 0));
   const [kind, id] = (steps[i] ?? '').split(':');

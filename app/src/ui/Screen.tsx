@@ -4,18 +4,19 @@ import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { T } from './theme';
+import { MAX_W } from './layout';
 import { Toast } from './components';
 import { useStore } from '../game/store';
 import type { AmbiencePlace } from '../core/audio/director';
 
-/** Night background, safe areas, 16 pt gutters, the shared toast, and the ambience of the place. */
+/** Night background, safe areas, 16 pt gutters, a centred column on tablets, the shared toast, and the ambience of the place. */
 export function Screen({ children, scroll = false, background = T.bg, padded = true, style, place }: {
   children: React.ReactNode; scroll?: boolean; background?: string; padded?: boolean; style?: StyleProp<ViewStyle>; place?: AmbiencePlace;
 }) {
   const insets = useSafeAreaInsets();
   const { toast, enterPlace } = useStore();
   useFocusEffect(useCallback(() => { if (place) enterPlace(place); }, [place, enterPlace]));
-  const pad: ViewStyle = { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 12, paddingHorizontal: padded ? 16 : 0 };
+  const pad: ViewStyle = { width: '100%', maxWidth: MAX_W, alignSelf: 'center', paddingTop: insets.top + 8, paddingBottom: insets.bottom + 12, paddingHorizontal: padded ? 16 : 0 };
   return (
     <View style={{ flex: 1, backgroundColor: background }}>
       {scroll ? (

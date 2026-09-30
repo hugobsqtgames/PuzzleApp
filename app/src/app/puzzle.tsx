@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, Pressable, ScrollView, Text, View } from 'react-native';
+import { useContentSize } from '../ui/layout';
 import { useAnimatedValue } from '../ui/motion';
 import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
@@ -24,7 +25,7 @@ const HINT_ICONS = ['whisper', 'hint', 'light', 'star'];
 export default function PuzzleScreen() {
   const store = useStore();
   const { state, engine, session, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
-  const { width } = useWindowDimensions();
+  const { width } = useContentSize();
   const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | null>(null);
   const [offered, setOffered] = useState(false);
   const [celebrating, setCelebrating] = useState(false);

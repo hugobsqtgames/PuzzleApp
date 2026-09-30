@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { useContentSize } from '../../ui/layout';
 import { goBack } from '../../ui/nav';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
@@ -15,7 +16,7 @@ import { districtLanterns } from '../../core/game/world';
 export default function DistrictScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { state, engine, showToast, play } = useStore();
-  const { width } = useWindowDimensions();
+  const { width } = useContentSize();
   const p = engine.progression;
   const d = districtById(id ?? 'phare');
   const info = infoOf(d);

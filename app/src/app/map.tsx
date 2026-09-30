@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useContentSize } from '../ui/layout';
 import { goBack } from '../ui/nav';
 import { router, useFocusEffect } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
@@ -15,7 +16,7 @@ import { look } from '../game/rewards';
 export default function MapScreen() {
   const { state, engine, showToast, toast, play, enterPlace } = useStore();
   useFocusEffect(useCallback(() => { enterPlace('night'); }, [enterPlace]));
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useContentSize();
   const insets = useSafeAreaInsets();
   const p = engine.progression;
   const k = width / MAP_W;
@@ -43,7 +44,7 @@ export default function MapScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: '#080914' }}>
       <ScrollView ref={scroller} onContentSizeChange={() => { if (!scrolled.current) { scrolled.current = true; scroller.current?.scrollTo({ y: startY, animated: false }); } }} contentOffset={{ x: 0, y: startY }} showsVerticalScrollIndicator={false}>
-        <View style={{ width, height: MAP_H * k }}>
+        <View style={{ width, height: MAP_H * k, alignSelf: 'center' }}>
           <SvgXml xml={xml} width={width} height={MAP_H * k} />
           {views.map((d) => {
             const [cx, cy, sc] = MAP_POS[d.id];

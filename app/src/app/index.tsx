@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { useContentSize } from '../ui/layout';
 import { Redirect, router } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
@@ -19,7 +20,7 @@ export const DAILY_UNLOCK_LIGHTS = 6;
 
 export default function Home() {
   const { state, engine, openLantern, today } = useStore();
-  const { width } = useWindowDimensions();
+  const { width } = useContentSize();
   const reduce = useReducedMotion();
   const p = engine.progression;
   const winW = Math.min(width, 600) - 32;

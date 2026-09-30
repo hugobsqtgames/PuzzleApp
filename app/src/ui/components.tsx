@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle } from 'react-native';
+import { Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle, useWindowDimensions } from 'react-native';
 import { useAnimatedValue } from './motion';
 import { SvgXml } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { T, R, type } from './theme';
 import { iconXml, niloXml, Mood, Look } from './art';
 import { NiloLive } from './NiloLive';
+import { MAX_W } from './layout';
 import { TIER_NAMES as TIERS } from '../game/catalog';
 
 let hapticsOn = true;
@@ -198,6 +199,7 @@ export function Crumb({ parent, current }: { parent: string; current: string }) 
 export function Sheet({ visible, onClose, children }: { visible: boolean; onClose: () => void; children: React.ReactNode }) {
   // Stays mounted while it slides away; the backdrop fades on its own.
   const [shown, setShown] = useState(visible);
+  const side = Math.max(0, (useWindowDimensions().width - MAX_W) / 2);
   if (visible && !shown) setShown(true);
   const v = useAnimatedValue(0);
   // A double tap that opened the sheet must not close it at once.
@@ -217,7 +219,7 @@ export function Sheet({ visible, onClose, children }: { visible: boolean; onClos
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: v }]}>
         <Pressable style={s.sheetBackdrop} onPress={closeFromBackdrop} accessibilityLabel="Fermer" />
       </Animated.View>
-      <Animated.View style={[s.sheet, { transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }] }]}>
+      <Animated.View style={[s.sheet, { left: side, right: side, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }] }]}>
         <View style={s.grab} />
         {children}
       </Animated.View>
