@@ -8,19 +8,19 @@ export const MARCHE_THEATRE: Record<string, RoomSpec> = {
   // ---------------------------------------------------------------- Pont des Épices
   'marche.b1.r1': { // Les Étals
     arch: 'deck', glow: '#E8C07A',
-    props: [[Q.lampions, 0, 90, 1, { w: 390, c: 1 }], [Q.stall, 100, 470, 1.15, { c: 1 }], [Q.stall, 295, 470, 1.15, { c: 4 }], [P.breadBasket, 195, 505, 1.2], [P.barrel, 40, 510, 0.9], [P.crate, 360, 510, 0.9], [Q.coins, 250, 505, 0.8]],
+    props: [[Q.lampions, 0, 90, 1, { w: 390, c: 1 }], [Q.stall, 100, 470, 1.15, { c: 1 }], [Q.stall, 295, 470, 1.15, { c: 4 }], [P.breadBasket, 195, 505, 1.2], [P.barrel, 40, 510, 0.9], [P.crate, 360, 510, 0.9], [Q.coins, 250, 505, 0.8], [Q.buoy, 90, 520, 0.9]],
     hide: [150, 430], secret: [195, 250],
     intro: 'Les étals sentent la cannelle et le poivre de lune. Aucun marchand, mais tout est rangé.',
   },
   'marche.b1.r2': { // Les Balances
     arch: 'deck', glow: '#E8C07A',
-    props: [[Q.lampions, 0, 70, 1, { w: 390, c: 3 }], [Q.scaleStand, 195, 470, 1.3], [Q.weights, 90, 505, 1.2], [Q.coins, 320, 505], [P.crate, 330, 450, 0.8], [Q.stall, 322, 470, 0.8, { c: 6 }], [P.hang, 195, 90], [Q.buoy, 250, 440, 0.8], [P.sack, 40, 440, 0.8]],
+    props: [[Q.lampions, 0, 70, 1, { w: 390, c: 3 }], [Q.scaleStand, 195, 470, 1.3], [Q.weights, 90, 505, 1.2], [Q.coins, 320, 505], [P.crate, 330, 450, 0.8], [Q.stall, 322, 470, 0.8, { c: 6 }], [P.hang, 195, 90], [Q.buoy, 250, 440, 0.8], [P.sack, 40, 440, 0.8], [Q.buoy, 98, 520, 0.9]],
     hide: [260, 505], secret: [195, 200],
     intro: 'Deux plateaux, un seul équilibre. Sur l’un, quelqu’un a laissé un poids de cuivre.',
   },
   'marche.b1.r3': { // Les Sacs
     arch: 'deck', glow: '#E8C07A',
-    props: [[Q.lampions, 0, 80, 1, { w: 390, c: 5 }], [Q.spiceSacks, 110, 500, 1.2], [Q.spiceSacks, 290, 490, 1, { f: true }], [P.sack, 200, 510, 1.1, { c: 2 }], [P.barrel, 360, 430, 0.9], [P.crate, 40, 430, 0.9], [Q.scaleStand, 195, 400, 0.6]],
+    props: [[Q.lampions, 0, 80, 1, { w: 390, c: 5 }], [Q.spiceSacks, 110, 500, 1.2], [Q.spiceSacks, 290, 490, 1, { f: true }], [P.sack, 200, 510, 1.1, { c: 2 }], [P.barrel, 360, 430, 0.9], [P.crate, 40, 430, 0.9], [Q.scaleStand, 195, 400, 0.6], [Q.buoy, 34, 520, 0.9], [Q.buoy, 90, 520, 0.9]],
     hide: [60, 510], secret: [300, 250],
     intro: 'Dans un sac, du poivre qui brille un peu. Le marchand l’appelait « poivre de lune ».',
   },
@@ -34,19 +34,19 @@ export const MARCHE_THEATRE: Record<string, RoomSpec> = {
   // ---------------------------------------------------------------- Barque du Changeur
   'marche.b2.r1': { // La Proue
     arch: 'deck', ao: { wx: 90 }, glow: '#E8C07A',
-    props: [[Q.figurehead, 260, 470, 1.2], [Q.mast, 90, 500, 1], [Q.ropeCoil, 180, 505], [Q.bollard, 340, 505], [Q.lampions, 90, 110, 1, { w: 300, c: 4 }], [Q.buoy, 40, 505, 0.9], [P.barrel, 350, 440, 0.8], [P.crate, 130, 440, 0.7]],
+    props: [[Q.figurehead, 260, 470, 1.2], [Q.mast, 90, 500, 1], [Q.ropeCoil, 180, 505], [Q.bollard, 340, 505], [Q.lampions, 90, 110, 1, { w: 300, c: 4 }], [Q.buoy, 40, 505, 0.9], [P.barrel, 350, 440, 0.8], [P.crate, 130, 440, 0.7], [Q.buoy, 98, 520, 0.9], [Q.buoy, 234, 520, 0.9]],
     hide: [300, 320], secret: [195, 360],
     intro: 'La figure de proue regarde toujours vers l’autre rive. On dit qu’elle sait nager.',
   },
   'marche.b2.r2': { // Le Comptoir
     arch: 'hold', ao: { win: 'porthole', wx: 300, wy: 150 }, glow: '#F4B45E',
-    props: [[Q.counter, 180, 490, 1.2, { w: 240 }], [Q.abacus, 110, 382, 1.2], [Q.coins, 220, 382, 1.1], [Q.ledger, 290, 386], [P.hang, 180, 200], [P.shelf, 90, 230, 1, { c: 3 }], [P.chest, 350, 510, 0.8]],
+    props: [[Q.counter, 180, 490, 1.2, { w: 240 }], [Q.abacus, 110, 382, 1.2], [Q.coins, 220, 382, 1.1], [Q.ledger, 290, 386], [P.hang, 180, 200], [P.shelf, 90, 230, 1, { c: 3 }], [P.chest, 350, 510, 0.8], [P.candle, 30, 520, 0.9]],
     hide: [60, 500], secret: [195, 290],
     intro: 'Le changeur échangeait tout : une pièce contre une histoire, une histoire contre une idée.',
   },
   'marche.b2.r3': { // La Cale
     arch: 'hold', ao: { win: 'none' }, glow: '#F4B45E',
-    props: [[P.barrel, 70, 490, 1.2], [P.barrel, 130, 500, 1], [P.crate, 280, 495, 1.3], [P.crate, 290, 438, 1], [P.chest, 195, 510, 1], [P.sack, 355, 505, 1, { c: 0 }], [P.hang, 195, 200], [Q.ropeCoil, 40, 400, 0.8], [P.oilCan, 350, 430]],
+    props: [[P.barrel, 70, 490, 1.2], [P.barrel, 130, 500, 1], [P.crate, 280, 495, 1.3], [P.crate, 290, 438, 1], [P.chest, 195, 510, 1], [P.sack, 355, 505, 1, { c: 0 }], [P.hang, 195, 200], [Q.ropeCoil, 40, 400, 0.8], [P.oilCan, 350, 430], [P.candle, 30, 520, 0.9]],
     hide: [220, 440], secret: [100, 240],
     intro: 'Il fait sombre dans la cale. Un coffret de sel tinte quand la barque tangue.',
   },
@@ -112,7 +112,7 @@ export const MARCHE_THEATRE: Record<string, RoomSpec> = {
   // ---------------------------------------------------------------- Foyer
   'theatre.b1.r1': { // Le Vestiaire
     arch: 'foyer', glow: '#F4B45E',
-    props: [[Q.counter, 195, 500, 1.1, { w: 260, v: 1 }], [S.coatRack, 60, 420, 1], [S.coatRack, 330, 420, 1, { c: 2 }], [P.coatHook, 195, 230, 1.3], [P.hang, 195, 110], [S.mask, 110, 405], [P.candle, 290, 405], [P.plant, 360, 520, 0.8]],
+    props: [[Q.counter, 195, 500, 1.1, { w: 260, v: 1 }], [S.coatRack, 60, 420, 1], [S.coatRack, 330, 420, 1, { c: 2 }], [P.coatHook, 195, 230, 1.3], [P.hang, 195, 110], [S.mask, 110, 405], [P.candle, 290, 405], [P.plant, 360, 520, 0.8], [P.candle, 30, 520, 0.9]],
     hide: [250, 405], secret: [195, 330],
     intro: 'Tous les manteaux attendent leurs propriétaires. Le ticket numéro 0 n’a jamais été rendu.',
   },
@@ -124,7 +124,7 @@ export const MARCHE_THEATRE: Record<string, RoomSpec> = {
   },
   'theatre.b1.r3': { // Le Bar
     arch: 'foyer', ao: { tint: '#4a2a3a' }, glow: '#E8C07A',
-    props: [[S.barCounter, 195, 505, 1.1], [S.bottleShelf, 195, 230, 1.2], [P.stool, 60, 505], [P.stool, 330, 505], [P.hang, 100, 110], [P.hang, 290, 110]],
+    props: [[S.barCounter, 195, 505, 1.1], [S.bottleShelf, 195, 230, 1.2], [P.stool, 60, 505], [P.stool, 330, 505], [P.hang, 100, 110], [P.hang, 290, 110], [P.candle, 120, 520, 0.9]],
     hide: [300, 360], secret: [195, 140],
     intro: 'Les verres sont rangés, sauf un. Un verre de cristal, encore posé au bout du comptoir.',
   },
@@ -170,19 +170,19 @@ export const MARCHE_THEATRE: Record<string, RoomSpec> = {
   },
   'theatre.b3.r2': { // Le Miroir
     arch: 'dressing', glow: '#FFE6B0',
-    props: [[S.vanity, 195, 490, 1.2], [P.stool, 195, 510, 0.9], [S.coatRack, 50, 460, 0.9], [P.plant, 350, 510], [S.mask, 340, 250], [S.portrait, 50, 250]],
+    props: [[S.vanity, 195, 490, 1.2], [P.stool, 195, 510, 0.9], [S.coatRack, 50, 460, 0.9], [P.plant, 350, 510], [S.mask, 340, 250], [S.portrait, 50, 250], [P.candle, 30, 520, 0.9]],
     hide: [150, 380], secret: [40, 150],
     intro: 'Le miroir aux ampoules. Les comédiens s’y maquillaient en se racontant qui ils allaient être.',
   },
   'theatre.b3.r3': { // La Malle
     arch: 'dressing', ao: { tint: '#3a2c44' }, glow: '#E7A98B',
-    props: [[P.chest, 195, 500, 1.6, { v: 1 }], [S.mask, 150, 380, 1.1], [S.mask, 240, 380, 0.9], [S.coatRack, 50, 470], [P.hang, 195, 130], [P.candle, 340, 510], [S.portrait, 330, 230], [P.shelf, 80, 250, 1, { v: 2 }]],
+    props: [[P.chest, 195, 500, 1.6, { v: 1 }], [S.mask, 150, 380, 1.1], [S.mask, 240, 380, 0.9], [S.coatRack, 50, 470], [P.hang, 195, 130], [P.candle, 340, 510], [S.portrait, 330, 230], [P.shelf, 80, 250, 1, { v: 2 }], [P.candle, 34, 520, 0.9], [P.candle, 90, 520, 0.9]],
     hide: [90, 505], secret: [195, 250],
     intro: 'Une malle pleine de visages. Un seul masque n’en a pas : on peut y mettre le sien.',
   },
   'theatre.b3.r4': { // Le Recoin
     arch: 'dressing', ao: { win: 'tall', wx: 300, wy: 150 }, glow: '#F4B45E',
-    props: [[P.armchair, 110, 500, 1.2, { c: 5 }], [P.candle, 250, 505, 1.3], [P.bookStack, 330, 510], [P.shelf, 100, 250, 1, { v: 2 }], [P.hang, 195, 110], [S.coatRack, 340, 440, 0.8]],
+    props: [[P.armchair, 110, 500, 1.2, { c: 5 }], [P.candle, 250, 505, 1.3], [P.bookStack, 330, 510], [P.shelf, 100, 250, 1, { v: 2 }], [P.hang, 195, 110], [S.coatRack, 340, 440, 0.8], [P.candle, 30, 520, 0.9], [P.candle, 82, 520, 0.9]],
     hide: [60, 440], secret: [200, 300],
     intro: 'Un coin tranquille pour répéter à la bougie. La chandelle a brûlé jusqu’au dernier mot.',
   },
@@ -208,7 +208,7 @@ export const MARCHE_THEATRE: Record<string, RoomSpec> = {
   },
   'theatre.b4.r4': { // Le Plateau
     arch: 'stage', glow: '#EFE0C0',
-    props: [[S.shadowScreen, 195, 440, 1.2], [S.spotlight, 60, 510, 0.9], [S.footlights, 195, 500, 1], [P.candle, 340, 510], [P.hang, 195, 110]],
+    props: [[S.shadowScreen, 195, 440, 1.2], [S.spotlight, 60, 510, 0.9], [S.footlights, 195, 500, 1], [P.candle, 340, 510], [P.hang, 195, 110], [P.candle, 30, 520, 0.9]],
     hide: [320, 470], secret: [195, 250],
     intro: 'Derrière l’écran, les ombres chinoises attendaient leur entrée. L’une d’elles est restée.',
   },

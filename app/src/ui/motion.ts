@@ -1,6 +1,6 @@
 // Motion tokens (DESIGN_SYSTEM § motion) and the system "Reduce Motion" switch.
 import { useEffect, useState } from 'react';
-import { AccessibilityInfo, Easing } from 'react-native';
+import { AccessibilityInfo, Animated, Easing } from 'react-native';
 
 export const MOTION = {
   instant: 80,
@@ -26,5 +26,11 @@ export function useReducedMotion(): boolean {
     const sub = AccessibilityInfo.addEventListener?.('reduceMotionChanged', (x: boolean) => { reduced = x; setV(x); });
     return () => { alive = false; sub?.remove?.(); };
   }, []);
+  return v;
+}
+
+/** An Animated.Value created once (same as React Native's useAnimatedValue, which react-native-web lacks). */
+export function useAnimatedValue(initial: number): Animated.Value {
+  const [v] = useState(() => new Animated.Value(initial));
   return v;
 }

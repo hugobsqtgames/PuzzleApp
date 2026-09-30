@@ -112,7 +112,7 @@ export default function RoomScreen() {
   };
 
   return (
-    <Screen background={BG} padded={false} place={info.sound}>
+    <Screen background={BG} padded={false} place={info.sound} scroll style={{ flexGrow: 1, gap: 0 }}>
       <View style={{ paddingHorizontal: 16, gap: 6, zIndex: 2 }}>
         <BackButton label={searching && step !== undefined ? 'Plus tard' : buildingName(d, bi)} onPress={() => (searching && step !== undefined ? leaveSearch() : goBack())} />
         <Crumb parent={buildingName(d, bi)} current={lanterns.length === 16 ? 'Finale' : `Salle ${ri + 1}`} />
@@ -122,7 +122,7 @@ export default function RoomScreen() {
         {digitShown ? <Text style={[type.foot, { color: T.gold }]}>La lumière a fait apparaître un chiffre dans la salle. La lanterne-clé du bâtiment en aura besoin.</Text> : null}
       </View>
 
-      <View style={{ flex: 1, marginTop: -8, marginBottom: -8 }} onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
+      <View style={{ flex: 1, minHeight: 470, marginTop: -8, marginBottom: -8 }} onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
         {box.w > 0 ? (
           <RoomScene roomId={at.room.id} w={box.w} h={box.h} lanterns={lanternKeys} lit={lit} recommended={rec} justLit={justLit} open={open}
             object={object.name} objectFound={picked} digit={digitShown ? sealDigitOf(at.room.id) : null} glow={info.hue}

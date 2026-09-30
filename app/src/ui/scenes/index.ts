@@ -12,6 +12,22 @@ import { OBS_GRENIER } from './rooms-d';
 
 export { W as SCENE_W, H as SCENE_H };
 
+/** Touch area of a lantern, in points. */
+export const HIT_W = 46, HIT_H = 50;
+
+/** Scale and offset that show the scene as large as possible without cutting a lantern. */
+export function sceneFit(w: number, h: number) {
+  const cover = Math.max(w / W, h / H);
+  const k = Math.min(cover, w / 342, h / 470);
+  return { k, ox: (w - W * k) / 2, oy: (h - H * k) / 2 };
+}
+
+/** A lantern place on screen: always fully visible and easy to touch, whatever the phone's shape. */
+export function placeOnScreen<T extends { x: number; y: number }>(s: T, w: number, h: number): T {
+  const { k, ox, oy } = sceneFit(w, h);
+  return { ...s, x: Math.min(w - 28, Math.max(28, ox + s.x * k)), y: Math.min(h - 22, Math.max(34, oy + s.y * k)) };
+}
+
 export type Placed = [Prop, number, number, number?, PO?];
 
 export interface RoomSpec {
@@ -43,7 +59,7 @@ export function auditScenes(counts: Record<string, number>): string[] {
     const anchors = anchorsOf(spec, makeG(0, '#F4B45E', seedOf(id)));
     const sl = pickSlots(anchors, n, spec.slots);
     if (sl.length < n) out.push(`${id}: ${sl.length}/${n} anchors`);
-    sl.forEach((a, i) => sl.slice(i + 1).forEach((b) => { if (Math.hypot(a.x - b.x, a.y - b.y) < 36) out.push(`${id}: « ${a.label} » and « ${b.label} » overlap`); }));
+    sl.forEach((a, i) => sl.slice(i + 1).forEach((b) => { if (!apart(a, b)) out.push(`${id}: « ${a.label} » and « ${b.label} » overlap`); }));
     sl.forEach((a) => { if (a.x < 24 || a.x > W - 24 || a.y < 48 || a.y > H - 40) out.push(`${id}: « ${a.label} » off screen (${a.x}, ${a.y})`); });
     const sp = spotsOf(id, n);
     for (const [what, pt] of [['objet caché', sp.hide], ['chiffre du sceau', sp.secret]] as const) {
@@ -67,13 +83,17 @@ function seedOf(id: string): number {
 }
 
 /** Every anchor of a room, in prop order. */
-function anchorsOf(spec: RoomSpec, g: G): Anchor[] {
+export function anchorsOf(spec: RoomSpec, g: G = makeG(0, '#F4B45E', 1)): Anchor[] {
   const out: Anchor[] = [];
   for (const [p, x, y, s, o] of [...spec.props, ...(spec.front ?? [])]) out.push(...p(g, x, y, s, o).a);
   return [...out, ...archAnchors(spec.arch, spec.ao)];
 }
 
-const MIN_GAP = 38;
+/** Two lantern places are never closer than one touch area (in scene units). */
+const apart = (a: [number, number] | { x: number; y: number }, b: [number, number] | { x: number; y: number }) => {
+  const ax = Array.isArray(a) ? a[0] : a.x, ay = Array.isArray(a) ? a[1] : a.y, bx = Array.isArray(b) ? b[0] : b.x, by = Array.isArray(b) ? b[1] : b.y;
+  return Math.abs(ax - bx) >= 49 || Math.abs(ay - by) >= 53;
+};
 
 /** Picks n lantern places: the listed ones, then the anchors farthest from those already taken. */
 export function pickSlots(anchors: Anchor[], n: number, wanted?: number[]): Slot[] {
@@ -82,7 +102,7 @@ export function pickSlots(anchors: Anchor[], n: number, wanted?: number[]): Slot
   const rest = anchors.filter((a) => !chosen.includes(a));
   while (chosen.length < n && rest.length) {
     // In prop order, the first anchor far enough from every chosen one.
-    const idx = rest.findIndex((a) => chosen.every((c) => Math.hypot(a[0] - c[0], a[1] - c[1]) >= MIN_GAP));
+    const idx = rest.findIndex((a) => chosen.every((c) => apart([a[0], a[1]], [c[0], c[1]])));
     if (idx < 0) break;
     chosen.push(rest.splice(idx, 1)[0]);
   }

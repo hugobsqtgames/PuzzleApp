@@ -8,7 +8,7 @@ export const OBS_GRENIER: Record<string, RoomSpec> = {
   // ---------------------------------------------------------------- Salle des Lentilles
   'obs.b1.r1': { // Le Polissoir
     arch: 'lab', ao: { wx: 300, wy: 150 }, glow: '#BFE6F0',
-    props: [[S.polishBench, 150, 480, 1.35], [P.shelf, 110, 250, 1.2, { w: 120, c: 3 }], [S.mirrorStand, 330, 505, 0.9], [P.stool, 260, 510], [P.hang, 150, 150], [P.candle, 60, 505], [P.bookStack, 40, 440, 0.8], [P.sconce, 40, 200], [S.developer, 230, 520, 0.8]],
+    props: [[S.polishBench, 150, 480, 1.35], [P.shelf, 110, 250, 1.2, { w: 120, c: 3 }], [S.mirrorStand, 330, 505, 0.9], [P.stool, 260, 510], [P.hang, 150, 150], [P.candle, 60, 505], [P.bookStack, 40, 440, 0.8], [P.sconce, 40, 200], [S.developer, 230, 520, 0.8], [P.candle, 114, 520, 0.9]],
     hide: [90, 395], secret: [300, 330],
     intro: 'On polissait ici les lentilles de l’Astronome. La plus parfaite n’a jamais quitté l’établi.',
   },
@@ -26,7 +26,7 @@ export const OBS_GRENIER: Record<string, RoomSpec> = {
   },
   'obs.b1.r4': { // Le Banc d’optique
     arch: 'lab', ao: { wx: 300, wy: 140 }, glow: '#BFE6F0',
-    props: [[S.opticalBench, 195, 490, 1], [P.shelf, 90, 230, 1.1, { c: 1 }], [P.stool, 60, 520], [P.candle, 340, 520], [P.hang, 195, 180], [S.starChart, 90, 330, 0.6], [S.celestialGlobe, 330, 432, 0.6], [P.sconce, 60, 440], [P.bookStack, 250, 525, 0.7]],
+    props: [[S.opticalBench, 195, 490, 1], [P.shelf, 90, 230, 1.1, { c: 1 }], [P.stool, 60, 520], [P.candle, 340, 520], [P.hang, 195, 180], [S.starChart, 90, 330, 0.6], [S.celestialGlobe, 330, 432, 0.6], [P.sconce, 60, 440], [P.bookStack, 250, 525, 0.7], [P.candle, 114, 520, 0.9]],
     hide: [200, 380], secret: [300, 330],
     intro: 'Sur le banc d’optique, un rayon a été capturé entre deux lentilles. Il tourne en rond, patiemment.',
   },
@@ -34,7 +34,7 @@ export const OBS_GRENIER: Record<string, RoomSpec> = {
   // ---------------------------------------------------------------- Coupole
   'obs.b2.r1': { // Le Télescope
     arch: 'dome', glow: '#8FB8F0',
-    props: [[S.bigTelescope, 210, 480, 1.1], [P.stool, 60, 510], [P.lectern, 340, 505, 0.9], [S.celestialGlobe, 110, 520, 0.7], [P.candle, 270, 520], [P.hang, 100, 250], [S.starChart, 300, 250, 0.6]],
+    props: [[S.bigTelescope, 210, 480, 1.1], [P.stool, 60, 510], [P.lectern, 340, 505, 0.9], [S.celestialGlobe, 110, 520, 0.7], [P.candle, 270, 520], [P.hang, 100, 250], [S.starChart, 300, 250, 0.6], [P.candle, 150, 520, 0.9], [P.candle, 210, 520, 0.9], [P.candle, 322, 520, 0.9], [P.sconce, 40, 170]],
     hide: [320, 410], secret: [80, 250],
     intro: 'Le grand télescope pointe vers une étoile qui n’est pas encore née.',
   },
@@ -46,7 +46,7 @@ export const OBS_GRENIER: Record<string, RoomSpec> = {
   },
   'obs.b2.r3': { // Le Mécanisme
     arch: 'dome', glow: '#D8B56A',
-    props: [[S.crank, 110, 380, 1.1], [P.gearWall, 290, 300, 1, { w: 60, c: 1 }], [P.gearWall, 330, 420, 1, { w: 30 }], [P.gearWall, 60, 250, 1, { w: 24 }], [P.oilCan, 195, 520], [P.toolBoard, 250, 180, 0.9], [P.stool, 300, 520], [P.candle, 40, 520]],
+    props: [[S.crank, 110, 380, 1.1], [P.gearWall, 290, 300, 1, { w: 60, c: 1 }], [P.gearWall, 330, 420, 1, { w: 30 }], [P.gearWall, 60, 250, 1, { w: 24 }], [P.oilCan, 195, 520], [P.toolBoard, 250, 180, 0.9], [P.stool, 300, 520], [P.candle, 40, 520], [P.candle, 98, 520, 0.9]],
     hide: [60, 500], secret: [195, 260],
     intro: 'Cette manivelle fait tourner toute la coupole. Il faut tourner quatre cents fois pour un tour.',
   },
@@ -86,7 +86,7 @@ export const OBS_GRENIER: Record<string, RoomSpec> = {
   // ---------------------------------------------------------------- Chambre Noire
   'obs.b4.r1': { // Le Sténopé
     arch: 'dark', glow: '#E8744A',
-    props: [[S.pinhole, 110, 460, 1.3], [P.table, 110, 490, 1.1, { w: 150 }], [S.plateRack, 320, 505, 0.8], [S.safelight, 250, 120], [P.stool, 220, 520], [S.clothesline, 20, 200, 1, { w: 350 }], [S.developer, 330, 432], [P.candle, 360, 520], [P.shelf, 100, 300, 1, { c: 5 }], [P.sconce, 30, 400]],
+    props: [[S.pinhole, 110, 460, 1.3], [P.table, 110, 490, 1.1, { w: 150 }], [S.plateRack, 320, 505, 0.8], [S.safelight, 250, 120], [P.stool, 220, 520], [S.clothesline, 20, 200, 1, { w: 350 }], [S.developer, 330, 432], [P.candle, 360, 520], [P.shelf, 100, 300, 1, { c: 5 }], [P.sconce, 30, 400], [P.candle, 30, 520, 0.9]],
     hide: [340, 330], secret: [195, 250],
     intro: 'Une boîte percée d’un trou d’épingle. Dedans, l’image de Vesper, la tête en bas.',
   },
@@ -98,7 +98,7 @@ export const OBS_GRENIER: Record<string, RoomSpec> = {
   },
   'obs.b4.r3': { // Le Bain
     arch: 'dark', glow: '#E8744A',
-    props: [[S.trays, 195, 490, 1.2], [S.safelight, 100, 120], [S.safelight, 290, 120], [S.developer, 195, 300, 1.2], [P.stool, 50, 520], [S.clothesline, 20, 190, 1, { w: 350 }], [P.candle, 340, 520], [P.shelf, 195, 310, 1.2, { w: 140, v: 2 }]],
+    props: [[S.trays, 195, 490, 1.2], [S.safelight, 100, 120], [S.safelight, 290, 120], [S.developer, 195, 300, 1.2], [P.stool, 50, 520], [S.clothesline, 20, 190, 1, { w: 350 }], [P.candle, 340, 520], [P.shelf, 195, 310, 1.2, { w: 140, v: 2 }], [P.candle, 106, 520, 0.9]],
     hide: [320, 520], secret: [195, 200],
     intro: 'Dans les bains, les images apparaissent lentement. Un flacon contient un peu de nuit.',
   },
@@ -113,7 +113,7 @@ export const OBS_GRENIER: Record<string, RoomSpec> = {
   'grenier.b1.r1': { // Le Grenier
     arch: 'attic', ao: { wx: 195, wy: 90 }, glow: '#FFD98E',
     props: [[P.rug, 195, 510, 1, { w: 260 }], [S.rockingChair, 90, 490, 1.2], [P.chest, 300, 505, 1.2], [S.letters, 300, 438], [S.oldLamp, 195, 520, 1.1], [P.bookStack, 360, 440, 0.8], [P.hang, 110, 190], [P.hang, 280, 190],
-      [P.coatHook, 195, 200], [S.portrait, 330, 300, 0.9], [P.wallClock, 60, 300, 0.8], [P.crate, 30, 520, 0.8], [P.candle, 240, 520], [P.shelf, 195, 290, 1, { v: 2 }], [P.barrel, 360, 520, 0.8], [P.stool, 150, 520, 0.8], [S.almanacs, 40, 432, 0.5], [P.oilCan, 250, 470]],
+      [P.coatHook, 195, 200], [S.portrait, 330, 300, 0.9], [P.wallClock, 60, 300, 0.8], [P.crate, 30, 520, 0.8], [P.candle, 240, 520], [P.shelf, 195, 290, 1, { v: 2 }], [P.barrel, 360, 520, 0.8], [P.stool, 150, 520, 0.8], [S.almanacs, 40, 432, 0.5], [P.oilCan, 250, 470], [P.candle, 82, 520, 0.9]],
     hide: [160, 330], secret: [195, 250],
     intro: 'Le grenier de l’Allumeur. Tout est resté comme au dernier soir : la lampe, les lettres, le fauteuil qui se balance encore.',
   },

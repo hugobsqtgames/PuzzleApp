@@ -1,7 +1,8 @@
 // Splash then onboarding (GAME_DESIGN § 14): 3 short pages, then the first
 // puzzle. No account, no permission, no choice to make.
 import React, { useEffect, useMemo, useState } from 'react';
-import { Animated, Pressable, Text, View, useWindowDimensions, useAnimatedValue } from 'react-native';
+import { Animated, Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { useAnimatedValue } from '../ui/motion';
 import { router } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 import { LinearGradientBackdrop } from '../ui/Backdrop';

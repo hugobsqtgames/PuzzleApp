@@ -9,7 +9,7 @@ export const HORLO_SERRE: Record<string, RoomSpec> = {
   'horlo.b1.r1': { // La Forge
     arch: 'workshop', ao: { win: 'none' }, glow: '#E8744A',
     props: [[P.forge, 110, 460, 1.3], [P.anvil, 270, 486, 1.3], [P.bellows, 200, 380, 1.1], [P.toolBoard, 300, 210, 1.1], [P.barrel, 360, 486, 0.9], [P.hang, 260, 120], [P.sconce, 40, 150, 1.2],
-      [Q.coins, 40, 510, 0.8], [P.hourglass, 230, 150, 1.1], [P.crate, 180, 510, 0.9]],
+      [Q.coins, 40, 510, 0.8], [P.hourglass, 230, 150, 1.1], [P.crate, 180, 510, 0.9], [P.candle, 105, 520, 0.9]],
     hide: [320, 470], secret: [120, 120],
     intro: 'La forge a gardé une odeur de fer chaud. Sur l’enclume, un sablier attend qu’on le retourne.',
   },
@@ -97,7 +97,7 @@ export const HORLO_SERRE: Record<string, RoomSpec> = {
   },
   'horlo.b4.r2': { // Le Joueur d’échecs
     arch: 'study', ao: { win: 'tall', wx: 300, wy: 140 }, glow: '#F4B45E',
-    props: [[P.chessAutomaton, 150, 470, 1.3], [P.chair, 50, 486, 1.1], [P.candle, 320, 505], [P.hang, 110, 150], [P.shelf, 300, 300, 1, { v: 2 }], [P.wallClock, 60, 250, 0.7]],
+    props: [[P.chessAutomaton, 150, 470, 1.3], [P.chair, 50, 486, 1.1], [P.candle, 320, 505], [P.hang, 110, 150], [P.shelf, 300, 300, 1, { v: 2 }], [P.wallClock, 60, 250, 0.7], [P.candle, 34, 520, 0.9], [P.candle, 90, 520, 0.9]],
     hide: [280, 480], secret: [195, 150],
     intro: 'La partie s’est arrêtée au milieu. Il manque un cavalier noir sur l’échiquier.',
   },
@@ -123,13 +123,13 @@ export const HORLO_SERRE: Record<string, RoomSpec> = {
   },
   'serre.b1.r2': { // La Fontaine
     arch: 'glass', glow: '#8FD3E0',
-    props: [[Q.fountain, 195, 480, 1.2], [Q.pot, 50, 440, 1.1], [Q.pot, 340, 440, 1.1, { v: 2 }], [Q.bench, 60, 510, 0.8], [Q.frog, 300, 500], [Q.lilypad, 150, 464, 0.6]],
+    props: [[Q.fountain, 195, 480, 1.2], [Q.pot, 50, 440, 1.1], [Q.pot, 340, 440, 1.1, { v: 2 }], [Q.bench, 60, 510, 0.8], [Q.frog, 300, 500], [Q.lilypad, 150, 464, 0.6], [Q.pot, 210, 520, 0.9], [Q.pot, 354, 520, 0.9]],
     hide: [260, 460], secret: [195, 250],
     intro: 'La fontaine s’est arrêtée au milieu d’un jet. Une goutte est restée suspendue, là, en l’air.',
   },
   'serre.b1.r3': { // Les Bancs
     arch: 'garden', glow: '#9CCB8A',
-    props: [[Q.bench, 100, 480, 1.1], [Q.bench, 290, 480, 1.1, { f: true }], [Q.pot, 195, 480, 1, { v: 1 }], [Q.lamppost, 30, 510, 0.9], [Q.lamppost, 360, 510, 0.9, { f: true }], [Q.wateringCan, 195, 515], [Q.moonFlower, 150, 420, 0.8], [Q.pot, 250, 430, 0.8, { v: 2 }]],
+    props: [[Q.bench, 100, 480, 1.1], [Q.bench, 290, 480, 1.1, { f: true }], [Q.pot, 195, 480, 1, { v: 1 }], [Q.lamppost, 30, 510, 0.9], [Q.lamppost, 360, 510, 0.9, { f: true }], [Q.wateringCan, 195, 515], [Q.moonFlower, 150, 420, 0.8], [Q.pot, 250, 430, 0.8, { v: 2 }], [Q.pot, 34, 520, 0.9], [Q.pot, 90, 520, 0.9], [Q.pot, 250, 520, 0.9], [Q.pot, 306, 520, 0.9], [P.hang, 40, 152], [P.hang, 100, 152], [P.hang, 160, 152]],
     hide: [140, 500], secret: [195, 200],
     intro: 'Sur chaque banc, une plaque : « Assieds-toi, et regarde pousser. » Quelqu’un a planté une graine qui brille.',
   },
@@ -143,13 +143,13 @@ export const HORLO_SERRE: Record<string, RoomSpec> = {
   // ---------------------------------------------------------------- Bassin aux Nénuphars
   'serre.b2.r1': { // La Rive
     arch: 'pond', ao: { floor: 440 }, glow: '#7FC8A9',
-    props: [[Q.reeds, 60, 480, 1.2], [Q.reeds, 340, 470], [Q.rock, 150, 500, 1.3], [Q.rock, 270, 510], [Q.lilypad, 220, 400, 0.8], [Q.lilypad, 110, 360, 0.6, { v: 1 }], [Q.frog, 150, 440], [Q.lamppost, 330, 360, 0.8, { f: true }], [Q.shell, 330, 520, 0.8], [Q.lilypad, 300, 450, 0.7], [Q.reeds, 250, 330, 0.6]],
+    props: [[Q.reeds, 60, 480, 1.2], [Q.reeds, 340, 470], [Q.rock, 150, 500, 1.3], [Q.rock, 270, 510], [Q.lilypad, 220, 400, 0.8], [Q.lilypad, 110, 360, 0.6, { v: 1 }], [Q.frog, 150, 440], [Q.lamppost, 330, 360, 0.8, { f: true }], [Q.shell, 330, 520, 0.8], [Q.lilypad, 300, 450, 0.7], [Q.reeds, 250, 330, 0.6], [Q.buoy, 30, 520, 0.9]],
     hide: [220, 470], secret: [300, 300],
     intro: 'Un galet est tiède sous la main. Il se souvient d’un soleil que personne n’a vu depuis longtemps.',
   },
   'serre.b2.r2': { // Le Ponton
     arch: 'pond', ao: { floor: 440 }, glow: '#7FC8A9',
-    props: [[Q.pier, 150, 430, 1.1], [Q.rowboat, 290, 490, 1.1], [Q.lamppost, 60, 430, 0.9], [Q.bollard, 250, 430], [Q.lilypad, 80, 510, 0.6], [Q.reeds, 350, 400, 0.8], [Q.ropeCoil, 110, 470, 0.7], [Q.buoy, 200, 520], [Q.frog, 330, 440], [Q.lilypad, 320, 360, 0.6, { v: 1 }]],
+    props: [[Q.pier, 150, 430, 1.1], [Q.rowboat, 290, 490, 1.1], [Q.lamppost, 60, 430, 0.9], [Q.bollard, 250, 430], [Q.lilypad, 80, 510, 0.6], [Q.reeds, 350, 400, 0.8], [Q.ropeCoil, 110, 470, 0.7], [Q.buoy, 200, 520], [Q.frog, 330, 440], [Q.lilypad, 320, 360, 0.6, { v: 1 }], [Q.buoy, 30, 520, 0.9], [Q.buoy, 165, 520, 0.9]],
     hide: [190, 470], secret: [60, 250],
     intro: 'La barque attend une rame. La grenouille jure qu’elle l’a vue passer, toute petite.',
   },
@@ -181,13 +181,13 @@ export const HORLO_SERRE: Record<string, RoomSpec> = {
   },
   'serre.b3.r3': { // Le Terreau
     arch: 'garden', glow: '#E8C07A',
-    props: [[Q.wheelbarrow, 150, 490, 1.3], [P.sack, 300, 490, 1.2, { c: 7 }], [P.sack, 345, 470, 1, { c: 6 }], [Q.pot, 60, 505, 0.9], [Q.wateringCan, 240, 510], [Q.lamppost, 360, 420, 0.8, { f: true }], [Q.pot, 250, 430, 0.8, { v: 1 }], [P.crate, 40, 440, 0.8], [Q.rock, 300, 525, 0.7]],
+    props: [[Q.wheelbarrow, 150, 490, 1.3], [P.sack, 300, 490, 1.2, { c: 7 }], [P.sack, 345, 470, 1, { c: 6 }], [Q.pot, 60, 505, 0.9], [Q.wateringCan, 240, 510], [Q.lamppost, 360, 420, 0.8, { f: true }], [Q.pot, 250, 430, 0.8, { v: 1 }], [P.crate, 40, 440, 0.8], [Q.rock, 300, 525, 0.7], [P.candle, 40, 522, 0.9], [Q.pot, 98, 520, 0.9], [Q.pot, 154, 520, 0.9], [Q.pot, 354, 520, 0.9]],
     hide: [100, 500], secret: [195, 250],
     intro: 'Un ver luisant a éclairé la pépinière tout seul pendant quarante ans. Il est fatigué.',
   },
   'serre.b3.r4': { // La Serre chaude
     arch: 'glass', glow: '#E8744A', ao: { tint: '#7a4a3a' },
-    props: [[Q.greenhouseStove, 90, 470, 1.2], [Q.bigLeaf, 280, 470, 1.3], [Q.bigLeaf, 330, 440, 0.9, { f: true }], [Q.pot, 195, 505, 1.1, { v: 1 }], [Q.wateringCan, 40, 510], [Q.vine, 200, 0, 1, { w: 150 }], [Q.pot, 150, 432, 0.8, { v: 2, c: 2 }]],
+    props: [[Q.greenhouseStove, 90, 470, 1.2], [Q.bigLeaf, 280, 470, 1.3], [Q.bigLeaf, 330, 440, 0.9, { f: true }], [Q.pot, 195, 505, 1.1, { v: 1 }], [Q.wateringCan, 40, 510], [Q.vine, 200, 0, 1, { w: 150 }], [Q.pot, 150, 432, 0.8, { v: 2, c: 2 }], [Q.pot, 98, 520, 0.9]],
     hide: [260, 505], secret: [120, 200],
     intro: 'Il fait bon, ici. L’arrosoir est percé, mais il arrose quand même. Autrement.',
   },
@@ -201,7 +201,7 @@ export const HORLO_SERRE: Record<string, RoomSpec> = {
   },
   'serre.b4.r2': { // Les Lianes
     arch: 'glass', glow: '#9CCB8A', ao: { tint: '#2f6a4a' },
-    props: [[Q.vine, 60, 0, 1, { w: 300 }], [Q.vine, 150, 0, 1, { w: 200 }], [Q.vine, 240, 0, 1, { w: 360 }], [Q.vine, 330, 0, 1, { w: 240 }], [Q.bigLeaf, 90, 500], [Q.bigLeaf, 320, 510, 1, { f: true }], [Q.pot, 195, 510, 0.9, { v: 1 }], [Q.frog, 250, 510]],
+    props: [[Q.vine, 60, 0, 1, { w: 300 }], [Q.vine, 150, 0, 1, { w: 200 }], [Q.vine, 240, 0, 1, { w: 360 }], [Q.vine, 330, 0, 1, { w: 240 }], [Q.bigLeaf, 90, 500], [Q.bigLeaf, 320, 510, 1, { f: true }], [Q.pot, 195, 510, 0.9, { v: 1 }], [Q.frog, 250, 510], [Q.pot, 34, 520, 0.9]],
     hide: [285, 160], secret: [195, 440],
     intro: 'Les lianes se sont nouées entre elles. Chaque nœud, dit le Jardinier, est un souvenir.',
   },
@@ -213,7 +213,7 @@ export const HORLO_SERRE: Record<string, RoomSpec> = {
   },
   'serre.b4.r4': { // La Canopée
     arch: 'garden', glow: '#EFE8D8', ao: { floor: 470 },
-    props: [[Q.palm, 60, 560, 1.2], [Q.palm, 340, 560, 1.1, { f: true }], [Q.moonFlower, 195, 460, 1.5], [Q.bigLeaf, 130, 540], [Q.bigLeaf, 270, 540, 1, { f: true }], [Q.vine, 195, 0, 1, { w: 110 }], [Q.frog, 200, 540, 0.8], [Q.vine, 100, 0, 1, { w: 200 }], [Q.vine, 290, 0, 1, { w: 170 }]],
+    props: [[Q.palm, 60, 560, 1.2], [Q.palm, 340, 560, 1.1, { f: true }], [Q.moonFlower, 195, 460, 1.5], [Q.bigLeaf, 130, 540], [Q.bigLeaf, 270, 540, 1, { f: true }], [Q.vine, 195, 0, 1, { w: 110 }], [Q.frog, 200, 540, 0.8], [Q.vine, 100, 0, 1, { w: 200 }], [Q.vine, 290, 0, 1, { w: 170 }], [Q.pot, 30, 520, 0.9], [Q.pot, 82, 520, 0.9], [Q.pot, 138, 520, 0.9]],
     hide: [300, 240], secret: [195, 140],
     intro: 'La fleur de minuit ne fleurit qu’une fois. Elle a attendu la lumière pour choisir ce soir.',
   },

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, Text, View, useWindowDimensions, useAnimatedValue } from 'react-native';
+import { Animated, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { useAnimatedValue } from '../ui/motion';
 import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
 

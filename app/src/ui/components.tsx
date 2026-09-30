@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle, useAnimatedValue } from 'react-native';
+import { Animated, Easing, Modal, Pressable, StyleProp, StyleSheet, Switch, Text, View, ViewStyle } from 'react-native';
+import { useAnimatedValue } from './motion';
 import { SvgXml } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 
@@ -199,6 +200,10 @@ export function Sheet({ visible, onClose, children }: { visible: boolean; onClos
   const [shown, setShown] = useState(visible);
   if (visible && !shown) setShown(true);
   const v = useAnimatedValue(0);
+  // A double tap that opened the sheet must not close it at once.
+  const openedAt = useRef(0);
+  useEffect(() => { if (visible) openedAt.current = Date.now(); }, [visible]);
+  const closeFromBackdrop = () => { if (Date.now() - openedAt.current > 350) onClose(); };
   useEffect(() => {
     if (visible) {
       Animated.spring(v, { toValue: 1, friction: 9, tension: 70, useNativeDriver: true }).start();
@@ -210,7 +215,7 @@ export function Sheet({ visible, onClose, children }: { visible: boolean; onClos
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: v }]}>
-        <Pressable style={s.sheetBackdrop} onPress={onClose} accessibilityLabel="Fermer" />
+        <Pressable style={s.sheetBackdrop} onPress={closeFromBackdrop} accessibilityLabel="Fermer" />
       </Animated.View>
       <Animated.View style={[s.sheet, { transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }] }]}>
         <View style={s.grab} />

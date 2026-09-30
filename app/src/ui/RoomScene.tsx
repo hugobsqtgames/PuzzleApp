@@ -2,21 +2,16 @@
 // that warms it lantern after lantern, a little dust in the air, and the
 // search for the hidden object once everything is lit.
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, GestureResponderEvent, Pressable, View, useAnimatedValue } from 'react-native';
+import { Animated, Easing, GestureResponderEvent, Pressable, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 import { roomLanternXml } from './art';
-import { SCENE_H, SCENE_W, Slot, hideOf, roomSlotsOf, sceneXml } from './scenes';
+import { HIT_H as HIT_HEIGHT, HIT_W as HIT_WIDTH, SCENE_H, SCENE_W, Slot, hideOf, placeOnScreen, roomSlotsOf, sceneFit, sceneXml } from './scenes';
+export { sceneFit };
 import { T } from './theme';
-import { useReducedMotion } from './motion';
+import { useReducedMotion, useAnimatedValue } from './motion';
 
 /** Scale and offset that show the scene as large as possible without cutting a lantern. */
-export function sceneFit(w: number, h: number) {
-  const cover = Math.max(w / SCENE_W, h / SCENE_H);
-  const k = Math.min(cover, w / 342, h / 480);
-  return { k, ox: (w - SCENE_W * k) / 2, oy: (h - SCENE_H * k) / 2 };
-}
-
 function PulseRing({ size, color = T.amber }: { size: number; color?: string }) {
   const v = useAnimatedValue(0);
   useEffect(() => {
@@ -55,9 +50,10 @@ const Motes = memo(function Motes({ w, h, color, n, strength }: { w: number; h: 
 });
 
 /** A lantern on its object. Pops and sends a wave of light the moment it is lit. */
-function Lantern({ index, slot, lit, isKey, recommended, justLit, k, disabled, label, onPress, reduce }: {
-  index: number; slot: Slot; lit: boolean; isKey?: boolean; recommended: boolean; justLit: boolean; k: number; disabled: boolean; label: string; onPress: () => void; reduce: boolean;
+function Lantern({ index, slot, lit, isKey, recommended, justLit, k, hw, hh, disabled, label, onPress, reduce }: {
+  index: number; slot: Slot; lit: boolean; isKey?: boolean; recommended: boolean; justLit: boolean; k: number; hw: number; hh: number; disabled: boolean; label: string; onPress: () => void; reduce: boolean;
 }) {
+  const HIT_W = hw, HIT_H = hh;
   const L = Math.max(52, 60 * k);
   const pop = useAnimatedValue(justLit && !reduce ? 0 : 1);
   const wave = useAnimatedValue(0);
@@ -74,13 +70,15 @@ function Lantern({ index, slot, lit, isKey, recommended, justLit, k, disabled, l
     <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress}
       onPressIn={() => Animated.spring(press, { toValue: 0.88, friction: 6, tension: 300, useNativeDriver: true }).start()}
       onPressOut={() => Animated.spring(press, { toValue: 1, friction: 4, tension: 200, useNativeDriver: true }).start()}
-      hitSlop={6}
-      style={{ position: 'absolute', left: slot.x - L / 2, top: slot.y - L * (34 / 60), width: L, height: L, alignItems: 'center', justifyContent: 'center' }}>
-      {justLit && !reduce ? <Animated.View pointerEvents="none" style={{ position: 'absolute', width: L * 0.9, height: L * 0.9, borderRadius: L, borderWidth: 2, borderColor: T.gold, opacity: wave.interpolate({ inputRange: [0, 0.1, 1], outputRange: [0, 1, 0] }), transform: [{ scale: wave.interpolate({ inputRange: [0, 1], outputRange: [0.6, 4] }) }] }} /> : null}
-      {recommended && !reduce ? <PulseRing size={34 * Math.max(1, k)} /> : null}
-      <Animated.View style={{ position: 'absolute', left: 0, top: 0, width: L, height: L, transform: [{ scale: Animated.multiply(press, pop.interpolate({ inputRange: [0, 0.6, 1], outputRange: [0.6, 1.15, 1] })) }] }}>
-        <SvgXml xml={xml} width={L} height={L} />
-      </Animated.View>
+      // The touch area hugs the lantern (46 × 50 pt): two neighbours never steal each other's taps.
+      style={{ position: 'absolute', left: slot.x - HIT_W / 2, top: slot.y - HIT_H / 2 - 4, width: HIT_W, height: HIT_H, alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+      <View pointerEvents="none" style={{ position: 'absolute', left: HIT_W / 2 - L / 2, top: HIT_H / 2 + 4 - L * (34 / 60), width: L, height: L, alignItems: 'center', justifyContent: 'center' }}>
+        {justLit && !reduce ? <Animated.View style={{ position: 'absolute', width: L * 0.9, height: L * 0.9, borderRadius: L, borderWidth: 2, borderColor: T.gold, opacity: wave.interpolate({ inputRange: [0, 0.1, 1], outputRange: [0, 1, 0] }), transform: [{ scale: wave.interpolate({ inputRange: [0, 1], outputRange: [0.6, 4] }) }] }} /> : null}
+        {recommended && !reduce ? <PulseRing size={34 * Math.max(1, k)} /> : null}
+        <Animated.View style={{ position: 'absolute', left: 0, top: 0, width: L, height: L, transform: [{ scale: Animated.multiply(press, pop.interpolate({ inputRange: [0, 0.6, 1], outputRange: [0.6, 1.15, 1] })) }] }}>
+          <SvgXml xml={xml} width={L} height={L} />
+        </Animated.View>
+      </View>
     </Pressable>
   );
 }
@@ -125,7 +123,9 @@ export function RoomScene({ roomId, w, h, lanterns, lit, recommended, justLit, o
 
   const { k, ox, oy } = sceneFit(w, h);
   // Always fully on screen and easy to touch, whatever the phone's shape.
-  const at = (s: Slot): Slot => ({ ...s, x: Math.min(w - 28, Math.max(28, ox + s.x * k)), y: Math.min(h - 22, Math.max(34, oy + s.y * k)) });
+  const at = (s: Slot): Slot => placeOnScreen(s, w, h);
+  // Touch areas shrink only with the scene (tests/scenes.test.ts checks they never overlap).
+  const hk = Math.min(1, Math.max(w / SCENE_W, h / SCENE_H));
 
   // Search: taps on the scene, near the hidden object or not.
   const [misses, setMisses] = useState(0);
@@ -158,7 +158,7 @@ export function RoomScene({ roomId, w, h, lanterns, lit, recommended, justLit, o
       ) : null}
       {showHint && hide ? <View pointerEvents="none" style={{ position: 'absolute', left: ox + hide[0] * k - 40, top: oy + hide[1] * k - 40, width: 80, height: 80, alignItems: 'center', justifyContent: 'center' }}><PulseRing size={46} color={T.gold} /></View> : null}
       {lanterns.map((l, i) => (
-        <Lantern key={l.key} index={i} slot={at(slots[i])} lit={lit[i]} isKey={l.isKey} recommended={i === recommended && open && !search?.active} justLit={i === justLit} k={k}
+        <Lantern key={l.key} index={i} slot={at(slots[i])} lit={lit[i]} isKey={l.isKey} recommended={i === recommended && open && !search?.active} justLit={i === justLit} k={k} hw={HIT_WIDTH * hk} hh={HIT_HEIGHT * hk}
           disabled={!open} reduce={reduce} label={labelOf(i, slots[i])} onPress={() => onLantern(i)} />
       ))}
     </View>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, Share, Text, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, Share, Text, TextInput, View } from 'react-native';
 import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
 
@@ -50,9 +50,12 @@ export default function Settings() {
     else showToast('Ce texte n’est pas une progression Lampion.', 'x');
   };
   const confirmReset = () => {
+    const reset = () => { void resetProgress(); showToast('Progression réinitialisée.', 'check'); router.dismissTo('/'); };
+    // Alert does nothing in a browser: the web build asks with the browser's own dialog.
+    if (Platform.OS === 'web') { if (typeof window !== 'undefined' && window.confirm('Réinitialiser la progression ? Toutes les lanternes, les Éclats, la série et les objets seront effacés. C’est définitif.')) reset(); return; }
     Alert.alert('Réinitialiser la progression ?', 'Toutes les lanternes, les Éclats, la série et les objets seront effacés. Les réglages sont gardés. C’est définitif.', [
       { text: 'Annuler', style: 'cancel' },
-      { text: 'Tout effacer', style: 'destructive', onPress: () => { void resetProgress(); showToast('Progression réinitialisée.', 'check'); router.dismissTo('/'); } },
+      { text: 'Tout effacer', style: 'destructive', onPress: reset },
     ]);
   };
 

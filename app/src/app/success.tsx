@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Animated, Easing, Text, View, useAnimatedValue } from 'react-native';
+import { Animated, Easing, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
 import { useStore, Result } from '../game/store';
 import { Screen } from '../ui/Screen';
 import { Button, Card, GaugeRow, Icon, LightPill, Nilo, Pill, Rise, Sheet } from '../ui/components';
-import { useReducedMotion } from '../ui/motion';
+import { useReducedMotion, useAnimatedValue } from '../ui/motion';
 import { bigLanternXml } from '../ui/art';
 import { T, type } from '../ui/theme';
 import { FAMILIES, TIER_NAMES } from '../game/catalog';
