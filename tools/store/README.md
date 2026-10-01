@@ -16,3 +16,12 @@ node ../tools/store/compose.js ipad          # → store/out/ipad-01…10.png
 
 Il faut Playwright (`PLAYWRIGHT=/chemin/vers/playwright`, `CHROMIUM=/chemin/vers/chromium` si besoin).
 `saveMock.json` reproduit la progression de la maquette (184 lumières), `save800.json` une partie avancée.
+
+## Vidéo d'aperçu (App Preview)
+
+`store/video/apercu-iphone-6.9.mp4` : 29 s, 886 × 1920, 30 i/s, H.264 + AAC stéréo (format Apple pour les iPhone 6,9 pouces).
+Filmée dans la vraie app (capture d'écran image par image de Chromium, nette au pixel), avec la musique de l'Horlogerie et les cloches réellement jouées.
+
+```sh
+FFMPEG=/chemin/vers/ffmpeg node ../tools/store/preview.js   # → store/out/preview-iphone.mp4
+```
