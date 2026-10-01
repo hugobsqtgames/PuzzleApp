@@ -20,12 +20,13 @@ import type { Code } from './catalog';
 import { WORLD, dailyPuzzle, eventPuzzle, eventSize, puzzleFor, FAMILIES, CONTENT_VERSION } from './catalog';
 import { EVENTS, EventId, eventDone } from './seasons';
 import { syncAppIcon } from './appIcon';
+import { syncWidget } from './widget';
 import { APP_VERSION } from '../content/whatsNew';
 import { Session, giveHint, hintCost, progressOf, record, startSession } from './session';
 import { ACHIEVEMENTS, COSMETICS, Profile, Slot, achievementContext, achievementStatus, newProfile, owns, starsOf } from './rewards';
 import { SAVE_DIRECTORY, deviceFS } from './files';
 import { scheduleReminders } from './reminders';
-import { inFrench, tr } from '../i18n';
+import { inFrench, lang, tr } from '../i18n';
 
 export { DEFAULT_SETTINGS, type Settings } from './saveText';
 
@@ -477,6 +478,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     commitProfile({ ...profileRef.current, picked: got.picked });
     return true;
   }, [commit, commitProfile]);
+
+  // The home-screen widget follows the streak and tonight's challenge.
+  useEffect(() => {
+    if (!ready) return;
+    const d = dailyPuzzle(today);
+    syncWidget({ streak: state.daily.streak, dailyDone: state.daily.completedDays.has(today), dailyFamily: d ? FAMILIES[d.code].name : '', dailyDay: today, lights: engine.progression.totalLights(state), lang: lang() });
+  }, [ready, state, today, settings.language]);
 
   const value = useMemo<Store>(() => ({
     ready, readOnly, state, engine, settings, profile, result, toast, today, daysAway,
