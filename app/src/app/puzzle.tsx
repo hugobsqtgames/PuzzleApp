@@ -96,7 +96,7 @@ export default function PuzzleScreen() {
       const r = finishSession(q);
       if (!r) { finishing.current = false; setCelebrating(false); return; }
       play('lanternLit');
-      if (r.celebrations.some((c) => (c.kind === 'lanternLit' && c.shards > 0) || (c.kind === 'dailyCompleted' && c.shards > 0))) later(() => play('shards'), 750);
+      if (r.celebrations.some((c) => (c.kind === 'lanternLit' && c.shards > 0) || (c.kind === 'dailyCompleted' && c.shards > 0) || ((c.kind as string) === 'eventLit' && (c as unknown as { shards: number }).shards > 0))) later(() => play('shards'), 750);
       later(() => router.replace('/success'), 420);
     }, delay);
   };
