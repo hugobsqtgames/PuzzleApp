@@ -12,7 +12,8 @@ Les longueurs ont été vérifiées par rapport aux limites d'Apple.
 | Classification par âge | 4+ (aucun contenu sensible, aucun achat, aucun lien externe) |
 | Prix | Au choix d'Hugo (aucun achat intégré dans l'app) |
 | Confidentialité (étiquette « nutrition ») | **Aucune donnée collectée** |
-| URL de la politique de confidentialité | À publier : le contenu est dans [`CONFIDENTIALITE.md`](CONFIDENTIALITE.md) (par exemple sur GitHub Pages) |
+| URL de la politique de confidentialité | `https://hugobsqtgames.github.io/PuzzleApp/confidentialite.html` (site publié par GitHub Pages depuis `site/`, texte tiré de [`CONFIDENTIALITE.md`](CONFIDENTIALITE.md)) |
+| URL d'assistance | `https://hugobsqtgames.github.io/PuzzleApp/` (aide en bas de page) |
 | Appareils | iPhone et iPad |
 | Langues | Français, anglais |
 | Chiffrement (export) | Aucun (`ITSAppUsesNonExemptEncryption = false`, déjà dans `app.json`) |

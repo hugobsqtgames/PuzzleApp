@@ -35,6 +35,7 @@ export default function Privacy() {
 
       <Part icon="book" title={tr('Ce qui reste sur ton téléphone')}>
         <P>{tr('Ta progression (lanternes, Éclats, série, objets, succès) et tes réglages sont enregistrés dans l’espace privé de l’app, sur ton appareil. Personne d’autre n’y a accès, pas même l’auteur du jeu.')}</P>
+        <P>{tr('Le widget de l’écran d’accueil lit ta série et le défi du soir dans un petit espace que l’app et le widget partagent, sur ton téléphone. Rien n’en sort.')}</P>
       </Part>
 
       <Part icon="share" title={tr('Sauvegarde et transfert')}>

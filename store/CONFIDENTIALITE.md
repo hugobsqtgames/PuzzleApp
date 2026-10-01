@@ -12,6 +12,8 @@ Lampion n'a ni compte, ni publicité, ni mesure d'audience, ni pisteur, ni serve
 
 Ta progression (lanternes, Éclats, série, objets, succès) et tes réglages sont enregistrés dans l'espace privé de l'app, sur ton appareil. Personne d'autre n'y a accès, pas même l'auteur du jeu.
 
+Le widget de l'écran d'accueil lit ta série et le défi du soir dans un petit espace que l'app et le widget partagent, sur ton téléphone. Rien n'en sort.
+
 ## Sauvegarde et transfert
 
 Si la sauvegarde iCloud de ton iPhone est activée, Apple y inclut ta progression, comme celle de tes autres apps : elle revient quand tu restaures ou changes de téléphone. Lampion n'y lit et n'y envoie rien lui-même. Ce service est régi par la politique de confidentialité d'Apple.
@@ -32,6 +34,8 @@ Lampion convient à tous les âges : aucune donnée n'est collectée, rien n'est
 
 Pour toute question, passe par la page de Lampion sur l'App Store.
 
+Le site de Lampion est hébergé par GitHub Pages (GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis). Il n'a ni cookie, ni mesure d'audience, ni contenu chargé ailleurs ; comme tout hébergeur, GitHub peut garder les adresses IP des visites pour sa sécurité (voir sa politique de confidentialité).
+
 ---
 
 # Lampion: privacy policy
@@ -47,6 +51,8 @@ Lampion has no account, no ads, no analytics, no trackers and no server. The app
 ## What stays on your phone
 
 Your progress (lanterns, Shards, streak, objects, achievements) and your settings are stored in the app's private space, on your device. Nobody else can see them, not even the game's author.
+
+The home-screen widget reads your streak and tonight's challenge from a small space the app and the widget share, on your phone. Nothing leaves it.
 
 ## Backup and transfer
 
@@ -67,3 +73,5 @@ Lampion suits every age: no data is collected, nothing is for sale, no link lead
 Publisher and author: Hugo BUSQUET. Lampion uses no hosting: the whole game is inside the app.
 
 For any question, use Lampion's page on the App Store.
+
+Lampion's website is hosted by GitHub Pages (GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA). It has no cookies, no analytics and loads nothing from elsewhere; like any host, GitHub may keep visitors' IP addresses for its security (see its privacy statement).

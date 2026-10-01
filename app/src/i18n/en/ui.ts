@@ -708,4 +708,5 @@ export const EN_UI: Record<string, string> = {
   'Le ciel est découpé en constellations. Place une étoile dans chaque ligne, chaque colonne et chaque constellation. Deux étoiles ne se touchent jamais, même par un coin. Touche une case : étoile, puis point (vide), puis libre.': 'The sky is cut into constellations. Put one star in each row, each column and each constellation. Two stars never touch, not even by a corner. Tap a cell: star, then dot (empty), then free.',
   'constellation {0}': 'constellation {0}',
   'vide': 'empty',
+  'Le widget de l’écran d’accueil lit ta série et le défi du soir dans un petit espace que l’app et le widget partagent, sur ton téléphone. Rien n’en sort.': 'The home-screen widget reads your streak and tonight’s challenge from a small space the app and the widget share, on your phone. Nothing leaves it.',
 };
