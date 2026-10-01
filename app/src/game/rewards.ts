@@ -15,6 +15,10 @@ export interface Profile {
   thrifty: number;
   catchUps: number;
   hatDrops: number;
+  /** Secrets of Vesper found (easter eggs), by id. */
+  eggs: string[];
+  /** Last time the app was opened (ISO), for Nilo's welcome back. */
+  lastSeen: string | null;
   themes: string[];
   visited: string[];
   /** Solve durations in seconds, per tier (last 100). */
@@ -24,7 +28,7 @@ export interface Profile {
   /** Rooms whose object the player has found by searching the lit room. */
   picked: string[];
 }
-export const newProfile = (): Profile => ({ murmures: 0, oops: 0, thrifty: 0, catchUps: 0, hatDrops: 0, themes: [], visited: [], durations: [[], [], [], [], [], []], history: [], picked: [] });
+export const newProfile = (): Profile => ({ murmures: 0, oops: 0, thrifty: 0, catchUps: 0, hatDrops: 0, eggs: [], lastSeen: null, themes: [], visited: [], durations: [[], [], [], [], [], []], history: [], picked: [] });
 
 export interface Achievement { id: string; name: string; description: string; reward: number; hidden?: boolean; progress: (c: Ctx) => [number, number] }
 interface Ctx { s: GameState; p: Progression; profile: Profile; solvedByFamily: Record<string, Lantern[]> }
@@ -92,6 +96,7 @@ const ACHIEVEMENTS_FR: Achievement[] = [
   // Malice
   { id: 'hush', name: 'Chut', description: 'Utilise 50 Murmures. L’aide fait partie du jeu.', reward: 15, progress: ({ profile }) => [Math.min(50, profile.murmures), 50] },
   { id: 'oops', name: 'Oups', description: 'Te tromper, puis réussir au coup suivant.', reward: 10, progress: ({ profile }) => [Math.min(1, profile.oops), 1] },
+  { id: 'curious', name: 'Fureteur', description: 'Un succès caché. Vesper a ses secrets : trouves-en trois.', reward: 20, hidden: true, progress: ({ profile }) => [Math.min(3, profile.eggs.length), 3] },
   { id: 'clumsy', name: 'Maladroit', description: 'Un succès caché. On dit qu’il a un chapeau.', reward: 15, hidden: true, progress: ({ profile }) => [Math.min(1, profile.hatDrops), 1] },
   { id: 'melomane', name: 'Mélomane', description: 'Écoute l’ambiance de 5 lieux de Vesper.', reward: 15, progress: ({ profile }) => [Math.min(5, profile.themes.length), 5] },
 ];
@@ -131,6 +136,9 @@ const COSMETICS_FR: Cosmetic[] = [
   { id: 'flame.night', slot: 'flame', name: 'Nuit bleue', price: 300, color: '#5C8FE0' },
   { id: 'flame.copper', slot: 'flame', name: 'Cuivre', price: 350, color: '#C98A5A' },
   { id: 'flame.pearl', slot: 'flame', name: 'Nacre', price: 450, color: '#EDE3F7' },
+  { id: 'flame.mint', slot: 'flame', name: 'Menthe', price: 180, color: '#9CE0C4' },
+  { id: 'flame.lilac', slot: 'flame', name: 'Lilas', price: 220, color: '#B79CE0' },
+  { id: 'flame.ruby', slot: 'flame', name: 'Rubis', price: 380, color: '#E0625A' },
   { id: 'flame.star', slot: 'flame', name: 'Blanc d’étoile', earn: { text: 'Éclaire le Grenier de l’Allumeur', when: lit('grenier') }, color: '#FFF3D6' },
   { id: 'hat.none', slot: 'hat', name: 'Aucun', price: 0 },
   { id: 'hat.glasses', slot: 'hat', name: 'Lunettes de l’Archiviste', earn: { text: 'Éclaire la Salle de Lecture', when: building('biblio.b4') } },
@@ -143,18 +151,26 @@ const COSMETICS_FR: Cosmetic[] = [
   { id: 'hat.beret', slot: 'hat', name: 'Béret de peintre', price: 300 },
   { id: 'hat.crown', slot: 'hat', name: 'Couronne de papier', price: 400 },
   { id: 'hat.top', slot: 'hat', name: 'Haut-de-forme de l’Allumeur', price: 600 },
+  { id: 'hat.nightcap', slot: 'hat', name: 'Bonnet de nuit', price: 140 },
+  { id: 'hat.flowers', slot: 'hat', name: 'Couronne de fleurs', price: 220 },
+  { id: 'hat.cap', slot: 'hat', name: 'Casquette de marin', price: 260 },
   { id: 'scarf.none', slot: 'scarf', name: 'Aucune', price: 0 },
   { id: 'scarf.knit', slot: 'scarf', name: 'Écharpe tricotée', price: 60 },
   { id: 'scarf.spice', slot: 'scarf', name: 'Foulard d’épices', price: 90 },
   { id: 'scarf.stripes', slot: 'scarf', name: 'Écharpe rayée', price: 250 },
   { id: 'scarf.star', slot: 'scarf', name: 'Écharpe étoilée', price: 400 },
   { id: 'scarf.gold', slot: 'scarf', name: 'Écharpe dorée', price: 500 },
+  { id: 'scarf.bow', slot: 'scarf', name: 'Nœud papillon', price: 160 },
+  { id: 'scarf.lavender', slot: 'scarf', name: 'Écharpe lavande', price: 200 },
   { id: 'scarf.ribbon', slot: 'scarf', name: 'Ruban de scène', earn: { text: 'Succès « Rappel » : éclaire le Théâtre', when: lit('theatre') } },
   { id: 'comp.none', slot: 'comp', name: 'Aucun', price: 0 },
   { id: 'comp.leaf', slot: 'comp', name: 'Feuille flottante', price: 150 },
   { id: 'comp.fish', slot: 'comp', name: 'Poisson de lune', price: 450 },
   { id: 'comp.kite', slot: 'comp', name: 'Petit cerf-volant', price: 500 },
   { id: 'comp.lantern', slot: 'comp', name: 'Lanterne de poche', price: 800 },
+  { id: 'comp.butterfly', slot: 'comp', name: 'Papillon', price: 350 },
+  { id: 'comp.cloud', slot: 'comp', name: 'Petit nuage', price: 420 },
+  { id: 'comp.bird', slot: 'comp', name: 'Petit oiseau', price: 600 },
   { id: 'comp.gear', slot: 'comp', name: 'Petit engrenage', earn: { text: 'Succès « Horloger » : 25 Engrenages', when: ach('family.EN') } },
   { id: 'comp.firefly', slot: 'comp', name: 'Luciole', earn: { text: 'Succès « Veilleur » : série de 30 soirs', when: ach('streak30') } },
   { id: 'comp.moth', slot: 'comp', name: 'Papillon de nuit', earn: { text: 'Succès « Clairvoyant »', when: ach('clairvoyant') } },

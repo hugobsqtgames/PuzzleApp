@@ -106,6 +106,7 @@ export default function Ending() {
       </View>
       <View style={{ width: '100%', maxWidth: 600, paddingHorizontal: 24 }}>
         <Button title={tr('Revenir à Vesper')} disabled={!done} onPress={() => router.dismissTo('/')} />
+        <Button title={tr('Crédits')} kind="ghost" disabled={!done} onPress={() => router.push('/credits')} />
       </View>
     </View>
   );

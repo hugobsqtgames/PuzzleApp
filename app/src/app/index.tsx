@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '../ui/Text';
 import { useContentSize, useWide } from '../ui/layout';
@@ -18,12 +18,17 @@ import { ENDING_SEEN } from '../game/story';
 import { look } from '../game/rewards';
 import { dailyLabel, dateOfDay } from '../ui/dates';
 import { addDays } from '../core/game/dayKey';
-import { tr } from '../i18n';
+import { tr, trn } from '../i18n';
+import { STANDARD_STREAK } from '../core/game/daily';
+import { DailyState } from '../core/game/state';
+
+/** The first evening the player could have played: no catch-up offered before they started. */
+const firstDailyDay = (d: DailyState) => [...d.completedDays, ...d.catchUpDays].sort()[0] ?? d.maxSeenDay ?? '9999-12-31';
 
 export const DAILY_UNLOCK_LIGHTS = 6;
 
 export default function Home() {
-  const { state, engine, openLantern, today } = useStore();
+  const { state, engine, openLantern, today, findEgg, daysAway } = useStore();
   const { width } = useContentSize();
   const reduce = useReducedMotion();
   const p = engine.progression;
@@ -35,6 +40,9 @@ export default function Home() {
   const views = useMemo(() => districtViews(p, state), [p, state]);
   const windowXml = useMemo(() => vesperWindowXml(views, 358, 210), [views]);
   const cur = current(p, state);
+  // Secret: between midnight and one, Nilo has fallen asleep on the window sill.
+  const midnight = new Date().getHours() === 0;
+  useEffect(() => { if (midnight) findEgg('midnight'); }, [midnight, findEgg]);
   if (!state.onboardingDone) return <Redirect href="/welcome" />;
 
   const loc = cur.lantern ? p.locate(cur.lantern.puzzle) : null;
@@ -47,6 +55,17 @@ export default function Home() {
   const dailyDone = state.daily.completedDays.has(today);
   const daily = dailyOpen ? dailyPuzzle(today) : null;
   const tomorrow = dailyOpen ? dailyPuzzle(addDays(today, 1)) : null;
+
+  // Missed evening challenges still within reach: a quiet reminder, never a red badge.
+  const missed = dailyOpen ? Array.from({ length: STANDARD_STREAK.catchUpWindowDays }, (_, i) => addDays(today, -(i + 1)))
+    .filter((d) => !state.daily.completedDays.has(d) && !state.daily.catchUpDays.has(d) && state.daily.maxSeenDay !== null && d >= firstDailyDay(state.daily) && dailyPuzzle(d)).length : 0;
+  const catchUp = missed ? (
+    <Pressable accessibilityRole="button" onPress={() => { tap(); router.push('/daily'); }} style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 6, paddingHorizontal: 4 }}>
+      <Icon name="cal" size={20} color={T.amber} />
+      <Text style={[type.callout, { flex: 1 }]}>{trn(missed, '{0} défi du soir manqué à rattraper', '{0} défis du soir manqués à rattraper')}</Text>
+      <Icon name="chev" size={18} color={T.tx3} />
+    </Pressable>
+  ) : null;
 
   const onContinue = () => {
     if (!cur.lantern) { router.push('/map'); return; }
@@ -72,7 +91,7 @@ export default function Home() {
           </View>
         </Pressable>
         <View style={{ position: 'absolute', right: 4, bottom: -26 }}>
-          <Nilo size={96} mood="curious" look={look(state)} onPress={() => router.push('/nilo')} />
+          <Nilo size={96} mood={midnight ? 'sleep' : 'curious'} look={look(state)} onPress={() => router.push('/nilo')} />
         </View>
       </View>
 
@@ -99,6 +118,8 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Lumières', [total])} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })}><LightPill n={total} /></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
+      {midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
+        : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text> : null}
 
 
       {dailyOpen && daily ? (
@@ -126,6 +147,7 @@ export default function Home() {
         </View>
       )}
 
+      {catchUp}
       {next ? (
         <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })} style={{ flexDirection: 'row', gap: 12, paddingVertical: 4, paddingHorizontal: 2, alignItems: 'center' }}>
           <Icon name="lock" size={20} color={T.tx2} />
@@ -183,6 +205,8 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Lumières', [total])} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })}><LightPill n={total} /></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
+      {midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
+        : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text> : null}
 
       <View style={{ height: winH, marginBottom: 6 }}>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('Ouvrir la carte de Vesper')} onPress={() => { tap(); router.push('/map'); }}
@@ -198,7 +222,7 @@ export default function Home() {
           </View>
         </Pressable>
         <View style={{ position: 'absolute', right: 4, bottom: -26 }}>
-          <Nilo size={96} mood="curious" look={look(state)} onPress={() => router.push('/nilo')} />
+          <Nilo size={96} mood={midnight ? 'sleep' : 'curious'} look={look(state)} onPress={() => router.push('/nilo')} />
         </View>
       </View>
 
@@ -245,6 +269,7 @@ export default function Home() {
         </View>
       )}
 
+      {catchUp}
       {next ? (
         <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })} style={{ flexDirection: 'row', gap: 12, paddingVertical: 4, paddingHorizontal: 2, alignItems: 'center' }}>
           <Icon name="lock" size={20} color={T.tx2} />

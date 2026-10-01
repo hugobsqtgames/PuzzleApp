@@ -86,6 +86,9 @@ const HATS: Record<string, string> = {
   crown: '<path d="M46 40l3-11 5 7 5-9 5 9 5-7 3 11z" fill="#FFD98E" stroke="#D9953F" stroke-width="1" stroke-linejoin="round"/><circle cx="59" cy="31" r="1.6" fill="#E88A8A"/>',
   beret: '<ellipse cx="61" cy="38" rx="15" ry="6" fill="#B5553F"/><path d="M47 40q14 4 28 0" stroke="#8a3d2d" stroke-width="1.5" fill="none"/><path d="M61 32v-4" stroke="#B5553F" stroke-width="2" stroke-linecap="round"/>',
   top: '<rect x="49" y="18" width="20" height="21" rx="2" fill="#1B1F3A"/><rect x="43" y="37" width="32" height="4" rx="2" fill="#1B1F3A"/><rect x="49" y="31" width="20" height="4" fill="#F4B45E"/>',
+  nightcap: '<path d="M45 41q10-24 30-16q6 3 9 14" fill="#5C8FE0"/><path d="M44 41q15 5 31 0" stroke="#EFE8D8" stroke-width="3.2" fill="none" stroke-linecap="round"/><circle cx="85" cy="40" r="4" fill="#EFE8D8"/>',
+  flowers: '<g><circle cx="45" cy="38" r="3.4" fill="#F29BC4"/><circle cx="52" cy="34" r="3.4" fill="#FFD98E"/><circle cx="60" cy="33" r="3.4" fill="#B79CE0"/><circle cx="68" cy="34" r="3.4" fill="#F29BC4"/><circle cx="75" cy="38" r="3.4" fill="#FFD98E"/></g><g fill="#FFF3D6"><circle cx="45" cy="38" r="1.2"/><circle cx="52" cy="34" r="1.2"/><circle cx="60" cy="33" r="1.2"/><circle cx="68" cy="34" r="1.2"/><circle cx="75" cy="38" r="1.2"/></g>',
+  cap: '<path d="M46 40a13 10 0 0 1 26 0z" fill="#EFE8D8"/><path d="M44 40h31" stroke="#1E2347" stroke-width="3" stroke-linecap="round"/><path d="M68 40q10 0 13 3" stroke="#1E2347" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M56 33l3 2 3-2" stroke="#3A4D8A" stroke-width="1.6" fill="none"/>',
 };
 const SCARVES: Record<string, string> = {
   none: '',
@@ -95,6 +98,8 @@ const SCARVES: Record<string, string> = {
   stripes: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#3A4D8A"/><path d="M70 88l6 16-7 1-4-15z" fill="#3A4D8A"/><path d="M38 86l-1 8M48 88l-1 8M58 89v8M68 88l1 8M78 86l1 7" stroke="#EFE8D8" stroke-width="2"/>',
   star: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#22264A"/><path d="M40 90l-8 14 8-2 5-10z" fill="#22264A"/><g fill="#FFD98E"><circle cx="42" cy="88" r="1.3"/><circle cx="52" cy="91" r="1.8"/><circle cx="63" cy="90" r="1.3"/><circle cx="74" cy="88" r="1.8"/></g>',
   gold: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#D9953F"/><path d="M70 88l6 16-7 1-4-15z" fill="#D9953F"/><path d="M33 84q25 11 51 0" stroke="#FFE6B0" stroke-width="1.4" fill="none"/>',
+  lavender: '<path d="M31 82q27 13 54 0l1 9q-28 13-56 0z" fill="#9A85C8"/><path d="M70 88l6 16-7 1-4-15z" fill="#9A85C8"/><path d="M34 86q24 10 49 0" stroke="#D8CCF0" stroke-width="1.2" fill="none"/>',
+  bow: '<path d="M58 88l-10-7v14zM58 88l10-7v14z" fill="#E0625A"/><circle cx="58" cy="88" r="3" fill="#B5453F"/>',
 };
 const COMPANIONS: Record<string, string> = {
   none: '',
@@ -105,6 +110,9 @@ const COMPANIONS: Record<string, string> = {
   comet: '<path d="M10 50l12-10" stroke="#8FB8F0" stroke-width="3" stroke-linecap="round" opacity=".5"/><path d="M22 36l1.3 2.7 3 .4-2.2 2 .6 3-2.7-1.5-2.7 1.5.6-3-2.2-2 3-.4z" fill="#FFD98E"/>',
   kite: '<path d="M12 28l8-8 8 8-8 10z" fill="#E88A8A"/><path d="M12 28h16M20 20v18" stroke="#b5553f" stroke-width=".8"/><path d="M20 38q-4 7 1 13q4 5 0 10" stroke="#EFE8D8" stroke-width="1" fill="none"/>',
   fish: '<g transform="translate(18 42)"><ellipse rx="7" ry="4" fill="#BFE6F0"/><path d="M6 0l5-4v8z" fill="#BFE6F0"/><circle cx="-3" cy="-1" r="1" fill="#0D0F1E"/></g>',
+  butterfly: '<g transform="translate(18 40)"><path d="M0 0q-10-10-11 0q4 6 11 0zM0 0q10-10 11 0q-4 6-11 0z" fill="#8FB8F0"/><path d="M0 0q-7 4-6 9q4 0 6-9zM0 0q7 4 6 9q-4 0-6-9z" fill="#B79CE0"/><path d="M0-4v8" stroke="#1E2347" stroke-width="1.4" stroke-linecap="round"/></g>',
+  cloud: '<g transform="translate(18 36)"><path d="M-9 4a5 5 0 0 1 2-9a6 6 0 0 1 11-1a5 5 0 0 1 5 10z" fill="#EFE8D8" opacity=".9"/><circle cx="-3" cy="0" r=".9" fill="#1E2347"/><circle cx="2" cy="0" r=".9" fill="#1E2347"/></g>',
+  bird: '<g transform="translate(18 40)"><ellipse rx="6.5" ry="5" fill="#E88A8A"/><circle cx="4" cy="-3" r="3.4" fill="#E88A8A"/><path d="M7 -3l4 1-4 1.5z" fill="#F4B45E"/><circle cx="5" cy="-4" r=".9" fill="#0D0F1E"/><path d="M-3 0q-4-6-8-3q3 4 8 3z" fill="#B5553F"/></g>',
   lantern: '<g transform="translate(18 38)"><circle r="9" fill="#F4B45E" opacity=".25"/><rect x="-4" y="-6" width="8" height="11" rx="2.5" fill="#F4B45E"/><rect x="-2.5" y="-9" width="5" height="3" fill="#6b5a3c"/><circle cy="-1" r="1.8" fill="#FFF3D6"/></g>',
 };
 

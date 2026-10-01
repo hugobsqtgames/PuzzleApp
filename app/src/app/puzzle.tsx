@@ -28,11 +28,13 @@ const HINT_ICONS = ['whisper', 'hint', 'light', 'star'];
 
 /** iPad: width of the left pane, and the phone width the board is drawn at. */
 const SIDE_W = 340, BOARD_BASE = 400;
+/** Silence on the board before Nilo offers his help. */
+const IDLE_MS = 90_000;
 
 export default function PuzzleScreen() {
   const store = useStore();
   const session = useSession();
-  const { state, engine, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
+  const { state, engine, findEgg, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
   const { width } = useContentSize();
   const { wide, width: wideWidth } = useWide();
   const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | 'restart' | null>(null);
@@ -42,6 +44,20 @@ export default function PuzzleScreen() {
   const finishing = useRef(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  // A long silence on the board: Nilo offers a Murmure (never during the tutorial lantern).
+  const activity = `${session?.id}:${session?.history.length}:${session?.hint.level}:${session?.wrongAnswers}`;
+  const activityRef = useRef(activity);
+  useEffect(() => { activityRef.current = activity; }, [activity]);
+  // A clock that notes since when the board has been the same.
+  const [clock, setClock] = useState({ key: '', since: 0, now: 0 });
+  useEffect(() => {
+    const id = setInterval(() => {
+      const t = Date.now();
+      setClock((c) => (c.key === activityRef.current ? { ...c, now: t } : { key: activityRef.current, since: t, now: t }));
+    }, 5000);
+    return () => clearInterval(id);
+  }, []);
+  const idle = clock.key === activity && clock.now - clock.since > IDLE_MS;
 
   if (!session) return <Screen><BackButton label={tr('Accueil')} onPress={() => router.replace('/')} /></Screen>;
   const s = session;
@@ -87,6 +103,8 @@ export default function PuzzleScreen() {
     const r = submit(s);
     if (r.correct) { end(s, 0); return; }
     play('error');
+    // Secret: 42 on the scales.
+    if (s.code === 'BA' && s.state.entry === '42') { findEgg('42'); showToast(tr('42 : la réponse à tout… sauf à cette balance.'), 'star'); }
     updateSession(r.session);
     Animated.sequence([6, -6, 4, -4, 0].map((x) => Animated.timing(shake, { toValue: x, duration: 60, useNativeDriver: true }))).start();
     if (r.session.wrongAnswers >= 2 && !offered) {
@@ -122,6 +140,11 @@ export default function PuzzleScreen() {
   if (s.error) feedback = <Message tone="error" text={s.error.text} />;
   else if (live && live.kind === 'invalid' && live.issues[0]) feedback = <Message tone="error" text={t(live.issues[0].message)} />;
   else if (shownHint(s) && s.hint.texts[s.hint.level - 1]) feedback = <Message tone="hint" icon={HINT_ICONS[s.hint.level - 1]} title={HINT_NAMES[s.hint.level - 1]} text={s.hint.texts[s.hint.level - 1]!} />;
+  else if (idle && s.id !== 'phare.b1.r1.1' && hintAvailable(s, HintLevel.Whisper)) {
+    const cost = hintCost(s, HintLevel.Whisper);
+    feedback = <Message tone="hint" icon="whisper" text={tr('Tu sèches un peu ? Je peux te souffler une piste.')}
+      action={{ label: cost ? tr('Murmure · {0} Éclats', [cost]) : tr('Un Murmure (gratuit)'), onPress: () => { tap(); onBuyHint(HintLevel.Whisper); } }} />;
+  }
   else if (s.id === 'phare.b1.r1.1') feedback = <Message tone="hint" icon="whisper" text={tr('Touche la lanterne éteinte en haut à gauche.')} />;
   else if (s.code === 'IN') feedback = <Text style={[type.foot, { textAlign: 'center' }]}>{trn(s.moves, '{0} coup', '{0} coups')}</Text>;
   const oops = !!s.error || (live?.kind === 'invalid');
@@ -275,6 +298,20 @@ export default function PuzzleScreen() {
         ) : (
           <>
             <Text style={[type.title2, { marginBottom: 10 }]}>{tr('Pause')}</Text>
+            {/* Where this puzzle stands: time, moves, help. */}
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
+              {[
+                [tr('Temps'), elapsed(s.startedAt)],
+                [tr('Coups'), String(s.moves)],
+                [tr('Indices'), String(s.paidHints + s.hint.freeWhispers)],
+                [tr('Erreurs'), String(s.wrongAnswers)],
+              ].map(([label, value]) => (
+                <View key={label} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: R.m, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line }}>
+                  <Text style={[type.title3, { fontVariant: ['tabular-nums'] }]}>{value}</Text>
+                  <Text style={type.foot}>{label}</Text>
+                </View>
+              ))}
+            </View>
             <Button title={tr('Reprendre')} onPress={() => setSheet(null)} />
             <Row icon="info" label={tr('Revoir la règle')} onPress={() => setSheet('rule')} />
             {/* Asked first: a restart erases the board, and a slip of the finger should not cost a long think. */}
@@ -327,7 +364,14 @@ function Row({ icon, label, onPress }: { icon: string; label: string; onPress: (
   );
 }
 
-function Message({ tone, text, icon, title }: { tone: 'error' | 'hint'; text: string; icon?: string; title?: string }) {
+/** Time since the puzzle was opened, « 4:07 ». */
+function elapsed(startedAt: string): string {
+  const secs = Math.max(0, Math.round((Date.now() - Date.parse(startedAt)) / 1000));
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), sec = secs % 60;
+  return h ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}` : `${m}:${String(sec).padStart(2, '0')}`;
+}
+
+function Message({ tone, text, icon, title, action }: { tone: 'error' | 'hint'; text: string; icon?: string; title?: string; action?: { label: string; onPress: () => void } }) {
   const err = tone === 'error';
   return (
     <View accessibilityLiveRegion="polite" style={{
@@ -335,7 +379,14 @@ function Message({ tone, text, icon, title }: { tone: 'error' | 'hint'; text: st
       backgroundColor: err ? 'rgba(232,138,138,0.1)' : 'rgba(143,211,224,0.08)', borderColor: err ? 'rgba(232,138,138,0.5)' : 'rgba(143,211,224,0.45)',
     }}>
       <Icon name={err ? 'x' : icon ?? 'whisper'} size={20} color={err ? T.coral : T.moon} sw={err ? 2 : 1.6} />
-      <Text style={{ color: T.tx, fontSize: 15, flex: 1, lineHeight: 20 }}>{title ? <Text style={{ fontWeight: '600' }}>{title} · </Text> : null}{text}</Text>
+      <View style={{ flex: 1, gap: 8 }}>
+        <Text style={{ color: T.tx, fontSize: 15, lineHeight: 20 }}>{title ? <Text style={{ fontWeight: '600' }}>{title} · </Text> : null}{text}</Text>
+        {action ? (
+          <Pressable accessibilityRole="button" onPress={action.onPress} style={{ alignSelf: 'flex-start', minHeight: 36, paddingHorizontal: 14, borderRadius: R.m, justifyContent: 'center', backgroundColor: 'rgba(143,211,224,0.14)', borderWidth: 1, borderColor: 'rgba(143,211,224,0.45)' }}>
+            <Text style={{ color: T.moon, fontSize: 14, fontWeight: '700' }}>{action.label}</Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }

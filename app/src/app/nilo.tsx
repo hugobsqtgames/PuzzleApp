@@ -16,11 +16,13 @@ const MOODS: Mood[] = ['curious', 'joy', 'oops', 'sleep', 'wonder', 'hint', 'thi
 const MOOD_FR: Record<Mood, string> = translated({ curious: 'Curieux', joy: 'Joie', oops: 'Oups', sleep: 'Sommeil', neutral: 'Neutre', think: 'Réflexion', hint: 'Indice', wonder: 'Émerveillement' });
 
 export default function NiloScreen() {
-  const { state, engine, showToast, noteProfile } = useStore();
+  const { state, engine, showToast, noteProfile, findEgg } = useStore();
   const [mood, setMood] = useState<Mood>('curious');
   const [hatFell, setHatFell] = useState(false);
   const [showMood, setShowMood] = useState(false);
   const taps = useRef<number[]>([]);
+  const spins = useRef<number[]>([]);
+  const [dizzy, setDizzy] = useState(false);
   const lk = look(state);
 
   const pet = () => {
@@ -33,6 +35,16 @@ export default function NiloScreen() {
       showToast(tr('Oups ! Le chapeau de Nilo est tombé.'), 'star');
       noteProfile((p) => ({ ...p, hatDrops: p.hatDrops + 1 }));
       setTimeout(() => setHatFell(false), 3000);
+      return;
+    }
+    // Secret: fifteen taps in a row and Nilo's head spins.
+    spins.current = [...spins.current.filter((t) => now - t < 8000), now];
+    if (spins.current.length >= 15) {
+      spins.current = [];
+      setMood('oops');
+      setDizzy(true);
+      findEgg('dizzy');
+      setTimeout(() => setDizzy(false), 4000);
       return;
     }
     const next = MOODS[(MOODS.indexOf(mood) + 1) % MOODS.length];
@@ -51,7 +63,7 @@ export default function NiloScreen() {
         <Text style={type.title1}>{tr('Nilo')}</Text>
         <Text style={[type.dialogue, { color: T.tx2 }]}>{tr('Apprenti de l’Allumeur. Dernière flamme de Vesper.')}</Text>
         <Text style={type.sub}>{tr('Vous avez allumé')} <Text style={{ color: T.tx, fontWeight: '700' }}>{engine.progression.totalLights(state)}</Text> {tr('lanternes ensemble.')}</Text>
-        <Text style={type.foot} accessibilityLiveRegion="polite">{showMood ? tr('Nilo : {0}', [MOOD_FR[mood]]) : tr('Touche Nilo pour voir ses humeurs.')}</Text>
+        <Text style={type.foot} accessibilityLiveRegion="polite">{dizzy ? tr('Nilo a la tête qui tourne… Doucement !') : showMood ? tr('Nilo : {0}', [MOOD_FR[mood]]) : tr('Touche Nilo pour voir ses humeurs.')}</Text>
       </View>
       <Button title={tr('Personnaliser')} onPress={() => router.push('/custom')} />
       <Button title={tr('Retour')} kind="ghost" onPress={() => goBack()} />

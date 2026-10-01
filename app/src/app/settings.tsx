@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Alert, Platform, Pressable, Share, View } from 'react-native';
 import { Text, TextInput } from '../ui/Text';
 import { goBack } from '../ui/nav';
@@ -37,10 +37,20 @@ function LinkRow({ label, onPress, color = T.tx, icon = 'chev' }: { label: strin
 }
 
 export default function Settings() {
-  const { settings, setSettings, resetProgress, exportProgress, importProgress, showToast, readOnly } = useStore();
+  const { settings, setSettings, resetProgress, exportProgress, importProgress, showToast, readOnly, findEgg } = useStore();
   const [sheet, setSheet] = useState<'time' | 'import' | 'lang' | null>(null);
   const [text, setText] = useState('');
   const hh = (n: number) => String(n).padStart(2, '0');
+  const versionTaps = useRef<number[]>([]);
+  const tapVersion = () => {
+    const now = Date.now();
+    versionTaps.current = [...versionTaps.current.filter((t) => now - t < 4000), now];
+    if (versionTaps.current.length >= 7) {
+      versionTaps.current = [];
+      findEgg('version');
+      showToast(tr('Mode développeur ? Il n’y en a pas. Mais merci d’avoir cherché.'), 'star');
+    }
+  };
 
   const toggleReminder = async (on: boolean) => {
     if (!on) { setSettings({ reminder: false, reminderOffered: true }); return; }
@@ -114,7 +124,13 @@ export default function Settings() {
         <LinkRow label={tr('Importer une progression')} onPress={() => setSheet('import')} />
         <LinkRow label={tr('Réinitialiser la progression')} color={T.coral} onPress={confirmReset} />
       </Group>
-      <Text style={[type.foot, { textAlign: 'center', marginTop: 16, marginBottom: 8 }]}>Lampion 1.0 · {tr('contenu')} v{CONTENT_VERSION}</Text>
+      <Group title={tr('Lampion')}>
+        <LinkRow label={tr('Crédits')} icon="star" onPress={() => router.push('/credits')} />
+      </Group>
+      {/* Secret: the version tapped seven times. */}
+      <Pressable onPress={tapVersion} accessibilityRole="text">
+        <Text style={[type.foot, { textAlign: 'center', marginTop: 16, marginBottom: 8 }]}>Lampion 1.0 · {tr('contenu')} v{CONTENT_VERSION}</Text>
+      </Pressable>
 
       <Sheet visible={sheet === 'time'} onClose={() => setSheet(null)}>
         <Text style={[type.title2, { marginBottom: 12 }]}>{tr('Heure du rappel')}</Text>

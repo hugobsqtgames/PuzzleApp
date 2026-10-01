@@ -9,7 +9,7 @@ import { Screen } from '../ui/Screen';
 import { Button, Card, GaugeRow, Icon, LightPill, Nilo, Pill, Rise, Sheet } from '../ui/components';
 import { useReducedMotion, useAnimatedValue } from '../ui/motion';
 import { bigLanternXml } from '../ui/art';
-import { T, type } from '../ui/theme';
+import { R, T, type } from '../ui/theme';
 import { FAMILIES, TIER_NAMES } from '../game/catalog';
 import { look } from '../game/rewards';
 import { askPermission } from '../game/reminders';
@@ -80,6 +80,7 @@ export default function Success() {
   const pop = useAnimatedValue(0);
   const reduce = useReducedMotion();
   const [offer, setOffer] = useState(false);
+  const [shownAt] = useState(() => Date.now());
   useEffect(() => { Animated.spring(pop, { toValue: 1, delay: 350, friction: 5, useNativeDriver: true }).start(); }, [pop]);
   const isTutorial = result?.session.id === TUTORIAL_LANTERN;
   useEffect(() => { if (isTutorial) completeOnboarding(); }, [isTutorial, completeOnboarding]);
@@ -96,6 +97,15 @@ export default function Success() {
   const n = room ? engine.progression.lights(room.lanterns, state) : 0;
   const follow = followUps(result);
   const title = tr(result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée');
+
+  const secs = (shownAt - Date.parse(s.startedAt)) / 1000;
+  const clear = s.paidHints === 0 && s.wrongAnswers === 0 && !s.usedSolution;
+  const niloLine = result.replay || isTutorial ? null
+    : s.usedSolution ? tr('On apprend aussi en regardant. La prochaine sera pour toi.')
+      : clear && secs < 60 ? tr('Rapide, et sans aide. Je suis impressionné !')
+        : clear ? tr('Sans indice et sans erreur. Belle lumière.')
+          : s.wrongAnswers > 0 ? tr('Tu t’es trompé, puis tu as trouvé. C’est comme ça qu’on apprend.')
+            : tr('Un coup de pouce, et c’est allumé. Bien joué !');
 
   let dailyText = '';
   if (daily && daily.kind === 'dailyCompleted') {
@@ -173,8 +183,16 @@ export default function Success() {
       ) : null}
 
       <View style={{ flex: 1 }} />
-      <View style={{ alignSelf: 'stretch' }}>
-        <View style={{ position: 'absolute', right: 0, bottom: 8 }}><Nilo size={84} mood="joy" look={look(state)} /></View>
+      {/* Nilo says a word that fits how it went. */}
+      <View style={{ alignSelf: 'stretch', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          {niloLine ? (
+            <View style={{ backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: R.m, borderBottomRightRadius: 4, paddingVertical: 10, paddingHorizontal: 12 }}>
+              <Text style={[type.callout, { color: T.tx }]}>{niloLine}</Text>
+            </View>
+          ) : null}
+        </View>
+        <Nilo size={84} mood="joy" look={look(state)} />
       </View>
       <View style={{ alignSelf: 'stretch', gap: 4 }}>
         <Button title={follow.length || s.kind === 'daily' || isTutorial ? tr('Continuer') : tr('Suivant')} onPress={next} />

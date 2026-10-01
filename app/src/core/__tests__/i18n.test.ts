@@ -36,8 +36,8 @@ describe('English', () => {
     for (const f of files) {
       const sf = ts.createSourceFile(f, fs.readFileSync(f, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
       const visit = (n: ts.Node) => {
-        // The app's name and version are the same in every language.
-        if (ts.isJsxText(n) && /\p{L}{2}/u.test(n.getText()) && !/^Lampion [\d.]+ ·$/.test(n.getText().trim())) raw.push(`${path.relative(root, f)}:${sf.getLineAndCharacterOfPosition(n.getStart()).line + 1} ${n.getText().trim()}`);
+        // Proper names (the app, its version, its author) are the same in every language.
+        if (ts.isJsxText(n) && /\p{L}{2}/u.test(n.getText()) && !/^(Lampion( [\d.]+ ·)?|Hugo BUSQUET)$/.test(n.getText().trim())) raw.push(`${path.relative(root, f)}:${sf.getLineAndCharacterOfPosition(n.getStart()).line + 1} ${n.getText().trim()}`);
         ts.forEachChild(n, visit);
       };
       visit(sf);

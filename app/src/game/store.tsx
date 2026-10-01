@@ -74,6 +74,10 @@ interface Store {
   completeOnboarding(): void;
   markSeen(key: string): void;
   noteProfile(patch: (p: Profile) => Profile): void;
+  /** A secret of Vesper found (easter egg): counted once. */
+  findEgg(id: string): void;
+  /** Whole days since the previous launch (0 on a first launch): Nilo's welcome back. */
+  daysAway: number;
   /** The player found the room's object in the lit scene. */
   pickObject(roomId: string): void;
   play(event: SoundEvent): void;
@@ -110,7 +114,7 @@ function decodeSide(text: string): { settings: Settings; profile: Profile; legac
     const n = (v: unknown) => (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 ? v : 0);
     const strings = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').slice(0, 50) : []);
     out.profile = {
-      murmures: n(p.murmures), oops: n(p.oops), thrifty: n(p.thrifty), catchUps: n(p.catchUps), hatDrops: n(p.hatDrops),
+      murmures: n(p.murmures), oops: n(p.oops), thrifty: n(p.thrifty), catchUps: n(p.catchUps), hatDrops: n(p.hatDrops), eggs: strings(p.eggs), lastSeen: typeof p.lastSeen === 'string' && !Number.isNaN(Date.parse(p.lastSeen)) ? p.lastSeen : null,
       themes: strings(p.themes), visited: strings(p.visited),
       durations: Array.isArray(p.durations) && p.durations.length === 6 ? p.durations.map((d) => (Array.isArray(d) ? d.filter((x) => typeof x === 'number' && x > 0 && x < 86400).slice(-100) : [])) : newProfile().durations,
       picked: Array.isArray(p.picked) ? p.picked.filter((x): x is string => typeof x === 'string').slice(0, 200) : [],
@@ -133,6 +137,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [result, setResult] = useState<Result | null>(null);
   const [toast, setToast] = useState<Store['toast']>(null);
   const [today, setToday] = useState<DayKey>(() => localDayKey(new Date()));
+  const [daysAway, setDaysAway] = useState(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Latest values for callbacks (every writer below also updates them at once).
   const stateRef = useRef(state);
@@ -180,6 +185,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         void writeSide(side.settings, side.profile);
       }
       setSettingsState(side.settings);
+      // Days since the last launch, then this launch is remembered.
+      const last = side.profile.lastSeen ? Date.parse(side.profile.lastSeen) : NaN;
+      setDaysAway(Number.isNaN(last) ? 0 : Math.max(0, Math.floor((Date.now() - last) / 86_400_000)));
+      side.profile = { ...side.profile, lastSeen: new Date().toISOString() };
+      void writeSide(side.settings, side.profile);
       setProfile(side.profile);
       sound.setSettings({ music: side.settings.music, effects: side.settings.effects, haptics: side.settings.haptics, interfaceTaps: false });
       setReady(true);
@@ -415,6 +425,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (names.length) { commit(st); showToast(names.length <= 3 ? tr('Succès : {0}', [names.join(', ')]) : tr('{0} succès débloqués. Retrouve-les dans le Carnet.', [names.length]), 'star'); }
   }, [commit, commitProfile, creditAchievements, showToast]);
 
+  const findEgg = useCallback((id: string) => {
+    if (profileRef.current.eggs.includes(id)) return;
+    noteProfile((p) => ({ ...p, eggs: [...p.eggs, id] }));
+  }, [noteProfile]);
+
   const pickObject = useCallback((roomId: string) => {
     if (profileRef.current.picked.includes(roomId)) return;
     commitProfile({ ...profileRef.current, picked: [...profileRef.current.picked, roomId] });
@@ -455,11 +470,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, [commit, commitProfile]);
 
   const value = useMemo<Store>(() => ({
-    ready, readOnly, state, engine, settings, profile, result, toast, today,
+    ready, readOnly, state, engine, settings, profile, result, toast, today, daysAway,
     showToast, openLantern, openDaily, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
-    completeOnboarding, markSeen, noteProfile, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), enterPlace, haptic, resetProgress, exportProgress, importProgress,
-  }), [ready, readOnly, state, settings, profile, result, toast, today, showToast, openLantern, openDaily, updateSession, leaveSession, finishSession,
-    buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
+    completeOnboarding, markSeen, noteProfile, findEgg, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), enterPlace, haptic, resetProgress, exportProgress, importProgress,
+  }), [ready, readOnly, state, settings, profile, result, toast, today, daysAway, showToast, openLantern, openDaily, updateSession, leaveSession, finishSession,
+    buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, findEgg, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
 
   return <Ctx.Provider value={value}><SessionCtx.Provider value={session}>{children}</SessionCtx.Provider></Ctx.Provider>;
 }

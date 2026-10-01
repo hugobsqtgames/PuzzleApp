@@ -636,4 +636,18 @@ export const EN_WORLD: Record<string, string> = {
   'Une luciole à côté de chaque lanterne. Elles ne se touchent jamais. Les nombres comptent les lucioles.': 'A firefly next to every lantern. They never touch. The numbers count the fireflies.',
   'Passerelles': 'Footbridges',
   'Relie les îlots par des passerelles qui ne se croisent pas. Chaque nombre dit combien en partent.': 'Join the islands with footbridges that never cross. Each number says how many leave it.',
+  // New wardrobe and hidden achievement
+  'Fureteur': 'Snoop',
+  'Un succès caché. Vesper a ses secrets : trouves-en trois.': 'A hidden achievement. Vesper has its secrets: find three.',
+  'Menthe': 'Mint',
+  'Lilas': 'Lilac',
+  'Rubis': 'Ruby',
+  'Bonnet de nuit': 'Nightcap',
+  'Couronne de fleurs': 'Flower crown',
+  'Casquette de marin': 'Sailor\'s cap',
+  'Nœud papillon': 'Bow tie',
+  'Écharpe lavande': 'Lavender scarf',
+  'Papillon': 'Butterfly',
+  'Petit nuage': 'Little cloud',
+  'Petit oiseau': 'Little bird',
 };
