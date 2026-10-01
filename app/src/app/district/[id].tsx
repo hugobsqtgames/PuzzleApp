@@ -26,14 +26,18 @@ export default function DistrictScreen() {
   // French agrees the keeper's words with her or him (L’Horlogère, La Marchande…).
   const [talk, setTalk] = useState(0);
   const keeperFeminine = !!info.keeper && (info.keeper.name.startsWith('La ') || info.keeper.name === 'L’Horlogère');
-  // The Grenier de l'Allumeur is at the top of the Phare: shown with it.
-  const grenier = d.id === 'phare' ? districtById('grenier') : null;
+  // The Grenier de l'Allumeur is at the top of the Phare: shown with it, but only once the
+  // last district (the Observatoire) has opened. Before that it stays a surprise.
+  const total = p.totalLights(state), letters = p.letters(state);
+  const grenierDistrict = d.id === 'phare' ? districtById('grenier') : null;
+  const grenierOpen = !!grenierDistrict && p.isDistrictUnlocked(grenierDistrict, total, letters);
+  const grenier = grenierDistrict && (grenierOpen || p.isDistrictUnlocked(districtById('obs'), total, letters)) ? grenierDistrict : null;
   const rows = buildingRows(p, state, d);
   const all = districtLanterns(d), lit = p.lights(all, state);
   const complete = lit === all.length;
   const artW = Math.min(width, 600) - 32;
   const buildings = [...rows.map((r) => ({ name: r.name, open: r.open, lit: r.lit / r.total })),
-    ...(grenier ? [{ name: 'Grenier', open: p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state)), lit: p.lights(districtLanterns(grenier), state) / 16 }] : [])];
+    ...(grenier ? [{ name: 'Grenier', open: grenierOpen, lit: p.lights(districtLanterns(grenier), state) / 16 }] : [])];
   const xml = districtXml(d.id, info.hue, buildings, complete);
   const k = Math.max(artW / 360, 250 / 300);
   const ox = (artW - 360 * k) / 2, oy = 250 - 300 * k;
@@ -49,9 +53,9 @@ export default function DistrictScreen() {
   };
   const openGrenier = () => {
     if (!grenier) return;
-    if (!p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state))) {
+    if (!grenierOpen) {
       tap('error'); play('locked');
-      showToast(tr('Grenier de l’Allumeur : {0}', [unlockText(grenier, p.totalLights(state), p.letters(state))]), 'lock');
+      showToast(tr('Grenier de l’Allumeur : {0}', [unlockText(grenier, total, letters)]), 'lock');
       return;
     }
     router.push({ pathname: '/building/[id]', params: { id: grenier.buildings[0].id } });
@@ -89,10 +93,10 @@ export default function DistrictScreen() {
         ))}
         {grenier ? (
           <Pressable accessibilityRole="button" onPress={openGrenier} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, minHeight: 52 }}>
-            <Icon name={p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state)) ? 'star' : 'lock'} size={20} color={T.gold} />
+            <Icon name={grenierOpen ? 'star' : 'lock'} size={20} color={T.gold} />
             <View style={{ flex: 1 }}>
               <Text style={type.headline}>{tr('Le Grenier de l’Allumeur')}</Text>
-              <Text style={type.foot}>{p.isDistrictUnlocked(grenier, p.totalLights(state), p.letters(state)) ? tr('{0} / {1} lanternes', [p.lights(districtLanterns(grenier), state), 16]) : tr('590 lumières et 4 lettres de l’Allumeur · {0} / 6 lettres', [p.letters(state)])}</Text>
+              <Text style={type.foot}>{grenierOpen ? tr('{0} / {1} lanternes', [p.lights(districtLanterns(grenier), state), 16]) : unlockText(grenier, total, letters)}</Text>
             </View>
             <Icon name="chev" size={18} color={T.tx3} />
           </Pressable>

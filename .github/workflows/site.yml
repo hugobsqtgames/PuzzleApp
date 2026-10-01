@@ -23,6 +23,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      pages: ${{ steps.pages.outputs.enabled }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -32,11 +34,23 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site/dist
+      # Until Pages is switched on, the site is built but not published (no failing run).
+      - id: pages
+        name: Is GitHub Pages on?
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${{ github.repository }}/pages" --silent 2>/dev/null; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GitHub Pages is off (Settings → Pages → Source: GitHub Actions): the site was built, not published."
+          fi
 
   deploy:
     name: Deploy
-    # Only the default branch is published.
-    if: github.ref_name == github.event.repository.default_branch
+    # Only the default branch is published, once Pages is on.
+    if: needs.build.outputs.pages == 'true' && github.ref_name == github.event.repository.default_branch
     needs: build
     runs-on: ubuntu-latest
     environment:

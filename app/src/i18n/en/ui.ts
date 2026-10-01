@@ -61,7 +61,6 @@ export const EN_UI: Record<string, string> = {
   '{0} / {1} lanternes': '{0} / {1} lanterns',
   ' · habitant réveillé': ' · resident awake',
   'Le Grenier de l’Allumeur': 'The Lamplighter’s Attic',
-  '590 lumières et 4 lettres de l’Allumeur · {0} / 6 lettres': '590 lights and 4 letters from the Lamplighter · {0} / 6 letters',
   '{0} est réveillée.': '{0} is awake.',
   '{0} est réveillé.': '{0} is awake.',
   '{0} dort. Éclaire tout le quartier pour la réveiller.': '{0} is asleep. Light the whole district to wake her.',
