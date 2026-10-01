@@ -17,7 +17,7 @@ Les longueurs ont été vérifiées par rapport aux limites d'Apple.
 | Langues | Français, anglais |
 | Chiffrement (export) | Aucun (`ITSAppUsesNonExemptEncryption = false`, déjà dans `app.json`) |
 
-Captures déjà prêtes : `store/iphone-6.9/` (iPhone 6,9 pouces) et `store/ipad-13/` (iPad 13 pouces).
+Captures prêtes (10 par appareil, refaites avec les événements, le mode Libre, la maison et les 26 familles) : `store/iphone-6.9/` (iPhone 6,9 pouces, 1320 × 2868) et `store/ipad-13/` (iPad 13 pouces, 2064 × 2752). Pour les régénérer : `tools/store/README.md`.
 
 ---
 

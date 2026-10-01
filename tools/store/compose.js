@@ -10,11 +10,12 @@ const SLIDES = [
   { k: 'Une ville à réveiller', t: 'Huit quartiers,<br>une seule nuit', s: 'Du Phare à l’Observatoire, chaque lumière rendue réveille un peu plus la ville.', shots: ['map'] },
   { k: '101 salles', t: 'Pas deux salles<br>pareilles', s: 'Chaque salle a son décor, son histoire et ses lanternes cachées.', shots: ['room-serre.b4.r4', 'room-biblio.b4.r3', 'room-marche.b1.r1'] },
   { k: 'Des énigmes justes', t: 'La logique,<br>jamais le hasard', s: 'Chaque puzzle se résout par le raisonnement. Pas de chrono, prends ton temps.', shots: ['vitraux'] },
-  { k: '17 familles d’énigmes', t: 'Écoute, observe,<br>déduis', s: 'Mélodies, vitraux, différences, ombres, étagères, miroirs, codes…', shots: ['carillon', 'differences', 'ombres'] },
+  { k: '26 familles d’énigmes', t: 'Écoute, observe,<br>déduis', s: 'Mélodies, vitraux, ombres, passerelles, rubans, constellations…', shots: ['carillon', 'passerelles', 'ombres'] },
   { k: 'Nilo', t: 'Un compagnon<br>qui veille sur toi', s: 'Nilo cligne, s’étonne, se réjouit… et murmure un indice quand tu bloques.', shots: ['nilo', 'hint-shown'] },
   { k: 'Plus qu’une lanterne', t: 'Objets cachés<br>et sceaux secrets', s: 'Fouille les décors, relève les chiffres des salles, ouvre les lanternes-clés.', shots: ['room-etabli', 'seal'] },
+  { k: 'Saisons et fêtes', t: 'Vesper vit<br>au fil de l’année', s: 'Printemps des Lanternes, Nuit des Citrouilles, Veillée de Vesper : trois rendez-vous chaque année.', shots: ['event-halloween', 'event-lanternes', 'event-noel'] },
   { k: 'Chaque soir', t: 'Un défi du soir,<br>le même pour tous', s: 'Une nouvelle énigme chaque jour, une série à entretenir, un carnet à remplir.', shots: ['daily', 'carnet'] },
-  { k: 'Rien que le jeu', t: 'Sans compte. Sans pub.<br>Sans pistage.', s: 'Tout reste sur ton appareil. Lampion se joue aussi hors ligne.', shots: ['success'] },
+  { k: 'Rien que le jeu', t: 'Sans compte. Sans pub.<br>Sans pistage.', s: 'Tout reste sur ton appareil. Mode Libre, maison à décorer, et tout se joue hors ligne.', shots: ['house', 'success', 'free'] },
 ];
 const stars = (() => { let s = 7, o = ''; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 140; i++) { const x = r() * 100, y = r() * 62, z = 1 + r() * 3.2, a = 0.25 + r() * 0.6; o += `<i style="left:${x}%;top:${y}%;width:${z}px;height:${z}px;opacity:${a}"></i>`; } return o; })();
 function phone(src, w, extra = '') {
@@ -23,7 +24,7 @@ function phone(src, w, extra = '') {
 }
 function html(sl) {
   const W = SIZE.w, H = SIZE.h, ipad = KIND === 'ipad';
-  const top = ipad ? 560 : 680;
+  const top = ipad ? 660 : 680;
   const n = sl.shots.length;
   let dev = '';
   const aspect = ipad ? 2752 / 2064 : 2796 / 1290;
