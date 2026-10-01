@@ -8,7 +8,10 @@ import { AppState, AppStateStatus, Platform } from 'react-native';
 import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
 import { AmbiencePlace, AudioCommand, AudioDirector, AudioSettings, DEFAULT_AUDIO_SETTINGS, SOUND_EVENTS, STANDARD_MANIFEST, SoundEvent, SoundManifest } from '../core/audio/director';
+import { CHIME_THEMES, ChimeTheme } from './chime';
 import { AMBIENCE_FILES, AMBIENCE_LOOP_SECONDS, AMBIENCE_OVERLAP_SECONDS, SFX_FILES } from './files';
+
+export { CHIME_THEMES, type ChimeTheme } from './chime';
 
 /** Rendered ambiences (tools/audio/render.js) for each place of the director. */
 export const PLACE_AMBIENCE: Record<AmbiencePlace, string> = {
@@ -29,9 +32,6 @@ const MANIFEST: SoundManifest = {
   ambiences: Object.fromEntries(Object.entries(STANDARD_MANIFEST.ambiences).map(([k, v]) => [k, { ...v, volume: 1 }])) as SoundManifest['ambiences'],
 };
 
-/** The Carillon's instrument, chosen in the settings. */
-export type ChimeTheme = 'bells' | 'xylo' | 'harp';
-export const CHIME_THEMES: ChimeTheme[] = ['bells', 'xylo', 'harp'];
 type Haptic = (kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium') => void;
 
 const safe = (f: () => void) => { try { f(); } catch { /* audio is never worth a crash */ } };

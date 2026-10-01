@@ -127,11 +127,13 @@ export default function Settings() {
             <Text style={[type.foot, { marginTop: 4 }]}>{tr('Pas de compte, pas de publicité, pas de suivi, pas de serveur. Rien n’est envoyé, sauf si tu exportes toi-même ta progression.')}</Text>
           </View>
         </View>
+        <LinkRow label={tr('Confidentialité et mentions légales')} onPress={() => router.push('/privacy')} />
       </Group>
       <Group title={tr('Sauvegarde')}>
         <LinkRow label={tr('Exporter ma progression')} icon="share" onPress={doExport} />
         <LinkRow label={tr('Importer une progression')} onPress={() => setSheet('import')} />
         <LinkRow label={tr('Réinitialiser la progression')} color={T.coral} onPress={confirmReset} />
+        <Text style={[type.foot, { paddingVertical: 12 }]}>{tr('Si la sauvegarde iCloud de ton iPhone est activée, ta progression y est comprise : elle te suit quand tu changes de téléphone.')}</Text>
       </Group>
       <Group title={tr('Lampion')}>
         <LinkRow label={tr('Crédits')} icon="star" onPress={() => router.push('/credits')} />
