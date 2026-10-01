@@ -11,11 +11,12 @@ import { useReducedMotion, useAnimatedValue } from '../ui/motion';
 import { bigLanternXml } from '../ui/art';
 import { R, T, type } from '../ui/theme';
 import { FAMILIES, TIER_NAMES } from '../game/catalog';
-import { look } from '../game/rewards';
+import { COSMETICS, look } from '../game/rewards';
 import { askPermission } from '../game/reminders';
 import { TUTORIAL_LANTERN } from './welcome';
 import { tr, trn } from '../i18n';
 import { nextStep } from '../game/views';
+import { EVENTS, EventId } from '../game/seasons';
 
 /** Slow rays of light behind the lantern. */
 function Rays() {
@@ -92,11 +93,14 @@ export default function Success() {
   const s = result.session;
   const lit = result.celebrations.find((c) => c.kind === 'lanternLit');
   const daily = result.celebrations.find((c) => c.kind === 'dailyCompleted');
+  // A seasonal event's puzzle (see store.finishSession).
+  const evc = result.celebrations.find((c) => (c.kind as string) === 'eventLit') as unknown as { event: EventId; solved: number; total: number; shards: number; gift: string | null } | undefined;
+  const evInfo = evc ? EVENTS[evc.event] : null;
   const where = s.kind === 'lantern' ? engine.progression.locate(s.id) : null;
   const room = where?.room ?? null;
   const n = room ? engine.progression.lights(room.lanterns, state) : 0;
   const follow = followUps(result);
-  const title = tr(result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée');
+  const title = evInfo ? (result.replay ? tr('Déjà rallumée') : evInfo.id === 'halloween' ? tr('Citrouille rallumée') : tr('Lanterne de la veillée allumée')) : tr(result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée');
 
   const secs = (shownAt - Date.parse(s.startedAt)) / 1000;
   const clear = s.paidHints === 0 && s.wrongAnswers === 0 && !s.usedSolution;
@@ -118,6 +122,7 @@ export default function Success() {
 
   const next = () => {
     if (follow.length) { router.replace({ pathname: '/found', params: { step: '0' } }); return; }
+    if (s.kind === 'event') { router.dismissTo('/event'); return; }
     if (s.kind === 'daily') {
       if (!settings.reminderOffered && !result.replay) { setOffer(true); return; }
       router.dismissTo('/');
@@ -161,13 +166,20 @@ export default function Success() {
               {lit && lit.kind === 'lanternLit' && lit.shards ? <Pill icon="shard" iconColor={T.moon}>+{lit.shards}</Pill> : null}
               {lit && lit.kind === 'lanternLit' && lit.clairvoyanceBonus ? <Pill icon="star" iconColor={T.gold} color={T.gold} borderColor="#6b5a3c">{tr('Clairvoyance')} +{lit.clairvoyanceBonus}</Pill> : null}
               {daily && daily.kind === 'dailyCompleted' && daily.shards ? <Pill icon="shard" iconColor={T.moon}>+{daily.shards}</Pill> : null}
+              {evc && evc.shards ? <Pill icon="shard" iconColor={T.moon}>+{evc.shards}</Pill> : null}
             </View>
           )}
         {s.code === 'IN' && result.minimalMoves && !s.usedSolution ? <Text style={type.foot}>{trn(s.state.moves, 'Résolu en {0} coup · minimum possible : {1}', 'Résolu en {0} coups · minimum possible : {1}', [s.state.moves, result.minimalMoves])}</Text> : null}
         {s.usedSolution ? <Text style={type.foot}>{tr('Solution consultée : la lumière est gagnée, sans bonus.')}</Text> : null}
       </Rise>
 
-      {s.kind === 'daily' ? (
+      {evc && evInfo ? (
+        <Card style={{ alignItems: 'center', gap: 6, alignSelf: 'stretch', borderColor: evInfo.flame }}>
+          <Text style={[type.cap, { color: evInfo.flame }]}>{tr(evInfo.name)}</Text>
+          <GaugeRow n={evc.solved} total={evc.total} label={evInfo.id === 'halloween' ? tr('Citrouilles') : tr('Soirs de veillée')} from={result.replay ? undefined : evc.solved - 1} />
+          {evc.gift ? <Text style={[type.callout, { color: T.gold, textAlign: 'center' }]}>{tr('Nouveau pour Nilo : {0}', [COSMETICS.find((c) => c.id === evc.gift)?.name ?? ''])}</Text> : null}
+        </Card>
+      ) : s.kind === 'daily' ? (
         <Card style={{ alignItems: 'center', gap: 4, alignSelf: 'stretch' }}>
           <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
             <Icon name="light" size={22} color={T.amber} />
@@ -195,7 +207,7 @@ export default function Success() {
         <Nilo size={84} mood="joy" look={look(state)} />
       </View>
       <View style={{ alignSelf: 'stretch', gap: 4 }}>
-        <Button title={follow.length || s.kind === 'daily' || isTutorial ? tr('Continuer') : tr('Suivant')} onPress={next} />
+        <Button title={follow.length || s.kind !== 'lantern' || isTutorial ? tr('Continuer') : tr('Suivant')} onPress={next} />
         {s.kind === 'lantern' && room && !follow.length ? <Button title={tr('Retour à la salle')} kind="ghost" onPress={() => router.dismissTo({ pathname: '/room/[id]', params: { id: room.id } })} /> : null}
         {s.kind === 'lantern' && !isTutorial ? <Button title={tr('Accueil')} kind="ghost" onPress={() => router.dismissTo('/')} /> : null}
       </View>

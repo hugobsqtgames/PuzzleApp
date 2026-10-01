@@ -18,6 +18,9 @@ import { WORLD } from '../game/catalog';
 import { infoOf } from '../game/views';
 import { look } from '../game/rewards';
 import { tr, translated } from '../i18n';
+import { seasonOn } from '../game/seasons';
+import { SeasonFall } from '../ui/SeasonFall';
+import { useNow } from '../ui/useNow';
 
 const TEXTS = translated(['Vesper s’est éteinte.', 'Chaque énigme rallume une lumière.', 'Nilo t’accompagne.']);
 const SUBS = translated([
@@ -37,6 +40,7 @@ function views(mode: 'dark' | 'phare'): DistrictView[] {
 export default function Welcome() {
   const { state, openLantern } = useStore();
   const { width, height } = useContentSize();
+  const season = seasonOn(useNow());
   const [page, setPage] = useState(-1); // -1 = splash
   const fade = useAnimatedValue(0);
   const dark = useMemo(() => vesperWindowXml(views('dark'), 390, 470), []);
@@ -58,9 +62,14 @@ export default function Welcome() {
   if (page === -1) {
     return (
       <Pressable style={{ flex: 1, backgroundColor: '#05060f', alignItems: 'center', justifyContent: 'center', gap: 18 }} onPress={() => setPage(0)} accessibilityRole="button" accessibilityLabel={tr('Toucher pour continuer')}>
+        {/* The logo follows the season: its colour, and what falls around it. */}
+        <SeasonFall kind={season.particle} accent={season.accent} w={width} h={height} n={14} />
         <Animated.View style={{ opacity: fade, alignItems: 'center', gap: 18 }}>
           <Nilo size={180} look={look(state)} />
-          <Text style={[type.display, { fontSize: 48, lineHeight: 52 }]}>{tr('Lampion')}</Text>
+          <View style={{ alignItems: 'center', gap: 2 }}>
+            <Text style={[type.display, { fontSize: 48, lineHeight: 52 }]}>{tr('Lampion')}</Text>
+            <Text style={[type.dialogue, { color: season.flame }]}>{tr('{0} à Vesper', [tr(season.name).toLowerCase()])}</Text>
+          </View>
           <Text style={[type.dialogue, { color: T.gold }]}>{tr('Chaque énigme rallume une lumière.')}</Text>
         </Animated.View>
         <Text style={[type.foot, { position: 'absolute', bottom: 36, opacity: 0.6 }]}>{tr('Touche pour continuer')}</Text>

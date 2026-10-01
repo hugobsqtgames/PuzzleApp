@@ -12,7 +12,8 @@ import { Screen } from '../ui/Screen';
 import { BackButton, Button, GlyphCircle, Icon, IconButton, Nilo, Sheet, ShardPill, TierBars, ToggleRow, tap } from '../ui/components';
 import { Board, ruleFor } from '../ui/boards';
 import { T, R, type } from '../ui/theme';
-import { FAMILIES, TIER_NAMES, dailyPuzzle, puzzleFor } from '../game/catalog';
+import { FAMILIES, TIER_NAMES, dailyPuzzle, eventPuzzle, eventSize, puzzleFor } from '../game/catalog';
+import { EVENTS, EventId } from '../game/seasons';
 import { Session, canSubmit, giveHint, hintAvailable, hintCost, isComplete, play as playMove, redo, shownHint, startSession, submit, undo } from '../game/session';
 import { STANDARD_ECONOMY } from '../core/game/engine';
 import { t } from '../content/strings';
@@ -73,8 +74,10 @@ export default function PuzzleScreen() {
   const where = s.kind === 'lantern' ? engine.progression.locate(s.id) : null;
   const info = where ? infoOf(where.district) : null;
   const roomAt = where?.room ? locateRoom(where.room.id) : null;
-  const backLabel = s.kind === 'daily' ? tr('Défi du soir') : where?.room ? tr('Salle {0}', [roomAt ? roomAt.index + 1 : '']) : where ? buildingName(where.district, where.district.buildings.indexOf(where.building)) : tr('Accueil');
-  const subtitle = s.kind === 'daily'
+  // event.<id>.<year>.<n>
+  const ev = s.kind === 'event' ? (() => { const [, id, , n] = s.id.split('.'); return { e: EVENTS[id as EventId], n: Number(n) }; })() : null;
+  const backLabel = ev ? tr(ev.e.name) : s.kind === 'daily' ? tr('Défi du soir') : where?.room ? tr('Salle {0}', [roomAt ? roomAt.index + 1 : '']) : where ? buildingName(where.district, where.district.buildings.indexOf(where.building)) : tr('Accueil');
+  const subtitle = ev ? `${tr(ev.e.name)} · ${ev.n} / ${eventSize(ev.e.id)}` : s.kind === 'daily'
     ? dailyLabel(dateOfDay(s.id.slice(6)))
     : where?.room && roomAt ? tr('Lanterne {0} · {1}', [where.room.lanterns.findIndex((l) => l.puzzle === s.id) + 1, slotText(roomSlotsOf(where.room.id, where.room.lanterns.length)[where.room.lanterns.findIndex((l) => l.puzzle === s.id)]?.label ?? '')]) : tr('Lanterne-clé');
   // On iPad the board is drawn at its phone size, then scaled up: taps scale with it.
@@ -137,7 +140,7 @@ export default function PuzzleScreen() {
 
   const leave = () => { leaveSession(); goBack(); };
   const restart = () => {
-    const p = s.kind === 'daily' ? dailyPuzzle(s.id.slice(6)) : puzzleFor(s.id);
+    const p = ev ? eventPuzzle(ev.e.id, ev.n - 1) : s.kind === 'daily' ? dailyPuzzle(s.id.slice(6)) : puzzleFor(s.id);
     if (p) updateSession({ ...startSession(p, s.kind, new Date()), id: s.id, paidHints: s.paidHints, wrongAnswers: s.wrongAnswers, usedSolution: s.usedSolution });
     setSheet(null);
   };
@@ -344,7 +347,7 @@ export default function PuzzleScreen() {
             <Row icon="undo" label={tr('Recommencer ce puzzle')} onPress={() => (s.history.length ? setSheet('restart') : restart())} />
             <ToggleRow icon="music" label={tr('Musique')} value={settings.music} onChange={(v) => setSettings({ music: v })} />
             <ToggleRow icon="sound" label={tr('Effets sonores')} value={settings.effects} onChange={(v) => setSettings({ effects: v })} />
-            <Button title={s.kind === 'daily' ? tr('Retour au défi') : where?.room ? tr('Retour à la salle') : tr('Retour au bâtiment')} kind="secondary" onPress={() => { setSheet(null); leave(); }} style={{ marginTop: 12 }} />
+            <Button title={ev ? tr('Retour à l’événement') : s.kind === 'daily' ? tr('Retour au défi') : where?.room ? tr('Retour à la salle') : tr('Retour au bâtiment')} kind="secondary" onPress={() => { setSheet(null); leave(); }} style={{ marginTop: 12 }} />
             <Text style={[type.foot, { marginTop: 10, textAlign: 'center' }]}>{s.kind === 'daily' ? tr('Le défi reste jouable toute la soirée.') : tr('Ta progression dans ce puzzle est gardée.')}</Text>
           </>
         )}

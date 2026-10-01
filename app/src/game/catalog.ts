@@ -97,6 +97,7 @@ const P = pack as unknown as {
   world: { id: string; districts: PackDistrict[] };
   puzzles: Record<string, PackPuzzle>;
   daily: { first: DayKey; last: DayKey; puzzles: Record<string, PackPuzzle> };
+  events?: Record<string, PackPuzzle[]>;
 };
 
 const toLantern = (l: PackLantern): Lantern => ({ puzzle: l.id, family: l.family, tier: l.tier });
@@ -155,6 +156,22 @@ const DAILY_FALLBACK: Record<Code, unknown> = {
   LU: { rows: 7, cols: 7, posts: [8, 10] }, PA: { rows: 7, cols: 7, islands: [9, 11] },
   SC: { rooms: ['phare.b1.r1'] },
 };
+
+/** How many puzzles a seasonal event has (0 if this pack has none). */
+export const eventSize = (event: string) => P.events?.[event]?.length ?? 0;
+
+/** The n-th puzzle (0-based) of a seasonal event, shipped in the pack. */
+export function eventPuzzle(event: string, n: number): PlayablePuzzle | null {
+  const key = `event.${event}.${n + 1}`;
+  const hit = parsed.get(key);
+  if (hit) return hit;
+  const raw = P.events?.[event]?.[n];
+  const data = raw ? FAMILIES[raw.f]?.engine.parse(raw.p) : null;
+  if (!raw || !data) return null;
+  const out = { id: key, code: raw.f, tier: raw.t, data };
+  parsed.set(key, out);
+  return out;
+}
 
 export function dailyPuzzle(day: DayKey): PlayablePuzzle | null {
   const id = `daily.${day}`;

@@ -12,7 +12,7 @@ import { STANDARD_ECONOMY } from '../core/game/engine';
 import { t } from '../content/strings';
 import { Code, FAMILIES, PlayablePuzzle } from './catalog';
 
-export type SessionKind = 'lantern' | 'daily';
+export type SessionKind = 'lantern' | 'daily' | 'event';
 /** What each hint level costs: the engine's table, so the sheet always shows what is charged. */
 export const HINT_COSTS = STANDARD_ECONOMY.hintCosts;
 

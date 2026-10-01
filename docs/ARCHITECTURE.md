@@ -65,6 +65,14 @@ Le jeu est écrit en français ; l'anglais est un dictionnaire dont les clés so
 - `src/core/__tests__/i18n.test.ts` échoue si un texte n'a pas sa traduction ou si les `{0}` ne correspondent pas. `I18N_DUMP=manquants.json npx jest i18n` écrit la liste de ce qui manque.
 - Une nouvelle langue : un dictionnaire de plus dans `src/i18n/`, une entrée dans `Lang`, `resolveLang` et le sélecteur des Réglages.
 
+## Saisons et événements
+
+`src/game/seasons.ts` lit la date du téléphone : quatre saisons (couleur de flamme, ce qui tombe devant la fenêtre de l'accueil, phrase du jour, tenue de Nilo s'il n'en porte pas) et deux événements annuels, la Nuit des Citrouilles (25 octobre → 2 novembre, 7 énigmes) et la Veillée de Vesper (15 décembre → 6 janvier, une énigme de plus chaque soir, 12 en tout).
+
+- Les énigmes d'événement sont dans `pack.json` (`events`), créées par la Forge (`EVENTS` dans `tools/forge/forge.ts`) et verrouillées comme les autres : tout marche hors ligne et revient chaque année.
+- La progression d'une année est rangée dans `GameState.seenDialogue` (`event.<id>.<année>.<n>`), les paliers une fois pour toutes (`event.halloween.complete`…) : ils donnent les objets de Nilo (`rewards.ts`).
+- L'icône de l'app change avec la saison (`src/game/appIcon.ts`, module `expo-alternate-app-icons`, icônes rendues par `node tools/icons/render.js`). **Uniquement dans une build de développement ou App Store** : Expo Go ne peut pas changer son icône. Réglage « Icône de saison » pour garder l'icône classique.
+
 ## Ajouter un chapitre (mise à jour de contenu)
 
 La fin du premier chapitre (`app/ending.tsx`) annonce la suite « de l'autre côté de la mer ». Pour l'ajouter :

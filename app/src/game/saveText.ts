@@ -23,8 +23,10 @@ export interface Settings {
   language: LangSetting;
   /** The Carillon's instrument. */
   chime: ChimeTheme;
+  /** The app icon follows the season (iOS, outside Expo Go). */
+  seasonIcon: boolean;
 }
-export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto', chime: 'bells' };
+export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto', chime: 'bells', seasonIcon: true };
 
 export function decodeSide(text: string): { settings: Settings; profile: Profile; legacyObjects?: boolean } {
   const out: { settings: Settings; profile: Profile; legacyObjects?: boolean } = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '../ui/Text';
 import { useContentSize, useWide } from '../ui/layout';
@@ -10,15 +10,19 @@ import { Screen } from '../ui/Screen';
 import { Button, Card, Crumb, Gauge, GaugeRow, GlyphCircle, Icon, LightPill, Nilo, Rise, ShardPill, Twinkles, tap } from '../ui/components';
 import { useReducedMotion } from '../ui/motion';
 import { SkyPhase, skyPhase, vesperWindowXml } from '../ui/art';
+import { useNow } from '../ui/useNow';
+import { SeasonFall } from '../ui/SeasonFall';
+import { pumpkinXml, vigilXml } from '../ui/seasonArt';
+import { eventDone, eventEnd, eventOn, seasonOn } from '../game/seasons';
 import { T, R, type } from '../ui/theme';
 import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName, lowerArticle } from '../game/views';
 import { districtLanterns } from '../core/game/world';
-import { FAMILIES, LANTERN_COUNT, TIER_NAMES, dailyPuzzle, WORLD, formatCount } from '../game/catalog';
+import { FAMILIES, LANTERN_COUNT, TIER_NAMES, dailyPuzzle, eventSize, WORLD, formatCount } from '../game/catalog';
 import { ENDING_SEEN } from '../game/story';
 import { look } from '../game/rewards';
 import { dailyLabel, dateOfDay } from '../ui/dates';
 import { addDays } from '../core/game/dayKey';
-import { tr, trn } from '../i18n';
+import { lang, tr, trn } from '../i18n';
 import { STANDARD_STREAK } from '../core/game/daily';
 import { DailyState } from '../core/game/state';
 
@@ -27,15 +31,6 @@ const firstDailyDay = (d: DailyState) => [...d.completedDays, ...d.catchUpDays].
 
 export const DAILY_UNLOCK_LIGHTS = 6;
 
-/** The hour of the phone, kept up to date while the screen is open. */
-function useHour() {
-  const [hour, setHour] = useState(() => new Date().getHours());
-  useEffect(() => {
-    const id = setInterval(() => setHour(new Date().getHours()), 60_000);
-    return () => clearInterval(id);
-  }, []);
-  return hour;
-}
 const phaseLabel = (p: SkyPhase) => (p === 'dawn' ? tr('à l’aube') : p === 'day' ? tr('en plein jour') : p === 'dusk' ? tr('au crépuscule') : tr('la nuit'));
 
 export default function Home() {
@@ -50,8 +45,16 @@ export default function Home() {
   const total = p.totalLights(state);
   const views = useMemo(() => districtViews(p, state), [p, state]);
   // The sky of the window follows the real time of day.
-  const hour = useHour();
+  const now = useNow();
+  const hour = now.getHours();
   const phase = skyPhase(hour);
+  // The season and the yearly events follow the phone's date.
+  const season = seasonOn(now);
+  const running = eventOn(now);
+  const fall = running ? { kind: running.event.particle, accent: running.event.flame } : { kind: season.particle, accent: season.accent };
+  // In season, Nilo wears what fits, unless the player dressed him already.
+  const dressed = look(state);
+  const niloLook = { ...dressed, hat: dressed.hat === 'none' && season.wear.hat ? season.wear.hat : dressed.hat, scarf: dressed.scarf === 'none' && season.wear.scarf ? season.wear.scarf : dressed.scarf };
   const windowXml = useMemo(() => vesperWindowXml(views, 358, 210, phase), [views, phase]);
   const cur = current(p, state);
   // Secret: between midnight and one, Nilo has fallen asleep on the window sill.
@@ -81,6 +84,21 @@ export default function Home() {
     </Pressable>
   ) : null;
 
+  const evSize = running ? eventSize(running.event.id) : 0;
+  const evSolved = running ? eventDone(state, running.event.id, running.year, evSize).filter(Boolean).length : 0;
+  const eventCard = running && evSize ? (
+    <Pressable accessibilityRole="button" onPress={() => { tap(); router.push('/event'); }}
+      style={({ pressed }) => [{ backgroundColor: T.s1, borderWidth: 1, borderColor: running.event.flame, borderRadius: R.l, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }, pressed ? { opacity: 0.85 } : null]}>
+      <SvgXml xml={running.event.id === 'halloween' ? pumpkinXml(true) : vigilXml('lit')} width={48} height={48} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={[type.cap, { color: running.event.flame }]}>{tr('Événement · jusqu’au {0}', [eventEnd(running.event, running.year).toLocaleDateString(lang() === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long' })])}</Text>
+        <Text style={type.headline}>{tr(running.event.name)}</Text>
+        <Text style={type.sub}>{running.event.id === 'halloween' ? tr('{0} / {1} citrouilles rallumées', [evSolved, evSize]) : tr('{0} / {1} soirs de veillée', [evSolved, evSize])}</Text>
+      </View>
+      <Icon name="chev" size={18} color={T.tx3} />
+    </Pressable>
+  ) : null;
+
   const onContinue = () => {
     if (!cur.lantern) { router.push('/map'); return; }
     if (openLantern(cur.lantern.puzzle)) router.push('/puzzle');
@@ -88,6 +106,11 @@ export default function Home() {
 
   return (
     <Screen scroll place="lighthouse" wide={wide}>
+      {/* The logo follows the season. */}
+      <View accessible accessibilityRole="header" accessibilityLabel={`Lampion, ${tr('{0} à Vesper', [tr(season.name).toLowerCase()])}`} style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: -4 }}>
+        <Text style={[type.title2, { fontSize: 26, lineHeight: 32 }]}>Lampion</Text>
+        <Text style={[type.dialogue, { color: running ? running.event.flame : season.flame }]}>{running ? tr(running.event.name) : tr('{0} à Vesper', [tr(season.name).toLowerCase()])}</Text>
+      </View>
       {wide ? (
         <View style={{ flexDirection: 'row', gap: 28, alignItems: 'flex-start' }}>
           <View style={{ width: winW, gap: 14 }}>
@@ -96,6 +119,7 @@ export default function Home() {
           style={{ flex: 1, borderRadius: R.l, overflow: 'hidden', backgroundColor: '#080914', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={windowXml} width={winW} height={winH} />
           {!reduce && (phase === 'night' || phase === 'dusk') ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
+          <SeasonFall kind={fall.kind} accent={fall.accent} w={winW} h={winH} n={fall.kind === 'bat' ? 5 : wide ? 16 : 10} />
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
             <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')} · {phaseLabel(phase)}</Text>
             <Text style={type.foot}>{tr('{0} / {1} lanternes', [total, formatCount(LANTERN_COUNT)])}</Text>
@@ -105,7 +129,7 @@ export default function Home() {
           </View>
         </Pressable>
         <View style={{ position: 'absolute', right: 4, bottom: -26 }}>
-          <Nilo size={96} mood={midnight ? 'sleep' : 'curious'} look={look(state)} onPress={() => router.push('/nilo')} />
+          <Nilo size={96} mood={midnight ? 'sleep' : 'curious'} look={niloLook} onPress={() => router.push('/nilo')} />
         </View>
       </View>
 
@@ -134,7 +158,8 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
       {midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
-        : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text> : null}
+        : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text>
+        : <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr(season.line)}</Text>}
 
 
       {dailyOpen && daily ? (
@@ -162,6 +187,7 @@ export default function Home() {
         </View>
       )}
 
+      {eventCard}
       {catchUp}
       {next ? (
         <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })} style={{ flexDirection: 'row', gap: 12, paddingVertical: 4, paddingHorizontal: 2, alignItems: 'center' }}>
@@ -221,13 +247,15 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
       {midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
-        : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text> : null}
+        : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text>
+        : <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr(season.line)}</Text>}
 
       <View style={{ height: winH, marginBottom: 6 }}>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('Ouvrir la carte de Vesper')} onPress={() => { tap(); router.push('/map'); }}
           style={{ flex: 1, borderRadius: R.l, overflow: 'hidden', backgroundColor: '#080914', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={windowXml} width={winW} height={winH} />
           {!reduce && (phase === 'night' || phase === 'dusk') ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
+          <SeasonFall kind={fall.kind} accent={fall.accent} w={winW} h={winH} n={fall.kind === 'bat' ? 5 : wide ? 16 : 10} />
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
             <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')} · {phaseLabel(phase)}</Text>
             <Text style={type.foot}>{tr('{0} / {1} lanternes', [total, formatCount(LANTERN_COUNT)])}</Text>
@@ -237,7 +265,7 @@ export default function Home() {
           </View>
         </Pressable>
         <View style={{ position: 'absolute', right: 4, bottom: -26 }}>
-          <Nilo size={96} mood={midnight ? 'sleep' : 'curious'} look={look(state)} onPress={() => router.push('/nilo')} />
+          <Nilo size={96} mood={midnight ? 'sleep' : 'curious'} look={niloLook} onPress={() => router.push('/nilo')} />
         </View>
       </View>
 
@@ -285,6 +313,7 @@ export default function Home() {
         </View>
       )}
 
+      {eventCard}
       {catchUp}
       {next ? (
         <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })} style={{ flexDirection: 'row', gap: 12, paddingVertical: 4, paddingHorizontal: 2, alignItems: 'center' }}>

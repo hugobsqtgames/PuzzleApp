@@ -17,7 +17,9 @@ import { AudioSettings, SoundEvent } from '../core/audio/director';
 import { SoundEngine } from '../audio/engine';
 import { DEFAULT_SETTINGS, Settings, decodeSide, exportText, parseImport } from './saveText';
 import type { Code } from './catalog';
-import { WORLD, dailyPuzzle, puzzleFor, FAMILIES, CONTENT_VERSION } from './catalog';
+import { WORLD, dailyPuzzle, eventPuzzle, eventSize, puzzleFor, FAMILIES, CONTENT_VERSION } from './catalog';
+import { EVENTS, EventId, eventDone } from './seasons';
+import { syncAppIcon } from './appIcon';
 import { Session, giveHint, hintCost, progressOf, record, startSession } from './session';
 import { ACHIEVEMENTS, COSMETICS, Profile, Slot, achievementContext, achievementStatus, newProfile, owns } from './rewards';
 import { SAVE_DIRECTORY, deviceFS } from './files';
@@ -48,6 +50,8 @@ interface Store {
   showToast(text: string, icon?: string): void;
   openLantern(id: string): boolean;
   openDaily(day: DayKey): boolean;
+  /** The n-th puzzle (0-based) of this year's seasonal event. */
+  openEvent(id: EventId, year: number, n: number): boolean;
   updateSession(s: Session): void;
   leaveSession(): void;
   finishSession(s: Session): Result | null;
@@ -87,6 +91,8 @@ const Ctx = createContext<Store | null>(null);
  * puzzle screen reads it (the screens behind it are not redrawn at each tap).
  */
 const SessionCtx = createContext<Session | null>(null);
+/** Shards for each puzzle of a seasonal event (once per year and puzzle). */
+export const EVENT_SHARDS = 15;
 const engine = new GameEngine(WORLD);
 const saveStore = new SaveStore(deviceFS, SAVE_DIRECTORY, `content-${CONTENT_VERSION}`);
 const SIDE_FILE = `${SAVE_DIRECTORY}/profile.json`;
@@ -161,6 +167,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       setProfile(side.profile);
       sound.setSettings({ music: side.settings.music, effects: side.settings.effects, haptics: side.settings.haptics, interfaceTaps: false });
       sound.setChime(side.settings.chime);
+      void syncAppIcon(side.settings.seasonIcon);
       setReady(true);
     })();
     return () => { alive = false; };
@@ -242,6 +249,16 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, [sound]);
 
+  const openEvent = useCallback((id: EventId, year: number, n: number) => {
+    const p = eventPuzzle(id, n);
+    if (!p) return false;
+    if (p.code === 'CR') sound.preloadBells();
+    // The session id carries the year: each year's event is played anew.
+    setSession({ ...startSession(p, 'event', new Date()), id: `event.${id}.${year}.${n + 1}` });
+    setResult(null);
+    return true;
+  }, [sound]);
+
   const updateSession = useCallback((s: Session) => { sessionRef.current = s; setSession(s); }, []);
 
   /** Keeps the board of an unfinished lantern (GameState.inProgress). */
@@ -282,6 +299,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           if (c.kind === 'districtCompleted') p = addHistory(p, () => 'Quartier entièrement éclairé', c.shards);
         }
       }
+    } else if (s.kind === 'event') {
+      // event.<id>.<year>.<n>: a light for the event, a few Shards, and its milestones once and for all.
+      const [, id, year] = s.id.split('.') as [string, EventId, string];
+      replay = next.seenDialogue.has(s.id);
+      next.seenDialogue.add(s.id);
+      const shards = replay ? 0 : EVENT_SHARDS;
+      if (shards) credit(next.wallet, shards, `event:${s.id}`);
+      const solved = eventDone(next, id, Number(year), eventSize(id)).filter(Boolean).length;
+      const gift = EVENTS[id].milestones.find(([n, flag]) => solved >= n && !next.seenDialogue.has(flag))?.[2] ?? null;
+      for (const [n, flag] of EVENTS[id].milestones) if (solved >= n) next.seenDialogue.add(flag);
+      if (shards) p = addHistory(p, () => `${EVENTS[id].name} · ${FAMILIES[s.code].name}`, shards);
+      celebrations = [{ kind: 'eventLit', event: id, solved, total: eventSize(id), shards, gift } as unknown as Celebration];
     } else {
       const day = s.id.slice('daily.'.length) as DayKey;
       celebrations = engine.dailySolved(day, new Date(s.startedAt), now, next);
@@ -368,6 +397,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setSettingsState(next);
     sound.setSettings({ music: next.music, effects: next.effects, haptics: next.haptics, interfaceTaps: false } as AudioSettings);
     sound.setChime(next.chime);
+    if (patch.seasonIcon !== undefined) void syncAppIcon(next.seasonIcon);
     void writeSide(next, profileRef.current);
   }, [sound, writeSide]);
 
@@ -434,9 +464,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<Store>(() => ({
     ready, readOnly, state, engine, settings, profile, result, toast, today, daysAway,
-    showToast, openLantern, openDaily, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
+    showToast, openLantern, openDaily, openEvent, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
     completeOnboarding, markSeen, noteProfile, findEgg, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), enterPlace, haptic, resetProgress, exportProgress, importProgress,
-  }), [ready, readOnly, state, settings, profile, result, toast, today, daysAway, showToast, openLantern, openDaily, updateSession, leaveSession, finishSession,
+  }), [ready, readOnly, state, settings, profile, result, toast, today, daysAway, showToast, openLantern, openDaily, openEvent, updateSession, leaveSession, finishSession,
     buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, findEgg, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
 
   return <Ctx.Provider value={value}><SessionCtx.Provider value={session}>{children}</SessionCtx.Provider></Ctx.Provider>;

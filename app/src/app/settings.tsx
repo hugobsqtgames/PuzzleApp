@@ -98,6 +98,9 @@ export default function Settings() {
           <Icon name="chev" size={18} color={T.tx3} />
         </Pressable>
       </Group>
+      <Group title={tr('Apparence')}>
+        <ToggleRow icon="star" label={tr('Icône de saison')} sub={tr('L’icône de Lampion change avec les saisons et les fêtes')} value={settings.seasonIcon} onChange={(v) => setSettings({ seasonIcon: v })} />
+      </Group>
       <Group title={tr('Jeu')}>
         <ToggleRow icon="chev" label={tr('Ouvrir directement les puzzles')} sub={tr('Sans l’aperçu de la lanterne')} value={settings.direct} onChange={(v) => setSettings({ direct: v })} />
       </Group>

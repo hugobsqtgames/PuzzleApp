@@ -119,6 +119,8 @@ export type Slot = 'flame' | 'hat' | 'scarf' | 'comp';
 export interface Cosmetic { id: string; slot: Slot; name: string; price?: number; earn?: { text: string; when: (c: Ctx) => boolean }; color?: string }
 
 const lit = (district: string) => ({ s, p }: Ctx) => { const d = WORLD.districts.find((x) => x.id === district)!; const all = districtLanterns(d); return p.lights(all, s) === all.length; };
+/** A milestone of a seasonal event, kept forever once reached (GameState.seenDialogue). */
+const flag = (id: string) => ({ s }: Ctx) => s.seenDialogue.has(id);
 const building = (id: string) => ({ s, p }: Ctx) => { for (const d of WORLD.districts) for (const b of d.buildings) if (b.id === id) { const all = buildingLanterns(b); return p.lights(all, s) === all.length; } return false; };
 const ach = (id: string) => (c: Ctx) => { const a = ACHIEVEMENTS.find((x) => x.id === id)!; const [n, t] = a.progress(c); return n >= t; };
 
@@ -151,6 +153,8 @@ const COSMETICS_FR: Cosmetic[] = [
   { id: 'hat.beret', slot: 'hat', name: 'Béret de peintre', price: 300 },
   { id: 'hat.crown', slot: 'hat', name: 'Couronne de papier', price: 400 },
   { id: 'hat.top', slot: 'hat', name: 'Haut-de-forme de l’Allumeur', price: 600 },
+  { id: 'hat.witch', slot: 'hat', name: 'Chapeau de sorcière', earn: { text: 'Allume les 7 citrouilles de la Nuit des Citrouilles', when: flag('event.halloween.complete') } },
+  { id: 'hat.santa', slot: 'hat', name: 'Bonnet de la Veillée', earn: { text: 'Veille 6 soirs pendant la Veillée de Vesper', when: flag('event.noel.half') } },
   { id: 'hat.nightcap', slot: 'hat', name: 'Bonnet de nuit', price: 140 },
   { id: 'hat.flowers', slot: 'hat', name: 'Couronne de fleurs', price: 220 },
   { id: 'hat.cap', slot: 'hat', name: 'Casquette de marin', price: 260 },
@@ -162,6 +166,7 @@ const COSMETICS_FR: Cosmetic[] = [
   { id: 'scarf.gold', slot: 'scarf', name: 'Écharpe dorée', price: 500 },
   { id: 'scarf.bow', slot: 'scarf', name: 'Nœud papillon', price: 160 },
   { id: 'scarf.lavender', slot: 'scarf', name: 'Écharpe lavande', price: 200 },
+  { id: 'scarf.holly', slot: 'scarf', name: 'Écharpe de houx', earn: { text: 'Veille les 12 soirs de la Veillée de Vesper', when: flag('event.noel.complete') } },
   { id: 'scarf.ribbon', slot: 'scarf', name: 'Ruban de scène', earn: { text: 'Succès « Rappel » : éclaire le Théâtre', when: lit('theatre') } },
   { id: 'comp.none', slot: 'comp', name: 'Aucun', price: 0 },
   { id: 'comp.leaf', slot: 'comp', name: 'Feuille flottante', price: 150 },
@@ -171,6 +176,8 @@ const COSMETICS_FR: Cosmetic[] = [
   { id: 'comp.butterfly', slot: 'comp', name: 'Papillon', price: 350 },
   { id: 'comp.cloud', slot: 'comp', name: 'Petit nuage', price: 420 },
   { id: 'comp.bird', slot: 'comp', name: 'Petit oiseau', price: 600 },
+  { id: 'comp.pumpkin', slot: 'comp', name: 'Petite citrouille', earn: { text: 'Allume 4 citrouilles de la Nuit des Citrouilles', when: flag('event.halloween.half') } },
+  { id: 'comp.snowflake', slot: 'comp', name: 'Flocon', earn: { text: 'Veille 3 soirs pendant la Veillée de Vesper', when: flag('event.noel.start') } },
   { id: 'comp.gear', slot: 'comp', name: 'Petit engrenage', earn: { text: 'Succès « Horloger » : 25 Engrenages', when: ach('family.EN') } },
   { id: 'comp.firefly', slot: 'comp', name: 'Luciole', earn: { text: 'Succès « Veilleur » : série de 30 soirs', when: ach('streak30') } },
   { id: 'comp.moth', slot: 'comp', name: 'Papillon de nuit', earn: { text: 'Succès « Clairvoyant »', when: ach('clairvoyant') } },

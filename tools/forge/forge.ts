@@ -294,10 +294,18 @@ const FIXED: Record<string, Fixed> = { ...TUTORIAL, ...PROTOTYPE_ROOM };
 //   --lock    writes released.json: the fingerprint of everything published.
 //             content.test then refuses any pack that changes a released puzzle.
 const OUT = path.resolve(__dirname, '../../app/src/content/generated/pack.json');
+/**
+ * The puzzles of the seasonal events, in play order: [family, tier].
+ * La Nuit des Citrouilles (Halloween): seven pumpkins; La Veillée de Vesper (Christmas): twelve evenings.
+ */
+const EVENTS: Record<string, [Code, number][]> = {
+  halloween: [['OM', 1], ['LU', 1], ['ME', 2], ['DI', 2], ['LA', 2], ['IN', 3], ['EN', 3]],
+  noel: [['CR', 1], ['VI', 1], ['ET', 1], ['SU', 2], ['TQ', 2], ['BR', 2], ['MO', 2], ['PA', 2], ['RU', 3], ['FI', 3], ['MI', 3], ['BA', 3]],
+};
 const LOCK = path.resolve(__dirname, 'released.json');
 const EXTEND = process.argv.includes('--extend');
 type Kept = { f: Code; t: Tier; p: unknown };
-const previous: { puzzles: Record<string, Kept>; daily: { puzzles: Record<string, Kept> } } | null =
+const previous: { puzzles: Record<string, Kept>; daily: { puzzles: Record<string, Kept> }; events?: Record<string, Kept[]> } | null =
   EXTEND && fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : null;
 /** Lanterns already published: their family, tier and puzzle never change. */
 const KEEP: Record<string, Kept> = previous?.puzzles ?? {};
@@ -484,14 +492,25 @@ function main() {
   }
   // The mockup's evening challenge was "Tuesday 29 September · Balances · Flame".
   daily['2026-09-29'] = { f: PROTOTYPE_DAILY.f, t: PROTOTYPE_DAILY.t, p: PROTOTYPE_DAILY.p };
-  const pack = { version: FORGE_VERSION, world: { id: 'vesper', districts: world }, puzzles, daily: { first, last, puzzles: daily } };
+  // Seasonal events: their puzzles ship in the app, the same every year (played offline).
+  const events: Record<string, Kept[]> = {};
+  for (const [id, plan] of Object.entries(EVENTS)) {
+    events[id] = plan.map(([code, tier], i) => {
+      const kept = previous?.events?.[id]?.[i];
+      if (kept) return kept;
+      const g = forgePuzzle(code, Math.min(tier, MAX_TIER[code]) as Tier, `event.${id}.${i + 1}`);
+      withKnownPath(code, g.data);
+      return { f: code, t: g.tier, p: g.data };
+    });
+  }
+  const pack = { version: FORGE_VERSION, world: { id: 'vesper', districts: world }, puzzles, daily: { first, last, puzzles: daily }, events };
   const out = OUT;
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(pack));
   if (EXTEND) process.stderr.write(`  kept ${Object.keys(KEEP).length} published lanterns and ${Object.keys(previous?.daily.puzzles ?? {}).length} daily puzzles\n`);
   if (process.argv.includes('--lock')) {
     const fp = (x: Kept) => StableHash.fnv1a64(JSON.stringify(x)).toString(16);
-    const lock = { version: FORGE_VERSION, lanterns: Object.fromEntries(Object.entries(puzzles).map(([k, v]) => [k, fp(v)])), daily: Object.fromEntries(Object.entries(daily).map(([k, v]) => [k, fp(v)])) };
+    const lock = { version: FORGE_VERSION, lanterns: Object.fromEntries(Object.entries(puzzles).map(([k, v]) => [k, fp(v)])), daily: Object.fromEntries(Object.entries(daily).map(([k, v]) => [k, fp(v)])), events: Object.fromEntries(Object.entries(events).flatMap(([id, list]) => list.map((v, i) => [`${id}.${i + 1}`, fp(v)]))) };
     fs.writeFileSync(LOCK, JSON.stringify(lock, null, 0));
     process.stderr.write(`  released.json: ${Object.keys(lock.lanterns).length} lanterns, ${Object.keys(lock.daily).length} daily puzzles locked\n`);
   }

@@ -52,7 +52,60 @@
         }
       ],
       "expo-font",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-alternate-app-icons",
+        [
+          {
+            "name": "Printemps",
+            "ios": "./assets/icons/season-printemps.png",
+            "android": {
+              "foregroundImage": "./assets/icons/season-printemps-fg.png",
+              "backgroundColor": "#140c24"
+            }
+          },
+          {
+            "name": "Ete",
+            "ios": "./assets/icons/season-ete.png",
+            "android": {
+              "foregroundImage": "./assets/icons/season-ete-fg.png",
+              "backgroundColor": "#061219"
+            }
+          },
+          {
+            "name": "Automne",
+            "ios": "./assets/icons/season-automne.png",
+            "android": {
+              "foregroundImage": "./assets/icons/season-automne-fg.png",
+              "backgroundColor": "#140a07"
+            }
+          },
+          {
+            "name": "Hiver",
+            "ios": "./assets/icons/season-hiver.png",
+            "android": {
+              "foregroundImage": "./assets/icons/season-hiver-fg.png",
+              "backgroundColor": "#070c1c"
+            }
+          },
+          {
+            "name": "Halloween",
+            "ios": "./assets/icons/season-halloween.png",
+            "android": {
+              "foregroundImage": "./assets/icons/season-halloween-fg.png",
+              "backgroundColor": "#0c0612"
+            }
+          },
+          {
+            "name": "Noel",
+            "ios": "./assets/icons/season-noel.png",
+            "android": {
+              "foregroundImage": "./assets/icons/season-noel-fg.png",
+              "backgroundColor": "#060b1a"
+            }
+          }
+        ]
+      ]
     ],
     "scheme": "lampion",
     "backgroundColor": "#0D0F1E"
