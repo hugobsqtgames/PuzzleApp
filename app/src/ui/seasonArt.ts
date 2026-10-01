@@ -23,3 +23,8 @@ export function vigilXml(state: 'lit' | 'open' | 'later'): string {
   const lit = state === 'lit';
   return `<svg viewBox="0 0 40 40">${lit ? '<circle cx="20" cy="22" r="18" fill="#FFE6B0" opacity=".2"/>' : ''}<path d="M20 4v5" stroke="#9CA2C6" stroke-width="1.5"/><path d="M13 9h14l-2 4h-10z" fill="#E0625A"/><rect x="12" y="13" width="16" height="17" rx="4" fill="${lit ? '#FFE6B0' : '#1d2140'}" stroke="${state === 'open' ? '#FFE6B0' : lit ? '#F4B45E' : '#2E3360'}" stroke-width="1.6" ${state === 'open' ? 'stroke-dasharray="3 2"' : ''}/>${lit ? '<circle cx="20" cy="21.5" r="3.5" fill="#FFF7E4"/>' : ''}<path d="M13 30h14l-2 4h-10z" fill="#E0625A"/><path d="M17 30l-3 6M23 30l3 6" stroke="#2E7D5B" stroke-width="1.4"/></svg>`;
 }
+
+/** A sky lantern of the Printemps des Lanternes: risen and glowing, ready to rise, or still to come. */
+export function skyLanternXml(lit: boolean): string {
+  return `<svg viewBox="0 0 40 40">${lit ? '<circle cx="20" cy="18" r="18" fill="#F7A8C8" opacity=".2"/>' : ''}<path d="M11 6h18l-3 24h-12z" fill="${lit ? '#F7A8C8' : '#2a1f3a'}" stroke="${lit ? '#FFD6E6' : '#5a4a72'}" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 6l-1 24M24 6l1 24" stroke="${lit ? '#E07FA8' : '#4a3a62'}" stroke-width="1"/><ellipse cx="20" cy="30" rx="6" ry="2" fill="${lit ? '#FFF3D6' : '#3a2f4a'}"/>${lit ? '<circle cx="20" cy="22" r="3.5" fill="#FFF7E4"/>' : ''}</svg>`;
+}

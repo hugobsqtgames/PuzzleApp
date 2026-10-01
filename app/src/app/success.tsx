@@ -4,6 +4,7 @@ import { Text } from '../ui/Text';
 import { router } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
+import { EVENT_THEME } from '../ui/eventTheme';
 import { useStore, Result } from '../game/store';
 import { Screen } from '../ui/Screen';
 import { Button, Card, GaugeRow, Icon, LightPill, Nilo, Pill, Rise, Sheet, Stars } from '../ui/components';
@@ -100,7 +101,7 @@ export default function Success() {
   const room = where?.room ?? null;
   const n = room ? engine.progression.lights(room.lanterns, state) : 0;
   const follow = followUps(result);
-  const title = s.kind === 'free' ? tr('Énigme résolue') : evInfo ? (result.replay ? tr('Déjà rallumée') : evInfo.id === 'halloween' ? tr('Citrouille rallumée') : tr('Lanterne de la veillée allumée')) : tr(result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée');
+  const title = s.kind === 'free' ? tr('Énigme résolue') : evInfo ? (result.replay ? tr('Déjà rallumée') : EVENT_THEME[evInfo.id].solvedTitle()) : tr(result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée');
 
   const secs = (shownAt - Date.parse(s.startedAt)) / 1000;
   const clear = s.paidHints === 0 && s.wrongAnswers === 0 && !s.usedSolution;
@@ -179,7 +180,7 @@ export default function Success() {
       {evc && evInfo ? (
         <Card style={{ alignItems: 'center', gap: 6, alignSelf: 'stretch', borderColor: evInfo.flame }}>
           <Text style={[type.cap, { color: evInfo.flame }]}>{tr(evInfo.name)}</Text>
-          <GaugeRow n={evc.solved} total={evc.total} label={evInfo.id === 'halloween' ? tr('Citrouilles') : tr('Soirs de veillée')} from={result.replay ? undefined : evc.solved - 1} />
+          <GaugeRow n={evc.solved} total={evc.total} label={EVENT_THEME[evInfo.id].gauge()} from={result.replay ? undefined : evc.solved - 1} />
           {evc.gift ? <Text style={[type.callout, { color: T.gold, textAlign: 'center' }]}>{tr('Nouveau pour Nilo : {0}', [COSMETICS.find((c) => c.id === evc.gift)?.name ?? ''])}</Text> : null}
         </Card>
       ) : s.kind === 'daily' ? (

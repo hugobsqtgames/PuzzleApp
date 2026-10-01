@@ -183,11 +183,14 @@ const FIXED: Record<string, Fixed> = { ...TUTORIAL, ...PROTOTYPE_ROOM };
 const OUT = path.resolve(__dirname, '../../app/src/content/generated/pack.json');
 /**
  * The puzzles of the seasonal events, in play order: [family, tier].
- * La Nuit des Citrouilles (Halloween): seven pumpkins; La Veillée de Vesper (Christmas): twelve evenings.
+ * La Nuit des Citrouilles (Halloween): seven pumpkins; La Veillée de Vesper (Christmas): twelve evenings;
+ * Le Printemps des Lanternes: nine sky lanterns.
  */
 const EVENTS: Record<string, [Code, number][]> = {
   halloween: [['OM', 1], ['LU', 1], ['ME', 2], ['DI', 2], ['LA', 2], ['IN', 3], ['EN', 3]],
   noel: [['CR', 1], ['VI', 1], ['ET', 1], ['SU', 2], ['TQ', 2], ['BR', 2], ['MO', 2], ['PA', 2], ['RU', 3], ['FI', 3], ['MI', 3], ['BA', 3]],
+  // Le Printemps des Lanternes (spring): nine sky lanterns.
+  lanternes: [['FI', 1], ['PA', 1], ['RU', 2], ['LU', 2], ['GL', 2], ['SG', 2], ['MO', 3], ['VI', 3], ['DI', 3]],
 };
 const LOCK = path.resolve(__dirname, 'released.json');
 const EXTEND = process.argv.includes('--extend');

@@ -27,6 +27,14 @@ test('Halloween du 25 octobre au 2 novembre ; Noël du 15 décembre au 6 janvier
   expect(eventOn(d(2027, 1, 7))).toBeNull();
 });
 
+test('le Printemps des Lanternes du 28 mars au 10 avril, tout ouvert d’un coup', () => {
+  expect(eventOn(d(2027, 3, 27))).toBeNull();
+  expect(eventOn(d(2027, 3, 28))).toMatchObject({ event: { id: 'lanternes' }, year: 2027 });
+  expect(eventOn(d(2027, 4, 10))).toMatchObject({ event: { id: 'lanternes' }, year: 2027 });
+  expect(eventOn(d(2027, 4, 11))).toBeNull();
+  expect(eventOpen(EVENTS.lanternes, 2027, d(2027, 3, 28), eventSize('lanternes'))).toBe(9);
+});
+
 test('la Veillée ouvre une lanterne par soir, même à cheval sur le nouvel an', () => {
   const size = eventSize('noel');
   expect(size).toBe(12);
@@ -37,8 +45,9 @@ test('la Veillée ouvre une lanterne par soir, même à cheval sur le nouvel an'
 });
 
 test('chaque énigme d’événement est livrée et jouable', () => {
-  for (const id of ['halloween', 'noel'] as const) {
-    expect(eventSize(id)).toBe(id === 'halloween' ? 7 : 12);
+  const sizes = { lanternes: 9, halloween: 7, noel: 12 } as const;
+  for (const id of ['lanternes', 'halloween', 'noel'] as const) {
+    expect(eventSize(id)).toBe(sizes[id]);
     for (let n = 0; n < eventSize(id); n++) expect(eventPuzzle(id, n)).not.toBeNull();
   }
 });
@@ -51,7 +60,8 @@ test('la progression d’un événement est rangée par année', () => {
   expect(eventDone(s, 'halloween', 2027, 7).some(Boolean)).toBe(false);
 });
 
-const EVENT_CASES: ['halloween' | 'noel', number][] = [...[...Array(7).keys()].map((n): ['halloween', number] => ['halloween', n]), ...[...Array(12).keys()].map((n): ['noel', number] => ['noel', n])];
+type Ev = 'lanternes' | 'halloween' | 'noel';
+const EVENT_CASES: [Ev, number][] = (['lanternes', 'halloween', 'noel'] as const).flatMap((id) => [...Array(eventSize(id)).keys()].map((n): [Ev, number] => [id, n]));
 test.each(EVENT_CASES)('%s %i : les indices mènent à la solution', (id, n) => {
   const p = eventPuzzle(id, n)!;
   let s = startSession(p, 'event', new Date('2026-10-26T20:00:00'));

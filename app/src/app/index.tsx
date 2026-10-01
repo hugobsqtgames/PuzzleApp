@@ -13,7 +13,7 @@ import { SkyPhase, skyPhase, vesperWindowXml } from '../ui/art';
 import { useNow } from '../ui/useNow';
 import { APP_VERSION, whatsNewFor } from '../content/whatsNew';
 import { Fog, SeasonFall } from '../ui/SeasonFall';
-import { pumpkinXml, vigilXml } from '../ui/seasonArt';
+import { EVENT_THEME } from '../ui/eventTheme';
 import { eventDone, eventEnd, eventOn, seasonOn, weatherOn } from '../game/seasons';
 import { T, R, type } from '../ui/theme';
 import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName, lowerArticle } from '../game/views';
@@ -78,8 +78,8 @@ export default function Home() {
   const morning = hour >= 6 && hour < 10, late = hour >= 22;
   // In season, Nilo wears what fits, unless the player dressed him already.
   const dressed = look(state);
-  // During the events, Nilo is in costume: a witch for the pumpkins, Father Christmas for the Vigil.
-  const baseLook = running ? { ...dressed, costume: running.event.id === 'noel' ? 'santa' as const : 'witch' as const } : { ...dressed, hat: dressed.hat === 'none' && season.wear.hat ? season.wear.hat : dressed.hat, scarf: dressed.scarf === 'none' && season.wear.scarf ? season.wear.scarf : dressed.scarf };
+  // During the events, Nilo dresses up: flowers and a sky lantern in spring, a witch for the pumpkins, Father Christmas for the Vigil.
+  const baseLook = running ? EVENT_THEME[running.event.id].dress(dressed) : { ...dressed, hat: dressed.hat === 'none' && season.wear.hat ? season.wear.hat : dressed.hat, scarf: dressed.scarf === 'none' && season.wear.scarf ? season.wear.scarf : dressed.scarf };
   const niloLook = morning && dressed.comp === 'none' ? { ...baseLook, comp: 'coffee' } : baseLook;
   const windowXml = useMemo(() => vesperWindowXml(views, 358, 210, phase), [views, phase]);
   const cur = current(p, state);
@@ -115,11 +115,11 @@ export default function Home() {
   const eventCard = running && evSize ? (
     <Pressable accessibilityRole="button" onPress={() => { tap(); router.push('/event'); }}
       style={({ pressed }) => [{ backgroundColor: T.s1, borderWidth: 1, borderColor: running.event.flame, borderRadius: R.l, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }, pressed ? { opacity: 0.85 } : null]}>
-      <SvgXml xml={running.event.id === 'halloween' ? pumpkinXml(true) : vigilXml('lit')} width={48} height={48} />
+      <SvgXml xml={EVENT_THEME[running.event.id].art(true, true)} width={48} height={48} />
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={[type.cap, { color: running.event.flame }]}>{tr('Événement · jusqu’au {0}', [eventEnd(running.event, running.year).toLocaleDateString(lang() === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long' })])}</Text>
         <Text style={type.headline}>{tr(running.event.name)}</Text>
-        <Text style={type.sub}>{running.event.id === 'halloween' ? tr('{0} / {1} citrouilles rallumées', [evSolved, evSize]) : tr('{0} / {1} soirs de veillée', [evSolved, evSize])}</Text>
+        <Text style={type.sub}>{EVENT_THEME[running.event.id].count(evSolved, evSize)}</Text>
       </View>
       <Icon name="chev" size={18} color={T.tx3} />
     </Pressable>

@@ -7,7 +7,7 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 
 import { eventOn, seasonOn } from './seasons';
 
-const NAMES: Record<string, string> = { printemps: 'Printemps', ete: 'Ete', automne: 'Automne', hiver: 'Hiver', halloween: 'Halloween', noel: 'Noel' };
+const NAMES: Record<string, string> = { printemps: 'Printemps', ete: 'Ete', automne: 'Automne', hiver: 'Hiver', lanternes: 'Lanternes', halloween: 'Halloween', noel: 'Noel' };
 
 /** The icon for this date: the event's if one is running, otherwise the season's. */
 export const seasonIconName = (d: Date) => NAMES[eventOn(d)?.event.id ?? seasonOn(d).id];

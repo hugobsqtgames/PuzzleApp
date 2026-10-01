@@ -1,4 +1,4 @@
-// The seasons of Vesper and its two yearly events, from the phone's date.
+// The seasons of Vesper and its three yearly events, from the phone's date.
 // Everything ships in the app: the events need no connection and come back
 // every year. An event's progress is kept per year in GameState.seenDialogue
 // (`event.<id>.<year>.<n>`), its rewards once and for all (`event.<id>.half`…).
@@ -37,7 +37,7 @@ export function seasonOn(d: Date): Season {
   return SEASONS.hiver;
 }
 
-export type EventId = 'halloween' | 'noel';
+export type EventId = 'lanternes' | 'halloween' | 'noel';
 
 export interface SeasonEvent {
   id: EventId;
@@ -55,6 +55,11 @@ export interface SeasonEvent {
 }
 
 export const EVENTS: Record<EventId, SeasonEvent> = {
+  lanternes: {
+    id: 'lanternes', name: 'Le Printemps des Lanternes', flame: '#F7A8C8', particle: 'petal', from: 328, to: 410, pace: 'free',
+    story: 'Sous les cerisiers du Quai, Vesper fait monter ses lanternes volantes. Neuf énigmes, à ton rythme, pour les envoyer dans le ciel.',
+    milestones: [[3, 'event.lanternes.start', 'comp.skylantern'], [9, 'event.lanternes.complete', 'flame.blossom']],
+  },
   halloween: {
     id: 'halloween', name: 'La Nuit des Citrouilles', flame: '#F28C28', particle: 'bat', from: 1025, to: 1102, pace: 'free',
     story: 'Les citrouilles du Marché se sont éteintes. Sept énigmes à résoudre, à ton rythme, pour les rallumer.',

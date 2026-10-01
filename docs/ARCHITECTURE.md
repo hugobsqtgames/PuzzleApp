@@ -67,7 +67,7 @@ Le jeu est écrit en français ; l'anglais est un dictionnaire dont les clés so
 
 ## Saisons et événements
 
-`src/game/seasons.ts` lit la date du téléphone : quatre saisons (couleur de flamme, ce qui tombe devant la fenêtre de l'accueil, phrase du jour, tenue de Nilo s'il n'en porte pas) et deux événements annuels, la Nuit des Citrouilles (25 octobre → 2 novembre, 7 énigmes) et la Veillée de Vesper (15 décembre → 6 janvier, une énigme de plus chaque soir, 12 en tout).
+`src/game/seasons.ts` lit la date du téléphone : quatre saisons (couleur de flamme, ce qui tombe devant la fenêtre de l'accueil, phrase du jour, tenue de Nilo s'il n'en porte pas) et trois événements annuels : le Printemps des Lanternes (28 mars → 10 avril, 9 énigmes), la Nuit des Citrouilles (25 octobre → 2 novembre, 7 énigmes) et la Veillée de Vesper (15 décembre → 6 janvier, une énigme de plus chaque soir, 12 en tout). L'habillage de chaque événement (dessin, tenue de Nilo, textes) est dans `src/ui/eventTheme.ts`.
 
 - Les énigmes d'événement sont dans `pack.json` (`events`), créées par la Forge (`EVENTS` dans `tools/forge/forge.ts`) et verrouillées comme les autres : tout marche hors ligne et revient chaque année.
 - La progression d'une année est rangée dans `GameState.seenDialogue` (`event.<id>.<année>.<n>`), les paliers une fois pour toutes (`event.halloween.complete`…) : ils donnent les objets de Nilo (`rewards.ts`).

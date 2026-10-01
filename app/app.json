@@ -94,6 +94,14 @@
             }
           },
           {
+            "name": "Lanternes",
+            "ios": "./assets/icons/season-lanternes.png",
+            "android": {
+              "foregroundImage": "./assets/icons/season-lanternes-fg.png",
+              "backgroundColor": "#140c24"
+            }
+          },
+          {
             "name": "Halloween",
             "ios": "./assets/icons/season-halloween.png",
             "android": {
