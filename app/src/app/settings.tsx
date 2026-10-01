@@ -10,6 +10,7 @@ import { BackButton, Button, Card, Icon, Sheet, ToggleRow, tap } from '../ui/com
 import { T, R, type } from '../ui/theme';
 import { askPermission, permissionStatus } from '../game/reminders';
 import { CONTENT_VERSION } from '../game/catalog';
+import { APP_VERSION } from '../content/whatsNew';
 import { CHIME_THEMES, ChimeTheme } from '../audio/engine';
 import { LangSetting, tr } from '../i18n';
 
@@ -143,7 +144,7 @@ export default function Settings() {
       </Group>
       {/* Secret: the version tapped seven times. */}
       <Pressable onPress={tapVersion} accessibilityRole="text">
-        <Text style={[type.foot, { textAlign: 'center', marginTop: 16, marginBottom: 8 }]}>Lampion 1.0 · {tr('contenu')} v{CONTENT_VERSION}</Text>
+        <Text style={[type.foot, { textAlign: 'center', marginTop: 16, marginBottom: 8 }]}>Lampion {APP_VERSION} · {tr('contenu')} v{CONTENT_VERSION}</Text>
       </Pressable>
 
       <Sheet visible={sheet === 'time'} onClose={() => setSheet(null)}>

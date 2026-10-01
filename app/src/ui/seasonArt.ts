@@ -8,6 +8,7 @@ export function particleXml(kind: Particle, accent: string, k = 0): string {
     case 'firefly': return `<circle r="6" fill="${accent}" opacity=".2"/><circle r="2" fill="${accent}"/>`;
     case 'leaf': return `<path d="M-5 0q5-5 10 0q-5 5-10 0z" fill="${['#E8744A', '#C8553D', '#E8B04A'][k % 3]}" transform="rotate(${(k * 61) % 180})"/>`;
     case 'snow': return `<circle r="${1.6 + (k % 3) * 0.7}" fill="#FFFFFF" opacity=".9"/>`;
+    case 'rain': return `<path d="M1-6l-2 12" stroke="#9FC3E8" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>`;
     case 'bat': return `<path d="M-8 0q3-4 5-1q1 2 3 0q2 2 3 0q2-3 5 1q-4 1-8 4q-4-3-8-4z" fill="#0a0410" stroke="#3b1640" stroke-width=".6"/>`;
   }
 }

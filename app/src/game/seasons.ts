@@ -5,7 +5,7 @@
 import type { GameState } from '../core/game/state';
 
 export type SeasonId = 'printemps' | 'ete' | 'automne' | 'hiver';
-export type Particle = 'petal' | 'firefly' | 'leaf' | 'snow' | 'bat';
+export type Particle = 'petal' | 'firefly' | 'leaf' | 'snow' | 'bat' | 'rain';
 
 export interface Season {
   id: SeasonId;
@@ -95,4 +95,22 @@ export const eventKey = (id: EventId, year: number, n: number) => `event.${id}.$
 /** Which of the event's puzzles this year are solved. */
 export function eventDone(s: GameState, id: EventId, year: number, size: number): boolean[] {
   return Array.from({ length: size }, (_, n) => s.seenDialogue.has(eventKey(id, year, n)));
+}
+
+export type Weather = 'clear' | 'rain' | 'fog';
+
+/**
+ * Vesper's weather for a day: mostly clear, a fine rain now and then, some
+ * foggy evenings. Always the same for a given date. No rain in winter (it
+ * snows), none during an event (its own sky).
+ */
+export function weatherOn(d: Date): Weather {
+  if (eventOn(d)) return 'clear';
+  const key = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  let x = key ^ 0x5bd1e995;
+  x = Math.imul(x ^ (x >>> 15), 0x2c1b3c6d); x = Math.imul(x ^ (x >>> 12), 0x297a2d39); x ^= x >>> 15;
+  const roll = (x >>> 0) % 100;
+  if (roll < 14 && seasonOn(d).id !== 'hiver') return 'rain';
+  if (roll >= 14 && roll < 26) return 'fog';
+  return 'clear';
 }

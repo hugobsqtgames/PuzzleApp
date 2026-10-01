@@ -7,13 +7,14 @@ import { SvgXml } from 'react-native-svg';
 
 import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
-import { Button, Card, Crumb, Gauge, GaugeRow, GlyphCircle, Icon, LightPill, Nilo, Rise, ShardPill, Twinkles, tap } from '../ui/components';
+import { Sheet, Button, Card, Crumb, Gauge, GaugeRow, GlyphCircle, Icon, LightPill, Nilo, Rise, ShardPill, Twinkles, tap } from '../ui/components';
 import { useReducedMotion } from '../ui/motion';
 import { SkyPhase, skyPhase, vesperWindowXml } from '../ui/art';
 import { useNow } from '../ui/useNow';
-import { SeasonFall } from '../ui/SeasonFall';
+import { APP_VERSION, whatsNewFor } from '../content/whatsNew';
+import { Fog, SeasonFall } from '../ui/SeasonFall';
 import { pumpkinXml, vigilXml } from '../ui/seasonArt';
-import { eventDone, eventEnd, eventOn, seasonOn } from '../game/seasons';
+import { eventDone, eventEnd, eventOn, seasonOn, weatherOn } from '../game/seasons';
 import { T, R, type } from '../ui/theme';
 import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName, lowerArticle } from '../game/views';
 import { districtLanterns } from '../core/game/world';
@@ -34,7 +35,7 @@ export const DAILY_UNLOCK_LIGHTS = 6;
 const phaseLabel = (p: SkyPhase) => (p === 'dawn' ? tr('à l’aube') : p === 'day' ? tr('en plein jour') : p === 'dusk' ? tr('au crépuscule') : tr('la nuit'));
 
 export default function Home() {
-  const { state, engine, openLantern, today, findEgg, daysAway } = useStore();
+  const { state, engine, openLantern, today, findEgg, daysAway, profile, noteProfile } = useStore();
   const { width } = useContentSize();
   const reduce = useReducedMotion();
   const p = engine.progression;
@@ -51,11 +52,15 @@ export default function Home() {
   // The season and the yearly events follow the phone's date.
   const season = seasonOn(now);
   const running = eventOn(now);
-  const fall = running ? { kind: running.event.particle, accent: running.event.flame } : { kind: season.particle, accent: season.accent };
+  const weather = weatherOn(now);
+  const fall = running ? { kind: running.event.particle, accent: running.event.flame } : weather === 'rain' ? { kind: 'rain' as const, accent: '#9FC3E8' } : { kind: season.particle, accent: season.accent };
+  // Nilo follows the hour: a coffee in the morning, yawns late in the evening (asleep after midnight, see below).
+  const morning = hour >= 6 && hour < 10, late = hour >= 22;
   // In season, Nilo wears what fits, unless the player dressed him already.
   const dressed = look(state);
   // During the events, Nilo is in costume: a witch for the pumpkins, Father Christmas for the Vigil.
-  const niloLook = running ? { ...dressed, costume: running.event.id === 'noel' ? 'santa' as const : 'witch' as const } : { ...dressed, hat: dressed.hat === 'none' && season.wear.hat ? season.wear.hat : dressed.hat, scarf: dressed.scarf === 'none' && season.wear.scarf ? season.wear.scarf : dressed.scarf };
+  const baseLook = running ? { ...dressed, costume: running.event.id === 'noel' ? 'santa' as const : 'witch' as const } : { ...dressed, hat: dressed.hat === 'none' && season.wear.hat ? season.wear.hat : dressed.hat, scarf: dressed.scarf === 'none' && season.wear.scarf ? season.wear.scarf : dressed.scarf };
+  const niloLook = morning && dressed.comp === 'none' ? { ...baseLook, comp: 'coffee' } : baseLook;
   const windowXml = useMemo(() => vesperWindowXml(views, 358, 210, phase), [views, phase]);
   const cur = current(p, state);
   // Secret: between midnight and one, Nilo has fallen asleep on the window sill.
@@ -100,6 +105,25 @@ export default function Home() {
     </Pressable>
   ) : null;
 
+  // After an update: what is new, once.
+  const news = profile.seenVersion !== null && profile.seenVersion !== APP_VERSION ? whatsNewFor(APP_VERSION) : null;
+  const seenNews = () => noteProfile((p) => ({ ...p, seenVersion: APP_VERSION }));
+  const newsSheet = (
+    <Sheet visible={!!news} onClose={seenNews}>
+      <View style={{ alignItems: 'center', gap: 12 }}>
+        <Nilo size={90} mood="joy" look={niloLook} still />
+        <Text style={[type.cap, { color: T.gold }]}>{tr('Quoi de neuf · version {0}', [APP_VERSION])}</Text>
+        {news?.lines.map((l) => (
+          <View key={l} style={{ flexDirection: 'row', gap: 10, alignSelf: 'stretch' }}>
+            <Icon name="light" size={18} color={T.amber} />
+            <Text style={[type.body, { flex: 1 }]}>{tr(l)}</Text>
+          </View>
+        ))}
+        <Button title={tr('Super !')} onPress={seenNews} style={{ alignSelf: 'stretch', marginTop: 6 }} />
+      </View>
+    </Sheet>
+  );
+
   const onContinue = () => {
     if (!cur.lantern) { router.push('/map'); return; }
     if (openLantern(cur.lantern.puzzle)) router.push('/puzzle');
@@ -120,7 +144,8 @@ export default function Home() {
           style={{ flex: 1, borderRadius: R.l, overflow: 'hidden', backgroundColor: '#080914', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={windowXml} width={winW} height={winH} />
           {!reduce && (phase === 'night' || phase === 'dusk') ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
-          <SeasonFall kind={fall.kind} accent={fall.accent} w={winW} h={winH} n={fall.kind === 'bat' ? 5 : wide ? 16 : 10} />
+          <SeasonFall kind={fall.kind} accent={fall.accent} w={winW} h={winH} n={fall.kind === 'bat' ? 5 : fall.kind === 'rain' ? 26 : wide ? 16 : 10} />
+          {weather === 'fog' && !running ? <Fog w={winW} h={winH} /> : null}
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
             <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')} · {phaseLabel(phase)}</Text>
             <Text style={type.foot}>{tr('{0} / {1} lanternes', [total, formatCount(LANTERN_COUNT)])}</Text>
@@ -130,7 +155,7 @@ export default function Home() {
           </View>
         </Pressable>
         <View style={{ position: 'absolute', right: 4, bottom: -26 }}>
-          <Nilo size={96} mood={midnight ? 'sleep' : 'curious'} look={niloLook} onPress={() => router.push('/nilo')} />
+          <Nilo size={96} mood={midnight ? 'sleep' : late ? 'think' : 'curious'} look={niloLook} onPress={() => router.push('/nilo')} />
         </View>
       </View>
 
@@ -160,6 +185,10 @@ export default function Home() {
       </View>
       {midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
         : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text>
+        : morning ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo boit son café. Une petite énigme avant de commencer la journée ?')}</Text>
+        : late ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo bâille… Encore une lanterne, et au lit ?')}</Text>
+        : weather === 'rain' && !running ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Il pleut sur Vesper. Les lanternes n’en brillent que mieux.')}</Text>
+        : weather === 'fog' && !running ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Le brouillard monte du port. Suis les lanternes.')}</Text>
         : <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr(season.line)}</Text>}
 
 
@@ -249,6 +278,10 @@ export default function Home() {
       </View>
       {midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
         : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text>
+        : morning ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo boit son café. Une petite énigme avant de commencer la journée ?')}</Text>
+        : late ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo bâille… Encore une lanterne, et au lit ?')}</Text>
+        : weather === 'rain' && !running ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Il pleut sur Vesper. Les lanternes n’en brillent que mieux.')}</Text>
+        : weather === 'fog' && !running ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Le brouillard monte du port. Suis les lanternes.')}</Text>
         : <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr(season.line)}</Text>}
 
       <View style={{ height: winH, marginBottom: 6 }}>
@@ -256,7 +289,8 @@ export default function Home() {
           style={{ flex: 1, borderRadius: R.l, overflow: 'hidden', backgroundColor: '#080914', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={windowXml} width={winW} height={winH} />
           {!reduce && (phase === 'night' || phase === 'dusk') ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
-          <SeasonFall kind={fall.kind} accent={fall.accent} w={winW} h={winH} n={fall.kind === 'bat' ? 5 : wide ? 16 : 10} />
+          <SeasonFall kind={fall.kind} accent={fall.accent} w={winW} h={winH} n={fall.kind === 'bat' ? 5 : fall.kind === 'rain' ? 26 : wide ? 16 : 10} />
+          {weather === 'fog' && !running ? <Fog w={winW} h={winH} /> : null}
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
             <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')} · {phaseLabel(phase)}</Text>
             <Text style={type.foot}>{tr('{0} / {1} lanternes', [total, formatCount(LANTERN_COUNT)])}</Text>
@@ -266,7 +300,7 @@ export default function Home() {
           </View>
         </Pressable>
         <View style={{ position: 'absolute', right: 4, bottom: -26 }}>
-          <Nilo size={96} mood={midnight ? 'sleep' : 'curious'} look={niloLook} onPress={() => router.push('/nilo')} />
+          <Nilo size={96} mood={midnight ? 'sleep' : late ? 'think' : 'curious'} look={niloLook} onPress={() => router.push('/nilo')} />
         </View>
       </View>
 
@@ -348,6 +382,7 @@ export default function Home() {
       </View>
         </>
       )}
+      {newsSheet}
     </Screen>
   );
 }

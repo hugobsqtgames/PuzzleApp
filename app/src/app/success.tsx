@@ -6,12 +6,12 @@ import { SvgXml } from 'react-native-svg';
 
 import { useStore, Result } from '../game/store';
 import { Screen } from '../ui/Screen';
-import { Button, Card, GaugeRow, Icon, LightPill, Nilo, Pill, Rise, Sheet } from '../ui/components';
+import { Button, Card, GaugeRow, Icon, LightPill, Nilo, Pill, Rise, Sheet, Stars } from '../ui/components';
 import { useReducedMotion, useAnimatedValue } from '../ui/motion';
 import { bigLanternXml } from '../ui/art';
 import { R, T, type } from '../ui/theme';
 import { FAMILIES, TIER_NAMES } from '../game/catalog';
-import { COSMETICS, look } from '../game/rewards';
+import { COSMETICS, look, starsOf } from '../game/rewards';
 import { askPermission } from '../game/reminders';
 import { TUTORIAL_LANTERN } from './welcome';
 import { tr, trn } from '../i18n';
@@ -158,6 +158,7 @@ export default function Success() {
       <Rise delay={500} style={{ alignItems: 'center', gap: 10 }}>
         <Text style={[type.cap, { color: T.gold }]}>{FAMILIES[s.code].name} · {TIER_NAMES[s.tier]}</Text>
         <Text style={[type.title1, { textAlign: 'center' }]}>{title}</Text>
+        {s.kind === 'lantern' && !isTutorial ? <Stars n={starsOf({ paidHints: s.paidHints, wrongAnswers: s.wrongAnswers, usedSolution: s.usedSolution })} size={24} /> : null}
         {result.replay
           ? <Text style={[type.sub, { textAlign: 'center' }]}>{tr('Bien joué. Les récompenses ne se gagnent qu’une fois.')}</Text>
           : (

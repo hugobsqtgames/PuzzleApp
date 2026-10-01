@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '../../ui/Text';
 import { useContentSize } from '../../ui/layout';
@@ -13,6 +13,7 @@ import { PANORAMA, districtXml } from '../../ui/art';
 import { T, type } from '../../ui/theme';
 import { BuildingRow, buildingRows, current, districtById, infoOf, unlockText } from '../../game/views';
 import { districtLanterns } from '../../core/game/world';
+import { keeperLine } from '../../content/keepers';
 import { tr } from '../../i18n';
 
 export default function DistrictScreen() {
@@ -23,6 +24,7 @@ export default function DistrictScreen() {
   const d = districtById(id ?? 'phare');
   const info = infoOf(d);
   // French agrees the keeper's words with her or him (L’Horlogère, La Marchande…).
+  const [talk, setTalk] = useState(0);
   const keeperFeminine = !!info.keeper && (info.keeper.name.startsWith('La ') || info.keeper.name === 'L’Horlogère');
   // The Grenier de l'Allumeur is at the top of the Phare: shown with it.
   const grenier = d.id === 'phare' ? districtById('grenier') : null;
@@ -97,12 +99,21 @@ export default function DistrictScreen() {
         ) : null}
       </View>
       {info.keeper ? (
-        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
-          <Icon name="moonI" size={18} color={T.tx2} />
-          <Text style={[type.foot, { flex: 1 }]}>
-            {complete ? `${tr(keeperFeminine ? '{0} est réveillée.' : '{0} est réveillé.', [info.keeper.name])} ${info.keeper.line}` : tr(keeperFeminine ? '{0} dort. Éclaire tout le quartier pour la réveiller.' : '{0} dort. Éclaire tout le quartier pour le réveiller.', [info.keeper.name])}
-          </Text>
-        </View>
+        // Touch the keeper: a word from them (in their sleep, until the district is lit).
+        <Pressable accessibilityRole="button" accessibilityHint={tr('Toucher pour lui parler')} onPress={() => { tap(); setTalk((n) => n + 1); }}
+          style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+          <Icon name={complete ? 'star' : 'moonI'} size={18} color={complete ? T.gold : T.tx2} />
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={type.foot}>
+              {complete ? `${tr(keeperFeminine ? '{0} est réveillée.' : '{0} est réveillé.', [info.keeper.name])} ${info.keeper.line}` : tr(keeperFeminine ? '{0} dort. Éclaire tout le quartier pour la réveiller.' : '{0} dort. Éclaire tout le quartier pour le réveiller.', [info.keeper.name])}
+            </Text>
+            {talk > 0 && keeperLine(d.id, complete, lit / all.length, talk - 1) ? (
+              <View style={{ alignSelf: 'flex-start', backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: 14, borderTopLeftRadius: 4, paddingVertical: 8, paddingHorizontal: 12 }}>
+                <Text style={[type.dialogue, { color: complete ? T.tx : T.tx2 }]}>{tr(keeperLine(d.id, complete, lit / all.length, talk - 1)!)}</Text>
+              </View>
+            ) : <Text style={[type.foot, { color: T.tx3 }]}>{tr('Touche pour lui parler.')}</Text>}
+          </View>
+        </Pressable>
       ) : null}
       {target ? <Button title={tr('Entrer · {0}', [target.name])} onPress={() => openBuilding(target)} style={{ marginTop: 4 }} /> : null}
     </Screen>

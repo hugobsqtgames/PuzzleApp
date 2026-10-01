@@ -8,8 +8,8 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { goBack } from '../../ui/nav';
 import { useStore } from '../../game/store';
 import { Screen } from '../../ui/Screen';
-import { BackButton, Button, Crumb, GaugeRow, GlyphCircle, Icon, Nilo, Pill, Sheet, TierBars, tap } from '../../ui/components';
-import { look } from '../../game/rewards';
+import { BackButton, Button, Crumb, GaugeRow, GlyphCircle, Icon, Nilo, Pill, Sheet, Stars, TierBars, tap } from '../../ui/components';
+import { look, starsOf } from '../../game/rewards';
 import type { Mood } from '../../ui/art';
 import { RoomScene } from '../../ui/RoomScene';
 import { introOf, roomSlotsOf, slotText } from '../../ui/scenes';
@@ -224,8 +224,11 @@ export default function RoomScreen() {
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 16, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center' }}>
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}><TierBars tier={sel.tier} /><Text style={type.sub}>{TIER_NAMES[sel.tier]}</Text></View>
               {/* Rewards are earned once: a lit lantern only shows that it is solved. */}
-              {lit[selected] ? <Pill icon="check" iconColor={T.gold} color={T.gold}>{tr('Résolue')}</Pill> : <Pill icon="shard" iconColor={T.moon}>+{REWARDS[sel.tier]}</Pill>}
+              {lit[selected] ? <Stars n={starsOf(state.solved.get(sel.puzzle))} /> : <Pill icon="shard" iconColor={T.moon}>+{REWARDS[sel.tier]}</Pill>}
             </View>
+            {lit[selected] && starsOf(state.solved.get(sel.puzzle)) < 3 ? (
+              <Text style={[type.foot, { marginTop: -8, marginBottom: 12 }]}>{starsOf(state.solved.get(sel.puzzle)) === 1 ? tr('Rejoue-la sans indice pour la 2e étoile, sans erreur pour la 3e.') : tr('Rejoue-la sans erreur pour la 3e étoile.')}</Text>
+            ) : null}
             <Text style={[type.sub, { marginBottom: 16 }]}>{fam(sel.family).rule}</Text>
             <Button title={lit[selected] ? tr('Rejouer') : state.inProgress.has(sel.puzzle) ? tr('Reprendre') : tr('Allumer')} onPress={() => play_(selected)} />
             <Button title={tr('Plus tard')} kind="ghost" onPress={() => setSelected(null)} style={{ marginTop: 4 }} />

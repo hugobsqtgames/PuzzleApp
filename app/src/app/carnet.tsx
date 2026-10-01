@@ -11,19 +11,19 @@ import { Screen } from '../ui/Screen';
 import { BackButton, Button, Card, Gauge, Icon, Nilo, Sheet, tap } from '../ui/components';
 import { objectSvg } from '../ui/scenes/objects';
 import { Turntable } from '../ui/Turntable';
-import { letterArtXml } from '../ui/art';
+import { districtXml, letterArtXml } from '../ui/art';
 import { T, SERIF, type } from '../ui/theme';
 import { CODES, FAMILIES, LANTERN_COUNT, TIER_NAMES, WORLD, formatCount } from '../game/catalog';
 import { ENDING_SEEN } from '../game/story';
-import { achievementContext, achievementStatus, look } from '../game/rewards';
-import { allRooms, collectibleOf, districtViews, infoOf, letterOwned, roomName, unlockText } from '../game/views';
+import { achievementContext, achievementStatus, look, starsOf } from '../game/rewards';
+import { allRooms, collectibleOf, districtViews, infoOf, letterOwned, lowerArticle, roomName, unlockText } from '../game/views';
 import { LETTERS } from '../content/vesper';
 import { districtLanterns, worldLanterns } from '../core/game/world';
 import { isClairvoyant } from '../core/game/state';
-import { tr, trn, translated } from '../i18n';
+import { lang, tr, trn, translated } from '../i18n';
 
-type Tab = 'objets' | 'succes' | 'stats' | 'vesper';
-const TABS: [Tab, string][] = translated([['objets', 'Objets'], ['succes', 'Succès'], ['stats', 'Statistiques'], ['vesper', 'Vesper']]);
+type Tab = 'objets' | 'succes' | 'stats' | 'vesper' | 'album';
+const TABS: [Tab, string][] = translated([['objets', 'Objets'], ['succes', 'Succès'], ['stats', 'Statistiques'], ['vesper', 'Vesper'], ['album', 'Album']]);
 
 export default function Carnet() {
   const params = useLocalSearchParams<{ tab?: string }>();
@@ -40,7 +40,7 @@ export default function Carnet() {
           </Pressable>
         ))}
       </View>
-      {tab === 'objets' ? <Objects /> : tab === 'succes' ? <Achievements /> : tab === 'stats' ? <Stats /> : <VesperTab />}
+      {tab === 'objets' ? <Objects /> : tab === 'succes' ? <Achievements /> : tab === 'stats' ? <Stats /> : tab === 'album' ? <Album /> : <VesperTab />}
     </Screen>
   );
 }
@@ -166,6 +166,29 @@ function Stats() {
   const clair = records.length ? Math.round((100 * records.filter(isClairvoyant).length) / records.length) : 0;
   const perFamily = CODES.map((c) => [c, lanterns.filter((l) => l.family === c).length] as const);
   const max = Math.max(1, ...perFamily.map(([, n]) => n));
+  // A portrait of the player, from the records kept on the phone.
+  const byFam = CODES.map((c) => {
+    const rs = lanterns.filter((l) => l.family === c).map((l) => state.solved.get(l.puzzle)!);
+    return { c, n: rs.length, hard: rs.length ? rs.filter((r) => r.paidHints > 0 || r.wrongAnswers > 0 || r.usedSolution).length / rs.length : 0 };
+  }).filter((f) => f.n >= 3);
+  const favourite = [...byFam].sort((a, b) => b.n - a.n)[0];
+  const toughest = [...byFam].sort((a, b) => b.hard - a.hard)[0];
+  const threeStars = records.filter((r) => starsOf(r) === 3).length;
+  const hours = records.map((r) => new Date(r.solvedAt).getHours()).filter((h) => !Number.isNaN(h));
+  const parts: [string, (h: number) => boolean][] = [[tr('le matin'), (h) => h >= 5 && h < 12], [tr('l’après-midi'), (h) => h >= 12 && h < 18], [tr('le soir'), (h) => h >= 18 && h < 23], [tr('la nuit'), (h) => h >= 23 || h < 5]];
+  const when = hours.length >= 5 ? [...parts].sort((a, b) => hours.filter(b[1]).length - hours.filter(a[1]).length)[0][0] : null;
+  // Speed: the tier played most, the last five times against the first ones.
+  const tierMost = profile.durations.map((d, t) => [t, d] as const).sort((a, b) => b[1].length - a[1].length)[0];
+  const early = tierMost && tierMost[1].length >= 10 ? median(tierMost[1].slice(0, Math.min(10, tierMost[1].length - 5))) : null;
+  const late = tierMost && tierMost[1].length >= 10 ? median(tierMost[1].slice(-5)) : null;
+  const speed = early && late ? Math.round((100 * (early - late)) / early) : null;
+  const portrait: [string, string, string][] = [
+    ...(favourite ? [['light', tr('Famille préférée'), `${FAMILIES[favourite.c].name} · ${trn(favourite.n, '{0} lanterne', '{0} lanternes')}`] as [string, string, string]] : []),
+    ...(toughest && toughest.hard > 0 ? [['hint', tr('La plus coriace pour toi'), `${FAMILIES[toughest.c].name} · ${tr('aide ou erreur {0} fois sur 10', [Math.round(toughest.hard * 10)])}`] as [string, string, string]] : []),
+    ['star', tr('Lanternes à 3 étoiles'), `${threeStars} / ${records.length}`],
+    ...(speed !== null ? [['cal', tr('Ta vitesse en {0}', [TIER_NAMES[tierMost[0]]]), speed >= 0 ? tr('{0} % plus rapide qu’à tes débuts', [speed]) : tr('un peu plus posée qu’à tes débuts')] as [string, string, string]] : []),
+    ...(when ? [['moonI', tr('Ton moment préféré'), tr('Tu joues surtout {0}', [when])] as [string, string, string]] : []),
+  ];
   const tiles: [string, string][] = [[tr('Lanternes'), String(engine.progression.totalLights(state))], [tr('Clairvoyance'), `${clair} %`], [tr('Série record'), trn(state.daily.bestStreak, '{0} soir', '{0} soirs')], [tr('Murmures'), String(profile.murmures)]];
   return (
     <>
@@ -174,6 +197,15 @@ function Stats() {
           <Card key={l} style={{ width: '48%', padding: 14 }}><Text style={type.foot}>{l}</Text><Text style={[type.title2, { marginTop: 2 }]}>{v}</Text></Card>
         ))}
       </View>
+      <Card style={{ gap: 12 }}>
+        <Text style={type.cap}>{tr('Ton profil de joueur')}</Text>
+        {portrait.map(([icon, label, value]) => (
+          <View key={label} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <Icon name={icon} size={20} color={T.gold} />
+            <View style={{ flex: 1 }}><Text style={type.foot}>{label}</Text><Text style={type.body}>{value}</Text></View>
+          </View>
+        ))}
+      </Card>
       <Card style={{ gap: 10 }}>
         <Text style={type.cap}>{tr('Lanternes par famille')}</Text>
         {perFamily.map(([c, n]) => (
@@ -203,6 +235,38 @@ function Stats() {
         <Text style={[type.foot, { flex: 1 }]}>{tr('Ces statistiques restent sur ton appareil. Rien n’est envoyé.')}</Text>
       </View>
     </>
+  );
+}
+
+/** The album: a photo of each district fully lit, Nilo in front, with the day it happened. */
+function Album() {
+  const { state, engine, profile } = useStore();
+  const { width } = useContentSize();
+  const p = engine.progression;
+  const done = WORLD.districts.filter((d) => { const all = districtLanterns(d); return all.length > 0 && p.lights(all, state) === all.length; });
+  const w = Math.min(width, 600) - 32 - 28, h = Math.round(w * 0.62);
+  if (!done.length) return <Card style={{ alignItems: 'center', gap: 10, padding: 22 }}><Nilo size={80} mood="think" look={look(state)} still /><Text style={[type.body, { textAlign: 'center', color: T.tx2 }]}>{tr('Éclaire un quartier en entier : Nilo prendra la pose devant, et la photo viendra ici.')}</Text></Card>;
+  return (
+    <View style={{ gap: 22, paddingTop: 6 }}>
+      {done.map((d, i) => {
+        const info = infoOf(d);
+        const at = profile.photos.find((x) => x.d === d.id)?.at;
+        const xml = districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: info.buildings[bi]?.name ?? '', open: true, lit: 1 })), true);
+        return (
+          <View key={d.id} accessible accessibilityRole="image" accessibilityLabel={tr('Photo : Nilo devant {0}', [lowerArticle(info.name)])}
+            style={{ alignSelf: 'center', backgroundColor: '#F4EEDF', padding: 10, paddingBottom: 14, borderRadius: 6, transform: [{ rotate: i % 2 ? '1.5deg' : '-1.5deg' }], shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}>
+            <View style={{ width: w, height: h, overflow: 'hidden', borderRadius: 2, backgroundColor: '#080914' }}>
+              <SvgXml xml={xml} width={w} height={h} />
+              <View style={{ position: 'absolute', right: 10, bottom: 4 }}><Nilo size={Math.round(h * 0.42)} mood="joy" look={look(state)} still /></View>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 10 }}>
+              <Text style={{ fontFamily: SERIF, fontSize: 17, color: '#2A2440' }}>{info.name}</Text>
+              <Text style={{ fontSize: 13, color: '#6b6280' }}>{at ? new Date(at).toLocaleDateString(lang() === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</Text>
+            </View>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 

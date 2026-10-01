@@ -10,7 +10,7 @@ import { iconXml, niloXml, Mood, Look } from './art';
 import { NiloLive } from './NiloLive';
 import { MAX_W } from './layout';
 import { TIER_NAMES as TIERS } from '../game/catalog';
-import { tr } from '../i18n';
+import { tr, trn } from '../i18n';
 
 let hapticsOn = true;
 /** Follows the "Vibrations" setting. */
@@ -188,6 +188,15 @@ export function GlyphCircle({ icon, size = 44, color = T.amber }: { icon: string
   return (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name={icon} size={size * 0.52} color={color} />
+    </View>
+  );
+}
+
+/** The mastery of a lantern, out of three. */
+export function Stars({ n, size = 18 }: { n: number; size?: number }) {
+  return (
+    <View accessible accessibilityRole="image" accessibilityLabel={trn(n, '{0} étoile sur 3', '{0} étoiles sur 3')} style={{ flexDirection: 'row', gap: 3 }}>
+      {[0, 1, 2].map((i) => <Icon key={i} name="star" size={size} color={i < n ? T.gold : T.line} sw={i < n ? 2.2 : 1.6} />)}
     </View>
   );
 }

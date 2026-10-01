@@ -20,8 +20,9 @@ import type { Code } from './catalog';
 import { WORLD, dailyPuzzle, eventPuzzle, eventSize, puzzleFor, FAMILIES, CONTENT_VERSION } from './catalog';
 import { EVENTS, EventId, eventDone } from './seasons';
 import { syncAppIcon } from './appIcon';
+import { APP_VERSION } from '../content/whatsNew';
 import { Session, giveHint, hintCost, progressOf, record, startSession } from './session';
-import { ACHIEVEMENTS, COSMETICS, Profile, Slot, achievementContext, achievementStatus, newProfile, owns } from './rewards';
+import { ACHIEVEMENTS, COSMETICS, Profile, Slot, achievementContext, achievementStatus, newProfile, owns, starsOf } from './rewards';
 import { SAVE_DIRECTORY, deviceFS } from './files';
 import { scheduleReminders } from './reminders';
 import { inFrench, tr } from '../i18n';
@@ -162,7 +163,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       // Days since the last launch, then this launch is remembered.
       const last = side.profile.lastSeen ? Date.parse(side.profile.lastSeen) : NaN;
       setDaysAway(Number.isNaN(last) ? 0 : Math.max(0, Math.floor((Date.now() - last) / 86_400_000)));
-      side.profile = { ...side.profile, lastSeen: new Date().toISOString() };
+      // A fresh install has nothing new to announce: it starts at this version.
+      side.profile = { ...side.profile, lastSeen: new Date().toISOString(), seenVersion: side.profile.seenVersion ?? APP_VERSION };
       void writeSide(side.settings, side.profile);
       setProfile(side.profile);
       sound.setSettings({ music: side.settings.music, effects: side.settings.effects, haptics: side.settings.haptics, interfaceTaps: false });
@@ -287,7 +289,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     let minimalMoves: number | undefined;
     if (s.kind === 'lantern') {
       replay = next.solved.has(s.id);
+      const before = next.solved.get(s.id);
       celebrations = engine.puzzleSolved(s.id, record(s, now), next);
+      // A replay never takes anything away: only a better mastery (more stars) is kept.
+      if (before && starsOf(record(s, now)) > starsOf(before)) next.solved.set(s.id, { ...record(s, now), solvedAt: before.solvedAt });
       next.inProgress.delete(s.id);
       if (!replay) {
         const secs = Math.round((now.getTime() - Date.parse(s.startedAt)) / 1000);

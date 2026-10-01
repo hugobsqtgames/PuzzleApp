@@ -10,6 +10,8 @@ import { OBJECTS, PEOPLE, PLACES } from '../families/inquiries';
 import { ROOM_SPECS, roomSlotsOf } from '../../ui/scenes';
 import { setLang } from '../../i18n';
 import { EVENTS, SEASONS } from '../../game/seasons';
+import { WHATS_NEW } from '../../content/whatsNew';
+import { KEEPER_TALK } from '../../content/keepers';
 
 /** A data string that is shown (not an id, a colour or a path). */
 const isText = (s: string) => /\p{L}/u.test(s) && !/^[a-z][\w.-]*$/.test(s) && !/^#[0-9a-f]{3,8}$/i.test(s) && !/^[A-Z]{2}$/.test(s) && !/^[A-Za-z]+\.[\w.]+$/.test(s) && !/[<>]/.test(s);
@@ -74,6 +76,8 @@ export function dataTexts(): string[] {
   for (const spec of Object.values(ROOM_SPECS)) if (spec.intro) out.add(spec.intro);
   for (const x of Object.values(SEASONS)) { out.add(x.name); out.add(x.line); }
   for (const e of Object.values(EVENTS)) { out.add(e.name); out.add(e.story); }
+  for (const w of WHATS_NEW) w.lines.forEach((l) => out.add(l));
+  for (const k of Object.values(KEEPER_TALK)) [...k.asleep, ...k.awake].forEach((l) => out.add(l));
   for (const d of WORLD.districts) for (const b of d.buildings) for (const r of b.rooms) {
     for (const sl of roomSlotsOf(r.id, r.lanterns.length)) for (const part of sl.label.replace(/ \(\d+\)$/, '').split(', ')) out.add(part);
   }

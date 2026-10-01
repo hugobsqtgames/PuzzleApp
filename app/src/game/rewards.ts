@@ -27,8 +27,17 @@ export interface Profile {
   history: { label: string; amount: number; at: string }[];
   /** Rooms whose object the player has found by searching the lit room. */
   picked: string[];
+  /** The app version whose « Quoi de neuf » was seen (null: fresh install, nothing to announce). */
+  seenVersion: string | null;
+  /** The App Store rating was asked once (after a district fully lit). */
+  reviewAsked: boolean;
+  /** The album: a photo of each district fully lit, with its date. */
+  photos: { d: string; at: string }[];
+  /** The player's own little house in Vesper: its name and the objects on its shelves (room ids). */
+  house: { name: string; shelf: (string | null)[] };
 }
-export const newProfile = (): Profile => ({ murmures: 0, oops: 0, thrifty: 0, catchUps: 0, hatDrops: 0, eggs: [], lastSeen: null, themes: [], visited: [], durations: [[], [], [], [], [], []], history: [], picked: [] });
+export const HOUSE_SLOTS = 8;
+export const newProfile = (): Profile => ({ murmures: 0, oops: 0, thrifty: 0, catchUps: 0, hatDrops: 0, eggs: [], lastSeen: null, themes: [], visited: [], durations: [[], [], [], [], [], []], history: [], picked: [], seenVersion: null, reviewAsked: false, photos: [], house: { name: '', shelf: Array(HOUSE_SLOTS).fill(null) } });
 
 export interface Achievement { id: string; name: string; description: string; reward: number; hidden?: boolean; progress: (c: Ctx) => [number, number] }
 interface Ctx { s: GameState; p: Progression; profile: Profile; solvedByFamily: Record<string, Lantern[]> }
@@ -203,3 +212,10 @@ export function look(s: GameState): { flame: string; hat: string; scarf: string;
 export type { Ctx as RewardContext };
 export { CODES as ALL_CODES };
 export type { Code as FamilyCode };
+
+/** Mastery of a lantern: ★ lit, ★★ without any hint, ★★★ without hint or mistake. Replays keep the best. */
+export function starsOf(r: { paidHints: number; wrongAnswers: number; usedSolution: boolean } | undefined): 0 | 1 | 2 | 3 {
+  if (!r) return 0;
+  if (r.usedSolution || r.paidHints > 0) return 1;
+  return r.wrongAnswers > 0 ? 2 : 3;
+}

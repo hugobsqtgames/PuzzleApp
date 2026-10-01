@@ -21,6 +21,7 @@ import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoo
 import { WORLD } from '../game/catalog';
 import { followUps } from './success';
 import { inFrench, tr } from '../i18n';
+import { askReview } from '../game/review';
 
 /**
  * A short cinematic for a district: the camera settles on the panorama while
@@ -53,12 +54,21 @@ const idOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step 
 
 export default function Found() {
   const { step, object: objectParam } = useLocalSearchParams<{ step?: string; object?: string }>();
-  const { state, engine, profile, result, play, equip, openLantern } = useStore();
+  const { state, engine, profile, result, play, equip, openLantern, noteProfile } = useStore();
   const { width } = useContentSize();
   const steps = useMemo(() => (objectParam ? [`object:${objectParam}`] : followUps(result)), [result, objectParam]);
   const i = Math.max(0, Number(step ?? 0));
   const [kind, id] = (steps[i] ?? '').split(':');
   const pickedHere = kindOf(steps, step) === 'object' && profile.picked.includes(idOf(steps, step));
+
+  // A district fully lit: its photo goes in the album, and (once ever) the App Store rating is asked, a moment later.
+  useEffect(() => {
+    if (kind !== 'keeper' || !id) return;
+    noteProfile((p) => (p.photos.some((x) => x.d === id) ? p : { ...p, photos: [...p.photos, { d: id, at: new Date().toISOString() }] }));
+    if (profile.reviewAsked) return;
+    const t = setTimeout(() => { noteProfile((p) => ({ ...p, reviewAsked: true })); void askReview(); }, 2500);
+    return () => clearTimeout(t);
+  }, [kind, id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (kind === 'object' && pickedHere) play('roomCompleted');

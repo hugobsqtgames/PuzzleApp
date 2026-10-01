@@ -3,7 +3,7 @@
 // the tests can throw anything at them.
 import { GameState, decodeState, encodeState } from '../core/game/state';
 import { CHIME_THEMES, ChimeTheme } from '../audio/chime';
-import { Profile, newProfile } from './rewards';
+import { HOUSE_SLOTS, Profile, newProfile } from './rewards';
 import type { LangSetting } from '../i18n';
 
 export interface Settings {
@@ -46,6 +46,14 @@ export function decodeSide(text: string): { settings: Settings; profile: Profile
       themes: strings(p.themes), visited: strings(p.visited),
       durations: Array.isArray(p.durations) && p.durations.length === 6 ? p.durations.map((d) => (Array.isArray(d) ? d.filter((x) => typeof x === 'number' && x > 0 && x < 86400).slice(-100) : [])) : newProfile().durations,
       picked: Array.isArray(p.picked) ? p.picked.filter((x): x is string => typeof x === 'string').slice(0, 200) : [],
+      seenVersion: typeof p.seenVersion === 'string' ? p.seenVersion.slice(0, 20) : null,
+      reviewAsked: p.reviewAsked === true,
+      photos: Array.isArray(p.photos) ? p.photos.filter((x): x is { d: string; at: string } => !!x && typeof x.d === 'string' && typeof x.at === 'string').slice(0, 20) : [],
+      house: (() => {
+        const h = (p.house ?? {}) as { name?: unknown; shelf?: unknown };
+        const shelf = Array.from({ length: HOUSE_SLOTS }, (_, i) => (Array.isArray(h.shelf) && typeof h.shelf[i] === 'string' ? h.shelf[i] as string : null));
+        return { name: typeof h.name === 'string' ? h.name.slice(0, 30) : '', shelf };
+      })(),
       history: Array.isArray(p.history) ? p.history.filter((h): h is Profile['history'][number] => !!h && typeof h.label === 'string' && typeof h.amount === 'number' && typeof h.at === 'string').slice(-30) : [],
     };
   } catch { /* defaults */ }
