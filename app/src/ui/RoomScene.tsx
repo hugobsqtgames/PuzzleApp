@@ -171,7 +171,7 @@ export function RoomScene({ roomId, w, h, lanterns, lit, recommended, justLit, o
 
   return (
     <View style={{ width: w, height: h, overflow: 'hidden' }}>
-      <Pressable accessible={!!search?.active} accessibilityLabel={search?.active ? tr('Chercher l’objet caché dans la salle') : undefined} onPress={onSceneTap} disabled={!search?.active} style={{ position: 'absolute', left: 0, top: 0, width: w, height: h }}>
+      <Pressable accessible={!!search?.active} accessibilityRole={search?.active ? 'button' : 'none'} accessibilityLabel={search?.active ? tr('Chercher l’objet caché dans la salle') : undefined} onPress={onSceneTap} disabled={!search?.active} style={{ position: 'absolute', left: 0, top: 0, width: w, height: h }}>
         {under ? <View style={{ position: 'absolute', left: ox, top: oy }} pointerEvents="none"><SvgXml xml={under} width={SCENE_W * k} height={SCENE_H * k} /></View> : null}
         <Animated.View style={{ position: 'absolute', left: ox, top: oy, opacity: fade }} pointerEvents="none"><SvgXml xml={xml} width={SCENE_W * k} height={SCENE_H * k} /></Animated.View>
       </Pressable>

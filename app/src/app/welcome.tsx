@@ -57,7 +57,7 @@ export default function Welcome() {
 
   if (page === -1) {
     return (
-      <Pressable style={{ flex: 1, backgroundColor: '#05060f', alignItems: 'center', justifyContent: 'center', gap: 18 }} onPress={() => setPage(0)} accessibilityLabel={tr('Toucher pour continuer')}>
+      <Pressable style={{ flex: 1, backgroundColor: '#05060f', alignItems: 'center', justifyContent: 'center', gap: 18 }} onPress={() => setPage(0)} accessibilityRole="button" accessibilityLabel={tr('Toucher pour continuer')}>
         <Animated.View style={{ opacity: fade, alignItems: 'center', gap: 18 }}>
           <Nilo size={180} look={look(state)} />
           <Text style={[type.display, { fontSize: 48, lineHeight: 52 }]}>{tr('Lampion')}</Text>

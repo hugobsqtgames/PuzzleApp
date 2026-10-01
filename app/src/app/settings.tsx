@@ -91,7 +91,7 @@ export default function Settings() {
         <ToggleRow icon="music" label={tr('Musique')} value={settings.music} onChange={(v) => setSettings({ music: v })} />
         <ToggleRow icon="sound" label={tr('Effets sonores')} value={settings.effects} onChange={(v) => setSettings({ effects: v })} />
         <ToggleRow icon="light" label={tr('Vibrations')} value={settings.haptics} onChange={(v) => setSettings({ haptics: v })} />
-        <Pressable accessibilityRole="button" accessibilityLabel={`${tr('Instrument du Carillon')} : ${chimeLabel(settings.chime)}`} onPress={() => { tap(); setSheet('chime'); }} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, gap: 12 }}>
+        <Pressable accessibilityRole="button" accessibilityLabel={`${tr('Instrument du Carillon')} : ${chimeLabel(settings.chime)}`} onPress={() => { tap(); setSheet('chime'); }} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, paddingVertical: 8, gap: 12 }}>
           <Icon name="bell" size={20} color={T.tx2} />
           <Text style={[type.body, { flex: 1 }]}>{tr('Instrument du Carillon')}</Text>
           <Text style={type.foot}>{chimeLabel(settings.chime)}</Text>
@@ -106,13 +106,13 @@ export default function Settings() {
         {settings.reminder ? <LinkRow label={tr('Heure : {0} h {1}', [hh(settings.reminderHour), hh(settings.reminderMinute)])} onPress={() => setSheet('time')} /> : null}
       </Group>
       <Group title={tr('Accessibilité')}>
-        <ToggleRow icon="eye" label={tr('Aide aux couleurs')} sub={tr('Motifs sur les vitraux, traits sur les différences')} value={settings.colorAid} onChange={(v) => setSettings({ colorAid: v })} />
+        <ToggleRow icon="eye" label={tr('Aide aux couleurs')} sub={tr('Motifs, lettres et repères en plus des couleurs')} value={settings.colorAid} onChange={(v) => setSettings({ colorAid: v })} />
         <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, borderBottomWidth: 1, borderBottomColor: T.line, gap: 12 }}>
           <Icon name="light" size={20} color={T.tx2} />
           <View style={{ flex: 1 }}><Text style={type.body}>{tr('Réduire les animations')}</Text><Text style={type.foot}>{tr('Suit le réglage du téléphone')}</Text></View>
           <Text style={type.foot}>{tr('Système')}</Text>
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel={`${tr('Langue')} : ${langLabel(settings.language)}`} onPress={() => { tap(); setSheet('lang'); }} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, gap: 12 }}>
+        <Pressable accessibilityRole="button" accessibilityLabel={`${tr('Langue')} : ${langLabel(settings.language)}`} onPress={() => { tap(); setSheet('lang'); }} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, paddingVertical: 8, gap: 12 }}>
           <Icon name="book" size={20} color={T.tx2} />
           <Text style={[type.body, { flex: 1 }]}>{tr('Langue')}</Text>
           <Text style={type.foot}>{langLabel(settings.language)}</Text>
@@ -147,7 +147,7 @@ export default function Settings() {
           {TIMES.map(([h, m]) => {
             const on = settings.reminderHour === h && settings.reminderMinute === m;
             return (
-              <Pressable key={`${h}${m}`} onPress={() => { tap(); setSettings({ reminderHour: h, reminderMinute: m }); setSheet(null); }}
+              <Pressable key={`${h}${m}`} accessibilityRole="radio" accessibilityState={{ selected: on }} accessibilityLabel={tr('{0} h {1}', [hh(h), hh(m)])} onPress={() => { tap(); setSettings({ reminderHour: h, reminderMinute: m }); setSheet(null); }}
                 style={{ width: '23%', flexGrow: 1, height: 48, borderRadius: R.m, alignItems: 'center', justifyContent: 'center', backgroundColor: T.s1, borderWidth: on ? 2 : 1, borderColor: on ? T.moon : T.line }}>
                 <Text style={{ color: T.tx, fontWeight: '600' }}>{hh(h)}:{hh(m)}</Text>
               </Pressable>

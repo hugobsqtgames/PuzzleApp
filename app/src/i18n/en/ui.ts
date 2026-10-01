@@ -524,4 +524,8 @@ export const EN_UI: Record<string, string> = {
   'au crépuscule': 'at dusk',
   'la nuit': 'at night',
   'Objet à faire tourner': 'Object to spin',
+  'Motifs, lettres et repères en plus des couleurs': 'Patterns, letters and marks on top of colours',
+  '{0}, toutes ses fenêtres allumées': '{0}, every window lit',
+  '{0}, une première fenêtre s’allume': '{0}, a first window lights up',
+  '{0} h {1}': '{0}:{1}',
 };

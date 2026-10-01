@@ -26,7 +26,7 @@ import { inFrench, tr } from '../i18n';
  * A short cinematic for a district: the camera settles on the panorama while
  * its windows light up one building after the other (frame by frame).
  */
-function DistrictReel({ frames, width, height }: { frames: string[]; width: number; height: number }) {
+function DistrictReel({ frames, width, height, label }: { frames: string[]; width: number; height: number; label: string }) {
   const reduce = useReducedMotion();
   const [f, setF] = useState(0);
   const cam = useAnimatedValue(0);
@@ -40,7 +40,7 @@ function DistrictReel({ frames, width, height }: { frames: string[]; width: numb
   }, [cam, n, reduce]);
   const shown = reduce ? frames.length - 1 : f;
   return (
-    <View style={{ width, height, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: T.line, backgroundColor: '#080914' }}>
+    <View accessible accessibilityRole="image" accessibilityLabel={label} style={{ width, height, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: T.line, backgroundColor: '#080914' }}>
       <Animated.View style={reduce ? null : { opacity: cam.interpolate({ inputRange: [0, 0.35, 1], outputRange: [0, 1, 1] }), transform: [{ scale: cam.interpolate({ inputRange: [0, 1], outputRange: [1.18, 1] }) }, { translateY: cam.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) }] }}>
         <SvgXml xml={frames[shown]} width={width} height={height} />
       </Animated.View>
@@ -154,7 +154,7 @@ export default function Found() {
     const info = infoOf(d);
     body = (
       <>
-        <DistrictReel width={width - 32} height={200} frames={d.buildings.map((_, upTo) => districtXml(d.id, info.hue, d.buildings.map((__, bi) => ({ name: buildingName(d, bi), open: true, lit: bi <= upTo ? 1 : 0.3 })), false))
+        <DistrictReel width={width - 32} height={200} label={tr('{0}, toutes ses fenêtres allumées', [info.name])} frames={d.buildings.map((_, upTo) => districtXml(d.id, info.hue, d.buildings.map((__, bi) => ({ name: buildingName(d, bi), open: true, lit: bi <= upTo ? 1 : 0.3 })), false))
           .concat(districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: true, lit: 1 })), true))} />
         <Rise delay={300}><Text style={[type.cap, { color: info.hue, textAlign: 'center' }]}>{tr('Quartier entièrement éclairé')}</Text></Rise>
         <Rise delay={500}><Text style={[type.title1, { textAlign: 'center' }]}>{info.name}</Text></Rise>
@@ -185,7 +185,7 @@ export default function Found() {
     body = (
       <>
         {/* Out of the dark, the first building lights its first windows. */}
-        <DistrictReel width={width - 32} height={220} frames={[0, 0.15].map((lit) => districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: bi === 0, lit: bi === 0 ? lit : 0 })), false))} />
+        <DistrictReel width={width - 32} height={220} label={tr('{0}, une première fenêtre s’allume', [info.name])} frames={[0, 0.15].map((lit) => districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: bi === 0, lit: bi === 0 ? lit : 0 })), false))} />
         <Rise delay={400}><Text style={[type.cap, { color: info.hue, textAlign: 'center' }]}>{tr('Nouveau quartier')}</Text></Rise>
         <Rise delay={650}><Text style={[type.display, { fontSize: 34, lineHeight: 40, textAlign: 'center' }]}>{info.name}</Text></Rise>
         <Rise delay={1000}><Text style={[type.dialogue, { color: T.tx2, textAlign: 'center' }]}>{info.tagline}</Text></Rise>

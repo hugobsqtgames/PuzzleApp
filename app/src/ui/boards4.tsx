@@ -345,6 +345,10 @@ function Ribbons({ s, width, onPlay, tap }: BoardProps) {
           ) : null)}
           {p.ends.flatMap(([a, b], k) => [a, b].map((x) => { const [cx, cy] = center(x); return <Circle key={`${k}.${x}`} cx={cx} cy={cy} r={size * 0.36} fill={RIBBON_COLORS[k % 10]} stroke={st.active === k ? '#FFF' : '#0D0F1E'} strokeWidth={st.active === k ? 3 : 2} />; }))}
         </Svg>
+        {/* Colour aid: each ribbon carries its letter all along, not only on its pins. */}
+        {aid ? st.paths.flatMap((path, k) => path.filter((x) => pinColour(p, x) < 0).map((x) => (
+          <Text key={`r${k}.${x}`} pointerEvents="none" style={{ position: 'absolute', left: (x % p.cols) * size, top: Math.floor(x / p.cols) * size + size / 2 - 7, width: size, textAlign: 'center', color: '#0D0F1E', fontSize: 10, fontWeight: '800', opacity: 0.85 }}>{String.fromCharCode(65 + k)}</Text>
+        ))) : null}
         {aid ? p.ends.flatMap(([a, b], k) => [a, b].map((x) => (
           <Text key={`t${k}.${x}`} pointerEvents="none" style={{ position: 'absolute', left: (x % p.cols) * size, top: Math.floor(x / p.cols) * size + size / 2 - 9, width: size, textAlign: 'center', color: '#0D0F1E', fontSize: 13, fontWeight: '800' }}>{String.fromCharCode(65 + k)}</Text>
         ))) : null}
@@ -362,6 +366,9 @@ function Ribbons({ s, width, onPlay, tap }: BoardProps) {
 // ---------------------------------------------------------------- Lucioles
 function Fireflies({ s, width, onPlay, tap }: BoardProps) {
   const p = s.data as FirefliesPuzzle, st = s.state as FirefliesState;
+  // Colour aid: a count already met is struck through, a cell at fault gets a dashed frame.
+  const aid = useStore().settings.colorAid;
+  const met = (done: boolean) => (done ? { color: T.tx3, ...(aid ? { textDecorationLine: 'line-through' as const } : null) } : { color: T.gold });
   const posts = new Set(p.posts), focus = focusOf(s);
   const size = Math.floor(Math.min(44, (width - 28 - 26) / p.cols));
   const count = (cells: number[]) => cells.filter((i) => st.cells[i] === 1).length;
@@ -379,17 +386,17 @@ function Fireflies({ s, width, onPlay, tap }: BoardProps) {
             );
             return (
               <Pressable key={c} accessibilityRole="button" accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${tr(v === 1 ? 'luciole' : v === 2 ? 'herbe' : 'libre')}`} onPress={() => press(i)}
-                style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', backgroundColor: hot ? 'rgba(232,138,138,0.25)' : v === 2 ? '#1d3a2c' : '#13241d', borderWidth: 0.5, borderColor: '#2e4a3e' }}>
+                style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', backgroundColor: hot ? 'rgba(232,138,138,0.25)' : v === 2 ? '#1d3a2c' : '#13241d', borderWidth: hot && aid ? 2 : 0.5, borderColor: hot && aid ? T.coral : '#2e4a3e', borderStyle: hot && aid ? 'dashed' : 'solid' }}>
                 {v === 1 ? <Svg width={size * 0.7} height={size * 0.7} viewBox="0 0 24 24"><Circle cx={12} cy={12} r={10} fill="rgba(240,228,66,0.3)" /><Circle cx={12} cy={12} r={4.5} fill="#F0E442" /><Path d="M12 7c-3-4-7-3-6 0M12 7c3-4 7-3 6 0" stroke="#BFE6F0" strokeWidth={1.4} fill="none" /></Svg> : null}
                 {v === 2 ? <Svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24"><Path d="M6 20c1-6 1-9 0-13M12 20c0-7 1-11 3-15M18 20c-1-5 0-8 2-11" stroke="#4f8a5e" strokeWidth={2} fill="none" strokeLinecap="round" /></Svg> : null}
               </Pressable>
             );
           })}
-          <Text style={{ width: 26, textAlign: 'center', color: count([...Array(p.cols)].map((_, c) => r * p.cols + c)) === p.rowCounts[r] ? T.tx3 : T.gold, fontSize: 15, fontWeight: '800' }}>{p.rowCounts[r]}</Text>
+          <Text style={[{ width: 26, textAlign: 'center', fontSize: 15, fontWeight: '800' }, met(count([...Array(p.cols)].map((_, c) => r * p.cols + c)) === p.rowCounts[r])]}>{p.rowCounts[r]}</Text>
         </View>
       ))}
       <View style={{ flexDirection: 'row', marginRight: 26 }}>
-        {p.colCounts.map((v, c) => <Text key={c} style={{ width: size, textAlign: 'center', color: count([...Array(p.rows)].map((_, r) => r * p.cols + c)) === v ? T.tx3 : T.gold, fontSize: 15, fontWeight: '800', marginTop: 4 }}>{v}</Text>)}
+        {p.colCounts.map((v, c) => <Text key={c} style={[{ width: size, textAlign: 'center', fontSize: 15, fontWeight: '800', marginTop: 4 }, met(count([...Array(p.rows)].map((_, r) => r * p.cols + c)) === v)]}>{v}</Text>)}
       </View>
     </View>
   );

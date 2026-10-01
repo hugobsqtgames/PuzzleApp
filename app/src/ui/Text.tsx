@@ -1,6 +1,7 @@
 // Text that follows the system text size (Dynamic Type), up to the point where
 // boards and buttons still hold. Use it instead of react-native's Text.
 import React from 'react';
+import { lang } from '../i18n';
 import { Platform, Text as RNText, TextInput as RNTextInput, StyleSheet, TextInputProps, TextProps } from 'react-native';
 
 export const MAX_FONT_SCALE = 1.4;
@@ -16,8 +17,13 @@ function scaled(style: TextProps['style']): TextProps['style'] {
   return [style, { fontSize: (s.fontSize ?? 14) * k, lineHeight: s.lineHeight ? s.lineHeight * k : undefined }];
 }
 
-export function Text({ style, ...props }: TextProps & { ref?: React.Ref<RNText> }) {
-  return <RNText maxFontSizeMultiplier={MAX_FONT_SCALE} {...props} style={scaled(style)} />;
+/** French typography: the space before « : ; ? ! » and inside « » never breaks the line. */
+export const frenchSpaces = (t: string) => t.replace(/ ([:;?!»])/g, '\u00A0$1').replace(/« /g, '«\u00A0');
+const typeset = (children: React.ReactNode): React.ReactNode =>
+  typeof children === 'string' ? frenchSpaces(children) : React.Children.map(children, (c) => (typeof c === 'string' ? frenchSpaces(c) : c));
+
+export function Text({ style, children, ...props }: TextProps & { ref?: React.Ref<RNText> }) {
+  return <RNText maxFontSizeMultiplier={MAX_FONT_SCALE} {...props} style={scaled(style)}>{lang() === 'fr' ? typeset(children) : children}</RNText>;
 }
 
 export function TextInput(props: TextInputProps & { ref?: React.Ref<RNTextInput> }) {
