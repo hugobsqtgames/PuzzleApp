@@ -63,7 +63,7 @@ export default function Free() {
                 <Pressable key={c} accessibilityRole="radio" accessibilityState={{ selected: on }} accessibilityLabel={FAMILIES[c].name} onPress={() => { tap(); setCode(c); }}
                   style={{ width: '30%', flexGrow: 1, alignItems: 'center', gap: 6, paddingVertical: 12, borderRadius: R.m, backgroundColor: T.s1, borderWidth: on ? 2 : 1, borderColor: on ? T.amber : T.line }}>
                   <GlyphCircle icon={c} size={40} color={on ? T.amber : T.tx2} />
-                  <Text style={{ color: on ? T.tx : T.tx2, fontSize: 13, fontWeight: '600', textAlign: 'center' }}>{FAMILIES[c].name}</Text>
+                  <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ color: on ? T.tx : T.tx2, fontSize: 13, fontWeight: '600', textAlign: 'center', paddingHorizontal: 4, alignSelf: 'stretch' }}>{FAMILIES[c].name}</Text>
                 </Pressable>
               );
             })}

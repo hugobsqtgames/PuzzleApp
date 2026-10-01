@@ -364,7 +364,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const buyHint = useCallback((s: Session, level: HintLevel) => {
     const cost = hintCost(s, level);
     // Every Murmure counts for « Chut », free or not.
-    const noteWhisper = () => { if (level === HintLevel.Whisper) commitProfile({ ...profileRef.current, murmures: profileRef.current.murmures + 1 }); };
+    const noteWhisper = () => { if (level === HintLevel.Whisper && s.kind !== 'free') commitProfile({ ...profileRef.current, murmures: profileRef.current.murmures + 1 }); };
     if (cost === 0) {
       const next = giveHint(s, level, 0);
       if (!next) return null;
@@ -463,7 +463,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const fresh = newGameState();
     fresh.onboardingDone = true;
     commit(fresh);
-    commitProfile(newProfile());
+    // A new game, but the app keeps knowing it already asked for a rating and which version's news were seen.
+    commitProfile({ ...newProfile(), reviewAsked: profileRef.current.reviewAsked, seenVersion: profileRef.current.seenVersion });
     setSession(null);
     setResult(null);
   }, [commit, commitProfile]);

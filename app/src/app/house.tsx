@@ -41,7 +41,7 @@ export default function House() {
   const [name, setName] = useState(profile.house.name);
   const W = Math.min(width, 600) - 32, H = Math.round(W * 0.95);
   const cell = (W * 0.9) / 4;
-  const objectOf = (roomId: string | null) => (roomId ? rooms.find((r) => r.room.id === roomId)?.object.name ?? null : null);
+  const objectOf = (roomId: string | null) => (roomId && profile.picked.includes(roomId) ? rooms.find((r) => r.room.id === roomId)?.object.name ?? null : null);
   const put = (roomId: string | null) => {
     if (slot === null) return;
     tap();
@@ -57,7 +57,7 @@ export default function House() {
   return (
     <Screen scroll place="lighthouse" style={{ gap: 14 }}>
       <BackButton label={tr('Retour')} onPress={() => goBack()} />
-      <TextInput value={name} onChangeText={setName} onBlur={saveName} onSubmitEditing={saveName} maxLength={30} placeholder={tr('Nomme ta maison')} placeholderTextColor={T.tx3}
+      <TextInput value={name} onChangeText={(t) => { setName(t); noteProfile((p) => ({ ...p, house: { ...p.house, name: t.slice(0, 30) } })); }} onBlur={saveName} onSubmitEditing={saveName} maxLength={30} placeholder={tr('Nomme ta maison')} placeholderTextColor={T.tx3}
         accessibilityLabel={tr('Nom de ta maison')} style={{ fontFamily: SERIF, fontSize: 30, color: T.tx, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: T.line }} />
       <Text style={[type.foot]}>{tr('Touche une place sur les étagères pour y poser un objet trouvé.')}</Text>
 
@@ -95,7 +95,7 @@ export default function House() {
             })}
           </View>
         )}
-        {slot !== null && profile.house.shelf[slot] ? (
+        {slot !== null && objectOf(profile.house.shelf[slot]) ? (
           <Pressable accessibilityRole="button" onPress={() => put(null)} style={{ flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', paddingVertical: 10 }}>
             <Icon name="undo" size={16} color={T.coral} /><Text style={{ color: T.coral, fontSize: 15 }}>{tr('Libérer cette place')}</Text>
           </Pressable>
