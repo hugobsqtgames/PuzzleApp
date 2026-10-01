@@ -51,6 +51,26 @@ const Motes = memo(function Motes({ w, h, color, n, strength }: { w: number; h: 
   );
 });
 
+/** The warm halo of a lit lantern: it breathes like a flame, each at its own pace. */
+function Halo({ size, index }: { size: number; index: number }) {
+  const v = useAnimatedValue(0);
+  useEffect(() => {
+    const ms = 1700 + ((index * 337) % 900);
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(v, { toValue: 1, duration: ms, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      Animated.timing(v, { toValue: 0, duration: ms * 0.8, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [v, index]);
+  return (
+    <Animated.View pointerEvents="none" style={{ position: 'absolute', width: size, height: size, opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.45, 0.8] }), transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1.06] }) }] }}>
+      <SvgXml xml={HALO} width={size} height={size} />
+    </Animated.View>
+  );
+}
+const HALO = `<svg viewBox="0 0 100 100"><defs><radialGradient id="lampHalo"><stop offset="0" stop-color="#FFD98E" stop-opacity=".55"/><stop offset=".45" stop-color="#F4B45E" stop-opacity=".18"/><stop offset="1" stop-color="#F4B45E" stop-opacity="0"/></radialGradient></defs><circle cx="50" cy="50" r="50" fill="url(#lampHalo)"/></svg>`;
+
 /** A lantern on its object. Pops and sends a wave of light the moment it is lit. */
 function Lantern({ index, slot, lit, isKey, recommended, justLit, k, hw, hh, disabled, label, onPress, reduce }: {
   index: number; slot: Slot; lit: boolean; isKey?: boolean; recommended: boolean; justLit: boolean; k: number; hw: number; hh: number; disabled: boolean; label: string; onPress: () => void; reduce: boolean;
@@ -76,6 +96,7 @@ function Lantern({ index, slot, lit, isKey, recommended, justLit, k, hw, hh, dis
       style={{ position: 'absolute', left: slot.x - HIT_W / 2, top: slot.y - HIT_H / 2 - 4, width: HIT_W, height: HIT_H, alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
       <View pointerEvents="none" style={{ position: 'absolute', left: HIT_W / 2 - L / 2, top: HIT_H / 2 + 4 - L * (34 / 60), width: L, height: L, alignItems: 'center', justifyContent: 'center' }}>
         {justLit && !reduce ? <Animated.View style={{ position: 'absolute', width: L * 0.9, height: L * 0.9, borderRadius: L, borderWidth: 2, borderColor: T.gold, opacity: wave.interpolate({ inputRange: [0, 0.1, 1], outputRange: [0, 1, 0] }), transform: [{ scale: wave.interpolate({ inputRange: [0, 1], outputRange: [0.6, 4] }) }] }} /> : null}
+        {lit && !reduce ? <Halo size={L * 2.1} index={index} /> : null}
         {recommended && !reduce ? <PulseRing size={34 * Math.max(1, k)} /> : null}
         <Animated.View style={{ position: 'absolute', left: 0, top: 0, width: L, height: L, transform: [{ scale: Animated.multiply(press, pop.interpolate({ inputRange: [0, 0.6, 1], outputRange: [0.6, 1.15, 1] })) }] }}>
           <SvgXml xml={xml} width={L} height={L} />

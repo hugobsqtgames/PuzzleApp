@@ -1,8 +1,8 @@
 // What a success reveals, one screen at a time: the room's object, the
 // resident who wakes up, the district keeper, a letter of the Allumeur, a
 // new district.
-import React, { useEffect, useMemo } from 'react';
-import { View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Animated, Easing, View } from 'react-native';
 import { Text } from '../ui/Text';
 import { useContentSize } from '../ui/layout';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -10,7 +10,8 @@ import { SvgXml } from 'react-native-svg';
 
 import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
-import { Button, Icon, Nilo, Pill, ShardPill } from '../ui/components';
+import { Button, Icon, Nilo, Pill, Rise, ShardPill } from '../ui/components';
+import { useAnimatedValue, useReducedMotion } from '../ui/motion';
 import { districtXml, letterArtXml } from '../ui/art';
 import { objectSvg } from '../ui/scenes/objects';
 import { T, type } from '../ui/theme';
@@ -20,6 +21,32 @@ import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoo
 import { WORLD } from '../game/catalog';
 import { followUps } from './success';
 import { inFrench, tr } from '../i18n';
+
+/**
+ * A short cinematic for a district: the camera settles on the panorama while
+ * its windows light up one building after the other (frame by frame).
+ */
+function DistrictReel({ frames, width, height }: { frames: string[]; width: number; height: number }) {
+  const reduce = useReducedMotion();
+  const [f, setF] = useState(0);
+  const cam = useAnimatedValue(0);
+  // The frames are rebuilt at each render: only their number drives the reel.
+  const n = frames.length;
+  useEffect(() => {
+    if (reduce) return;
+    Animated.timing(cam, { toValue: 1, duration: 1600, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    const ids = Array.from({ length: n - 1 }, (_, k) => setTimeout(() => setF(k + 1), 500 + k * 380));
+    return () => ids.forEach(clearTimeout);
+  }, [cam, n, reduce]);
+  const shown = reduce ? frames.length - 1 : f;
+  return (
+    <View style={{ width, height, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: T.line, backgroundColor: '#080914' }}>
+      <Animated.View style={reduce ? null : { opacity: cam.interpolate({ inputRange: [0, 0.35, 1], outputRange: [0, 1, 1] }), transform: [{ scale: cam.interpolate({ inputRange: [0, 1], outputRange: [1.18, 1] }) }, { translateY: cam.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) }] }}>
+        <SvgXml xml={frames[shown]} width={width} height={height} />
+      </Animated.View>
+    </View>
+  );
+}
 
 const kindOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step ?? 0))] ?? '').split(':')[0];
 const idOf = (steps: string[], step?: string) => (steps[Math.max(0, Number(step ?? 0))] ?? '').split(':')[1] ?? '';
@@ -127,13 +154,12 @@ export default function Found() {
     const info = infoOf(d);
     body = (
       <>
-        <View style={{ width: width - 32, height: 200, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: T.line }}>
-          <SvgXml xml={districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: true, lit: 1 })), true)} width={width - 32} height={200} />
-        </View>
-        <Text style={[type.cap, { color: info.hue }]}>{tr('Quartier entièrement éclairé')}</Text>
-        <Text style={[type.title1, { textAlign: 'center' }]}>{info.name}</Text>
-        {info.keeper ? <Text style={[type.dialogue, { textAlign: 'center' }]}>{tr('{0} se réveille.', [info.keeper.name])} {info.keeper.line}</Text> : null}
-        <ShardPill n={`+${engine.economy.districtBonus}`} />
+        <DistrictReel width={width - 32} height={200} frames={d.buildings.map((_, upTo) => districtXml(d.id, info.hue, d.buildings.map((__, bi) => ({ name: buildingName(d, bi), open: true, lit: bi <= upTo ? 1 : 0.3 })), false))
+          .concat(districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: true, lit: 1 })), true))} />
+        <Rise delay={300}><Text style={[type.cap, { color: info.hue, textAlign: 'center' }]}>{tr('Quartier entièrement éclairé')}</Text></Rise>
+        <Rise delay={500}><Text style={[type.title1, { textAlign: 'center' }]}>{info.name}</Text></Rise>
+        {info.keeper ? <Rise delay={500 + d.buildings.length * 380}><Text style={[type.dialogue, { textAlign: 'center' }]}>{tr('{0} se réveille.', [info.keeper.name])} {info.keeper.line}</Text></Rise> : null}
+        <Rise delay={700 + d.buildings.length * 380}><ShardPill n={`+${engine.economy.districtBonus}`} /></Rise>
       </>
     );
   }
@@ -143,7 +169,7 @@ export default function Found() {
     const letter = LETTERS.find((l) => l.from === from);
     if (letter) body = (
       <>
-        <SvgXml xml={letterArtXml()} width={200} height={150} />
+        <SvgXml xml={letterArtXml(from)} width={200} height={150} />
         <Text style={[type.cap, { color: T.gold }]}>{tr('Lettre de l’Allumeur')}</Text>
         <Text style={type.title1}>{letter.title}</Text>
         <Text style={[type.dialogue, { textAlign: 'center', maxWidth: 340 }]}>« {letter.text} »</Text>
@@ -158,13 +184,12 @@ export default function Found() {
     const families = [...new Set(d.buildings.flatMap((b) => b.rooms.flatMap((r) => r.lanterns.map((l) => l.family))))];
     body = (
       <>
-        <View style={{ width: width - 32, height: 220, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: T.line }}>
-          <SvgXml xml={districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: bi === 0, lit: 0.15 })), false)} width={width - 32} height={220} />
-        </View>
-        <Text style={[type.cap, { color: info.hue }]}>{tr('Nouveau quartier')}</Text>
-        <Text style={[type.display, { fontSize: 34, lineHeight: 40, textAlign: 'center' }]}>{info.name}</Text>
-        <Text style={[type.dialogue, { color: T.tx2 }]}>{info.tagline}</Text>
-        <Text style={[type.sub, { textAlign: 'center' }]}>{tr('{0} familles de casse-têtes t’y attendent.', [families.length])}</Text>
+        {/* Out of the dark, the first building lights its first windows. */}
+        <DistrictReel width={width - 32} height={220} frames={[0, 0.15].map((lit) => districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: bi === 0, lit: bi === 0 ? lit : 0 })), false))} />
+        <Rise delay={400}><Text style={[type.cap, { color: info.hue, textAlign: 'center' }]}>{tr('Nouveau quartier')}</Text></Rise>
+        <Rise delay={650}><Text style={[type.display, { fontSize: 34, lineHeight: 40, textAlign: 'center' }]}>{info.name}</Text></Rise>
+        <Rise delay={1000}><Text style={[type.dialogue, { color: T.tx2, textAlign: 'center' }]}>{info.tagline}</Text></Rise>
+        <Rise delay={1300}><Text style={[type.sub, { textAlign: 'center' }]}>{tr('{0} familles de casse-têtes t’y attendent.', [families.length])}</Text></Rise>
       </>
     );
     buttons = (
@@ -177,7 +202,7 @@ export default function Found() {
   }
 
   return (
-    <Screen style={{ gap: 12, paddingTop: 72 }} place={kind === 'district' ? 'glasshouse' : undefined}>
+    <Screen style={{ gap: 12, paddingTop: 72 }} place={kind === 'district' ? infoOf(districtById(id)).sound : undefined}>
       <View style={{ alignItems: 'center', gap: 12 }}>{body}</View>
       <View style={{ flex: 1 }} />
       <View style={{ gap: 4 }}>{buttons}</View>

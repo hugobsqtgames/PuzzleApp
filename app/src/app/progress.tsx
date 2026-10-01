@@ -10,7 +10,8 @@ import { Screen } from '../ui/Screen';
 import { BackButton, Button, Card, Crumb, Gauge, Icon, tap } from '../ui/components';
 import { T, type } from '../ui/theme';
 import { WORLD } from '../game/catalog';
-import { buildingName, buildingRows, current, districtState, infoOf, locateRoom, roomLabel, unlockText } from '../game/views';
+import { buildingName, buildingRows, current, districtState, infoOf, letterOwned, locateRoom, roomLabel, unlockText } from '../game/views';
+import { LETTERS } from '../content/vesper';
 import { districtLanterns } from '../core/game/world';
 import { tr } from '../i18n';
 
@@ -90,7 +91,7 @@ export default function Progress() {
 
       <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Icon name="letter" size={22} color={T.gold} />
-        <Text style={[type.body, { flex: 1 }]}>{tr('Lettres de l’Allumeur : {0} / {1}', [letters, 6])}</Text>
+        <Text style={[type.body, { flex: 1 }]}>{tr('Lettres de l’Allumeur : {0} / {1}', [LETTERS.filter((l) => letterOwned(p, state, l.from)).length, LETTERS.length])}</Text>
       </Card>
     </Screen>
   );

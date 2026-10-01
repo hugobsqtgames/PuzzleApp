@@ -241,11 +241,29 @@ function districtArt(d: DistrictView, cx: number, cy: number, sc: number): strin
 }
 
 /** Window on Vesper (home). */
-export function vesperWindowXml(districts: DistrictView[], w: number, h: number): string {
-  const gid = uid('g');
+/** The sky over Vesper follows the real time of day. */
+export type SkyPhase = 'dawn' | 'day' | 'dusk' | 'night';
+export const skyPhase = (hour: number): SkyPhase => (hour >= 5 && hour < 8 ? 'dawn' : hour >= 8 && hour < 17 ? 'day' : hour >= 17 && hour < 21 ? 'dusk' : 'night');
+const SKIES: Record<SkyPhase, { stops: [string, string, string]; stars: number; body: 'moon' | 'sun'; sun?: [number, number, string] }> = {
+  night: { stops: ['#080914', '#11142c', '#0D0F1E'], stars: 1, body: 'moon' },
+  dawn: { stops: ['#1a1c3c', '#5b4370', '#d98f7a'], stars: 0.35, body: 'sun', sun: [0.2, 0.5, '#FFD3A0'] },
+  day: { stops: ['#22385f', '#456691', '#7f9bbd'], stars: 0, body: 'sun', sun: [0.47, 0.13, '#FFF0C8'] },
+  dusk: { stops: ['#121636', '#4a2d58', '#cc6a52'], stars: 0.55, body: 'sun', sun: [0.84, 0.46, '#FFB070'] },
+};
+
+export function vesperWindowXml(districts: DistrictView[], w: number, h: number, phase: SkyPhase = 'night'): string {
+  const gid = uid('g'), glow = uid('s');
+  const sky = SKIES[phase];
   const P: [string, number, number, number][] = [['phare', 0.12, 0.86, 0.62], ['biblio', 0.34, 0.7, 0.5], ['horlo', 0.58, 0.62, 0.5], ['serre', 0.8, 0.5, 0.42], ['marche', 0.35, 0.36, 0.34], ['theatre', 0.64, 0.24, 0.3], ['obs', 0.86, 0.14, 0.26]];
-  let s = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#080914"/><stop offset=".7" stop-color="#11142c"/><stop offset="1" stop-color="#0D0F1E"/></linearGradient></defs>
-  <rect width="${w}" height="${h}" fill="url(#${gid})"/>${stars(w, h * 0.6, 40, 3)}<circle cx="${w * 0.82}" cy="${h * 0.16}" r="${h * 0.06}" fill="#EFE8D8" opacity=".85"/><circle cx="${w * 0.835}" cy="${h * 0.15}" r="${h * 0.06}" fill="#11142c"/>`;
+  let s = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky.stops[0]}"/><stop offset=".7" stop-color="${sky.stops[1]}"/><stop offset="1" stop-color="${sky.stops[2]}"/></linearGradient>
+  <radialGradient id="${glow}"><stop offset="0" stop-color="${sky.sun?.[2] ?? '#fff'}" stop-opacity=".55"/><stop offset="1" stop-color="${sky.sun?.[2] ?? '#fff'}" stop-opacity="0"/></radialGradient></defs>
+  <rect width="${w}" height="${h}" fill="url(#${gid})"/>`;
+  if (sky.stars > 0) s += `<g opacity="${sky.stars}">${stars(w, h * 0.6, 40, 3)}</g>`;
+  if (sky.body === 'moon') s += `<circle cx="${w * 0.82}" cy="${h * 0.16}" r="${h * 0.06}" fill="#EFE8D8" opacity=".85"/><circle cx="${w * 0.835}" cy="${h * 0.15}" r="${h * 0.06}" fill="#11142c"/>`;
+  else if (sky.sun) {
+    const [sx, sy, c] = sky.sun;
+    s += `<circle cx="${w * sx}" cy="${h * sy}" r="${h * 0.22}" fill="url(#${glow})"/><circle cx="${w * sx}" cy="${h * sy}" r="${h * 0.055}" fill="${c}"/>`;
+  }
   for (const [id, px, py, sc] of P.slice().reverse()) {
     const d = districts.find((x) => x.id === id);
     if (d) s += districtArt(d, px * w, py * h, sc * Math.min(w / 390, h / 230));
@@ -276,6 +294,8 @@ export function mapXml(districts: DistrictView[]): string {
   for (const d of ordered) {
     const [cx, cy, sc] = pos[d.id];
     s += districtArt(d, cx, cy, sc);
+    // The district's resident: asleep until every lantern is lit, then awake and glowing.
+    if (d.state !== 'locked') s += keeperArt(d.id, d.lit >= 1, d.hue, cx + (cx < W / 2 ? 58 : -96) * sc, cy - 26 * sc, 0.62);
     if (d.state === 'current') s += `<circle cx="${cx}" cy="${cy - 40 * sc}" r="${70 * sc}" fill="none" stroke="#F4B45E" stroke-width="1.5" opacity=".6"/>`;
     s += `<g transform="translate(${cx},${cy + 26})">
         <rect x="-86" y="-15" width="172" height="44" rx="14" fill="${d.state === 'locked' ? '#11142a' : '#171A2E'}" stroke="${d.state === 'current' ? '#F4B45E' : '#2E3360'}" opacity=".94"/>
@@ -302,7 +322,7 @@ export const PANORAMA: Record<string, [number, number, number, Roof][]> = {
 };
 
 /** Sleeping (or awake) keeper of the district, at the foot of the buildings. */
-function keeperArt(district: string, awake: boolean, hue: string): string {
+function keeperArt(district: string, awake: boolean, hue: string, x = 150, y = 236, scale = 1): string {
   const eyes = awake ? `<circle cx="1" cy="15" r="1.6" fill="#FFE6B0"/>` : `<path d="M-1 15q2 2 4 0" stroke="#9CA2C6" stroke-width="1.2" fill="none"/>`;
   const zz = awake ? '' : `<text x="30" y="2" fill="#9CA2C6" font-family="${SVG_SERIF_ITALIC}" font-size="11">z</text><text x="37" y="-6" fill="#9CA2C6" font-family="${SVG_SERIF_ITALIC}" font-size="8">z</text>`;
   const bodies: Record<string, string> = {
@@ -321,7 +341,7 @@ function keeperArt(district: string, awake: boolean, hue: string): string {
   };
   const body = bodies[district];
   if (!body) return '';
-  return `<g transform="translate(150,236)">${body}${district === 'obs' ? '' : eyes}${zz}${awake ? `<circle cx="18" cy="16" r="30" fill="${hue}" opacity=".08"/>` : ''}</g>`;
+  return `<g transform="translate(${x},${y}) scale(${scale})">${body}${district === 'obs' ? '' : eyes}${zz}${awake ? `<circle cx="18" cy="16" r="30" fill="${hue}" opacity=".08"/>` : ''}</g>`;
 }
 
 export function districtXml(districtId: string, hue: string, buildings: BuildingView[], keeperAwake: boolean): string {
@@ -438,6 +458,32 @@ export function bigLanternXml(): string {
   return `<svg viewBox="0 0 100 120"><circle cx="50" cy="62" r="48" fill="${T.amber}" opacity=".18"/><path d="M50 6v10" stroke="#c9a563" stroke-width="3"/><path d="M40 16h20" stroke="#c9a563" stroke-width="4" stroke-linecap="round"/><rect x="28" y="20" width="44" height="66" rx="18" fill="${T.amber}" stroke="#FFE6B0" stroke-width="3"/><circle cx="50" cy="52" r="12" fill="#FFF3D6"/><path d="M36 92h28" stroke="#c9a563" stroke-width="5" stroke-linecap="round"/></svg>`;
 }
 
-export function letterArtXml(): string {
-  return `<svg viewBox="0 0 200 150"><circle cx="100" cy="75" r="64" fill="${T.gold}" opacity=".1"/><rect x="42" y="40" width="116" height="78" rx="6" fill="#EFE8D8"/><path d="M42 46l58 40 58-40" stroke="#c9a563" stroke-width="3" fill="none"/><circle cx="100" cy="92" r="10" fill="#B5553F"/><path d="M96 92l4-5 4 5-4 4z" fill="#E8894A"/></svg>`;
+/** Ink drawings of the Allumeur, one per letter (drawn around 0,0, about 60 wide). */
+const LETTER_VIGNETTES: Record<string, string> = {
+  // The lighthouse, its beam reaching out
+  phare: `<path d="M-6 22l3-30h6l3 30z"/><path d="M-5 -8h10v-6h-10z"/><path d="M0 -14v-4"/><path d="M6 -11l22-8M6 -11l22 0M-6 -11l-22-8M-6 -11l-22 0" opacity=".6"/><path d="M-30 24q15-4 30 0t30 0"/>`,
+  // A pile of books, one open
+  biblio: `<path d="M-22 22h44v-7h-44z"/><path d="M-18 15h36v-7h-36z"/><path d="M-20 8q10-5 20 0q10-5 20 0v-14q-10-5-20 0q-10-5-20 0z"/><path d="M0 8v-14"/><path d="M-15 -2h10M5 -2h10M-15 2h10M5 2h10" opacity=".5"/>`,
+  // A stopped clock
+  horlo: `<circle cx="0" cy="2" r="20"/><circle cx="0" cy="2" r="16" opacity=".5"/><path d="M0 2v-11M0 2l8 5"/><path d="M0 -18v3M0 22v-3M-20 2h3M20 2h-3"/><path d="M-6 -22h12" />`,
+  // A seed of light, sprouting
+  serre: `<path d="M-24 22q24-6 48 0"/><path d="M0 20q-2-16 0-26"/><path d="M0 4q-14-2-16-14q12 0 16 14z"/><path d="M0 -4q12-4 14-16q-12 2-14 16z"/><circle cx="0" cy="-10" r="3"/><path d="M-6 -16l-3-4M6 -16l3-4M0 -17v-5" opacity=".6"/>`,
+  // The boat he traded his flame for
+  marche: `<path d="M-24 10h48l-8 10h-32z"/><path d="M0 10v-30"/><path d="M0 -20l18 26h-18z"/><path d="M0 -16l-14 22h14" opacity=".7"/><path d="M-30 24q8-3 15 0t15 0t15 0t15 0"/>`,
+  // Two masks, the play goes on elsewhere
+  theatre: `<path d="M-22 -14q12-6 22 0q0 18-11 22q-11-4-11-22z"/><path d="M-16 -6l4 1M-6 -5l-4 0M-15 4q4-3 8 0"/><path d="M2 -8q12-6 22 0q0 18-11 22q-11-4-11-22z"/><path d="M8 0l4 1M18 1l-4 0M8 9q4 3 8 0"/>`,
+  // The telescope, and a light blinking across the sea
+  obs: `<path d="M-20 18l14-12"/><path d="M-10 10l18-20l6 5l-18 20z"/><path d="M-12 22l6-12l6 12"/><path d="M22 -12l2-5l2 5l5 2l-5 2l-2 5l-2-5l-5-2z"/><path d="M-30 24q15-3 30 0t30 0"/>`,
+  // The top of the lighthouse, and the answer on the horizon
+  grenier: `<path d="M-14 22v-18h10v18"/><path d="M-16 4h14l-7-8z"/><path d="M-30 24q15-3 30 0t30 0"/><circle cx="22" cy="10" r="2"/><path d="M16 10h-4M28 10h4M22 4v-4" opacity=".6"/>`,
+};
+
+/** A letter of the Allumeur: a sheet of paper with his ink drawing and a wax seal. */
+export function letterArtXml(from?: string): string {
+  const art = (from && LETTER_VIGNETTES[from]) || '';
+  const lines = [0, 1, 2].map((i) => `<path d="M${64 + (i % 2) * 4} ${100 + i * 7}q18-2 36 0t${28 - i * 6} 0" stroke="#8a6d45" stroke-width="1.2" fill="none" opacity=".55"/>`).join('');
+  return `<svg viewBox="0 0 200 150"><circle cx="100" cy="75" r="68" fill="${T.gold}" opacity=".1"/>
+  <g transform="rotate(-3 100 75)"><rect x="50" y="18" width="100" height="116" rx="4" fill="#EFE8D8"/><rect x="50" y="18" width="100" height="116" rx="4" fill="none" stroke="#c9a563" stroke-width="1.2"/>
+  <g transform="translate(100,58)" stroke="#6b4f2a" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">${art}</g>${lines}
+  <circle cx="136" cy="120" r="10" fill="#B5553F"/><path d="M132 120l4-5 4 5-4 4z" fill="#E8894A"/></g></svg>`;
 }

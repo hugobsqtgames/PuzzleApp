@@ -10,11 +10,13 @@ import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
 import { BackButton, Button, Card, Gauge, Icon, Nilo, Sheet, tap } from '../ui/components';
 import { objectSvg } from '../ui/scenes/objects';
+import { Turntable } from '../ui/Turntable';
+import { letterArtXml } from '../ui/art';
 import { T, SERIF, type } from '../ui/theme';
 import { CODES, FAMILIES, LANTERN_COUNT, TIER_NAMES, WORLD, formatCount } from '../game/catalog';
 import { ENDING_SEEN } from '../game/story';
 import { achievementContext, achievementStatus, look } from '../game/rewards';
-import { allRooms, collectibleOf, districtViews, infoOf, roomName, unlockText } from '../game/views';
+import { allRooms, collectibleOf, districtViews, infoOf, letterOwned, roomName, unlockText } from '../game/views';
 import { LETTERS } from '../content/vesper';
 import { districtLanterns, worldLanterns } from '../core/game/world';
 import { isClairvoyant } from '../core/game/state';
@@ -54,13 +56,7 @@ function Objects() {
   const waiting = rooms.map((r, i) => !found[i] && state.collectibles.has(collectibleOf(r.room.id)));
   const count = found.filter(Boolean).length;
   const p = engine.progression;
-  const letterOwned = (from: string) => {
-    if (from === 'phare' || from === 'grenier') { const d = WORLD.districts.find((x) => x.id === from)!; const all = districtLanterns(d); return p.lights(all, state) === all.length; }
-    const d = WORLD.districts.find((x) => x.id === from)!;
-    const key = d.buildings[3]?.keystone;
-    return !!key && state.solved.has(key.puzzle);
-  };
-  const letters = LETTERS.map((l, i) => ({ ...l, i, owned: letterOwned(l.from) }));
+  const letters = LETTERS.map((l, i) => ({ ...l, i, owned: letterOwned(p, state, l.from) }));
   if (count === 0 && !waiting.some(Boolean)) {
     return (
       <View style={{ alignItems: 'center', gap: 14, paddingVertical: 40 }}>
@@ -116,7 +112,7 @@ function Objects() {
       <Sheet visible={open !== null} onClose={() => setOpen(null)}>
         {open !== null ? (
           <View style={{ alignItems: 'center', gap: 10 }}>
-            <SvgXml xml={objectSvg(rooms[open].object.name, T.gold, 1.4)} width={64} height={64} />
+            <Turntable front={objectSvg(rooms[open].object.name, T.gold, 1.4)} back={objectSvg(rooms[open].object.name, '#8a6d3a', 1.4)} size={110} />
             <Text style={type.title2}>{rooms[open].object.name}</Text>
             <Text style={[type.dialogue, { textAlign: 'center' }]}>{rooms[open].object.story}</Text>
             <Text style={type.foot}>{infoOf(rooms[open].district).short} · {infoOf(rooms[open].district).buildings[rooms[open].bi].name}</Text>
@@ -126,6 +122,7 @@ function Objects() {
       <Sheet visible={letter !== null} onClose={() => setLetter(null)}>
         {letter !== null ? (
           <View style={{ gap: 10 }}>
+            <View style={{ alignItems: 'center' }}><SvgXml xml={letterArtXml(LETTERS[letter].from)} width={200} height={150} /></View>
             <Text style={type.title2}>{LETTERS[letter].title}</Text>
             <Text style={type.dialogue}>« {LETTERS[letter].text} »</Text>
           </View>
@@ -221,7 +218,7 @@ function VesperTab() {
       <Card style={{ alignItems: 'center', gap: 4, padding: 20 }}>
         <Text style={type.cap}>{tr('Vesper')}</Text>
         <Text style={type.display}>{p.totalLights(state)}<Text style={[type.title2, { color: T.tx2 }]}> / {formatCount(LANTERN_COUNT)}</Text></Text>
-        <Text style={type.foot}>{tr('Lettres de l’Allumeur : {0} / {1}', [p.letters(state), 6])}</Text>
+        <Text style={type.foot}>{tr('Lettres de l’Allumeur : {0} / {1}', [LETTERS.filter((l) => letterOwned(p, state, l.from)).length, LETTERS.length])}</Text>
       </Card>
       {state.seenDialogue.has(ENDING_SEEN) ? <Button title={tr('Revoir la fin du premier chapitre')} kind="ghost" icon="light" onPress={() => router.push('/ending')} /> : null}
       <Card style={{ paddingVertical: 4 }}>

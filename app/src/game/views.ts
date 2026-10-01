@@ -142,3 +142,12 @@ export function allRooms(): { district: District; bi: number; ri: number; room: 
   }));
   return out;
 }
+
+/** A letter of the Allumeur is in hand: the whole Phare (or Grenier) lit, or the district's key lantern. */
+export function letterOwned(p: Progression, s: GameState, from: string): boolean {
+  const d = WORLD.districts.find((x) => x.id === from);
+  if (!d) return false;
+  if (from === 'phare' || from === 'grenier') { const all = districtLanterns(d); return p.lights(all, s) === all.length; }
+  const key = d.buildings[3]?.keystone;
+  return !!key && s.solved.has(key.puzzle);
+}

@@ -518,4 +518,10 @@ export const EN_UI: Record<string, string> = {
   'Cloches': 'Bells',
   'Instrument du Carillon': 'Carillon instrument',
   'Touche un instrument pour l’écouter.': 'Tap an instrument to hear it.',
+  // Home window: time of day
+  'à l’aube': 'at dawn',
+  'en plein jour': 'by day',
+  'au crépuscule': 'at dusk',
+  'la nuit': 'at night',
+  'Objet à faire tourner': 'Object to spin',
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '../ui/Text';
 import { useContentSize, useWide } from '../ui/layout';
@@ -9,7 +9,7 @@ import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
 import { Button, Card, Crumb, Gauge, GaugeRow, GlyphCircle, Icon, LightPill, Nilo, Rise, ShardPill, Twinkles, tap } from '../ui/components';
 import { useReducedMotion } from '../ui/motion';
-import { vesperWindowXml } from '../ui/art';
+import { SkyPhase, skyPhase, vesperWindowXml } from '../ui/art';
 import { T, R, type } from '../ui/theme';
 import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName, lowerArticle } from '../game/views';
 import { districtLanterns } from '../core/game/world';
@@ -27,6 +27,17 @@ const firstDailyDay = (d: DailyState) => [...d.completedDays, ...d.catchUpDays].
 
 export const DAILY_UNLOCK_LIGHTS = 6;
 
+/** The hour of the phone, kept up to date while the screen is open. */
+function useHour() {
+  const [hour, setHour] = useState(() => new Date().getHours());
+  useEffect(() => {
+    const id = setInterval(() => setHour(new Date().getHours()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return hour;
+}
+const phaseLabel = (p: SkyPhase) => (p === 'dawn' ? tr('à l’aube') : p === 'day' ? tr('en plein jour') : p === 'dusk' ? tr('au crépuscule') : tr('la nuit'));
+
 export default function Home() {
   const { state, engine, openLantern, today, findEgg, daysAway } = useStore();
   const { width } = useContentSize();
@@ -38,10 +49,13 @@ export default function Home() {
   const winH = wide ? 380 : 210;
   const total = p.totalLights(state);
   const views = useMemo(() => districtViews(p, state), [p, state]);
-  const windowXml = useMemo(() => vesperWindowXml(views, 358, 210), [views]);
+  // The sky of the window follows the real time of day.
+  const hour = useHour();
+  const phase = skyPhase(hour);
+  const windowXml = useMemo(() => vesperWindowXml(views, 358, 210, phase), [views, phase]);
   const cur = current(p, state);
   // Secret: between midnight and one, Nilo has fallen asleep on the window sill.
-  const midnight = new Date().getHours() === 0;
+  const midnight = hour === 0;
   useEffect(() => { if (midnight) findEgg('midnight'); }, [midnight, findEgg]);
   if (!state.onboardingDone) return <Redirect href="/welcome" />;
 
@@ -81,9 +95,9 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('Ouvrir la carte de Vesper')} onPress={() => { tap(); router.push('/map'); }}
           style={{ flex: 1, borderRadius: R.l, overflow: 'hidden', backgroundColor: '#080914', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={windowXml} width={winW} height={winH} />
-          {!reduce ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
+          {!reduce && (phase === 'night' || phase === 'dusk') ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
-            <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')}</Text>
+            <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')} · {phaseLabel(phase)}</Text>
             <Text style={type.foot}>{tr('{0} / {1} lanternes', [total, formatCount(LANTERN_COUNT)])}</Text>
           </View>
           <View style={{ position: 'absolute', right: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 999, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line }}>
@@ -213,9 +227,9 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('Ouvrir la carte de Vesper')} onPress={() => { tap(); router.push('/map'); }}
           style={{ flex: 1, borderRadius: R.l, overflow: 'hidden', backgroundColor: '#080914', borderWidth: 1, borderColor: T.line }}>
           <SvgXml xml={windowXml} width={winW} height={winH} />
-          {!reduce ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
+          {!reduce && (phase === 'night' || phase === 'dusk') ? <Twinkles w={winW} h={winH * 0.57} n={wide ? 14 : 8} seed={3} /> : null}
           <View style={{ position: 'absolute', left: 14, bottom: 12, gap: 2 }}>
-            <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')}</Text>
+            <Text style={[type.cap, { color: T.tx }]}>{tr('Vesper')} · {phaseLabel(phase)}</Text>
             <Text style={type.foot}>{tr('{0} / {1} lanternes', [total, formatCount(LANTERN_COUNT)])}</Text>
           </View>
           <View style={{ position: 'absolute', right: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 999, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line }}>
