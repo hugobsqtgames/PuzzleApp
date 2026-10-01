@@ -14,6 +14,7 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 // MARK: - Icons (1.5 stroke, 24 grid)
 export const IC: Record<string, string> = {
+  CO: '<path d="M5 18l5-6 4 3 5-9" stroke-dasharray="2 2"/><path d="M5 15.5l.8 1.7 1.8.3-1.3 1.3.3 1.8-1.6-.9-1.6.9.3-1.8-1.3-1.3 1.8-.3z"/><circle cx="10" cy="12" r="1.4"/><circle cx="14" cy="15" r="1.4"/><path d="M19 3.5l.8 1.7 1.8.3-1.3 1.3.3 1.8-1.6-.9-1.6.9.3-1.8-1.3-1.3 1.8-.3z"/>',
   SU: '<circle cx="5" cy="15.5" r="1.6"/><circle cx="11" cy="13.5" r="2.6"/><circle cx="18.5" cy="11" r="3.6"/>',
   LA: '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M12 6.5v2"/><rect x="9.2" y="8.5" width="5.6" height="7.5" rx="1.8"/><path d="M10.2 17.5h3.6"/>',
   CA: '<path d="M8.5 10V8a3.5 3.5 0 0 1 7 0v2"/><circle cx="12" cy="15" r="5.5"/><path d="M12 13v2.2"/>',

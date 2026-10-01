@@ -719,4 +719,10 @@ export const EN_WORLD: Record<string, string> = {
   'Bienvenue à Vesper : 1 000 lanternes à rallumer.': 'Welcome to Vesper: 1,000 lanterns to relight.',
   'Chaque soir, un nouveau défi.': 'A new challenge every evening.',
   'Nilo t’attend sur le quai du Phare.': 'Nilo is waiting for you on the Lighthouse quay.',
+  'Constellations': 'Constellations',
+  'Une étoile par ligne, par colonne et par constellation. Deux étoiles ne se touchent jamais, même par un coin.': 'One star per row, per column and per constellation. Two stars never touch, not even by a corner.',
+  'Astrologue': 'Stargazer',
+  'Sceau': 'Seal',
+  'Chaque salle éclairée cache un chiffre dans son décor. Retrouve-les pour ouvrir le sceau.': 'Each lit room hides a digit in its scenery. Find them to open the seal.',
+  'Gardien des sceaux': 'Keeper of seals',
 };

@@ -325,7 +325,7 @@ export function Board(props: BoardProps) {
     case 'SU': return <Sequence {...props} />;
     case 'BA': return <Scales {...props} />;
     case 'CR': case 'VI': case 'DI': case 'ET': case 'OM': case 'SC': return <Board3 {...props} />;
-    case 'BR': case 'SG': case 'TO': case 'GL': case 'TQ': case 'RU': case 'LU': case 'PA': return <Board4 {...props} />;
+    case 'BR': case 'SG': case 'TO': case 'GL': case 'TQ': case 'RU': case 'LU': case 'PA': case 'CO': return <Board4 {...props} />;
     default: return <Board2 {...props} />;
   }
 }

@@ -8,7 +8,7 @@ App Expo (SDK 57, React Native, TypeScript, Expo Router), entièrement hors lign
 app/src/
   core/            le jeu sans interface (testé par Jest)
     puzzlekit/     aléatoire déterministe, contrat d'une famille, pipeline d'acceptation, paliers
-    families/      25 familles de puzzles + le Sceau (génération, résolution, validation, note, indices)
+    families/      25 familles de puzzles + le Sceau + Constellations (mode Libre seulement, pas encore dans les lanternes livrées) (génération, résolution, validation, note, indices)
     game/          monde, progression, économie, défi du soir, état sauvegardé
     persistence/   sauvegarde robuste (écriture atomique, copie de secours, décodage tolérant)
     audio/         directeur son et haptique

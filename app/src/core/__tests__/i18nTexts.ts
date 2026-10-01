@@ -72,7 +72,7 @@ export function dataTexts(): string[] {
   setLang('fr');
   const out = new Set<string>();
   strings([DISTRICT_INFO, LETTERS, ACHIEVEMENTS.map((a) => [a.name, a.description]), COSMETICS, SLOT_NAMES, TIER_NAMES], out);
-  for (const c of CODES) for (const k of ['name', 'rule', 'achievement'] as const) { const s = FAMILIES[c][k]; if (s) out.add(s); }
+  for (const c of Object.keys(FAMILIES) as (keyof typeof FAMILIES)[]) for (const k of ['name', 'rule', 'achievement'] as const) { const s = FAMILIES[c][k]; if (s) out.add(s); }
   [...CHARACTERS, ...PEOPLE, ...OBJECTS, ...PLACES, ...SHELF_NAMES].forEach((s) => out.add(s));
   for (const spec of Object.values(ROOM_SPECS)) if (spec.intro) out.add(spec.intro);
   for (const x of Object.values(SEASONS)) { out.add(x.name); out.add(x.line); }

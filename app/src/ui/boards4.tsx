@@ -1,4 +1,4 @@
-// Boards of Broderie, Signes, Toits, Glissade, Taquin, Rubans, Lucioles and Passerelles.
+// Boards of Broderie, Signes, Toits, Glissade, Taquin, Rubans, Lucioles, Passerelles and Constellations.
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, GestureResponderEvent, Pressable, View } from 'react-native';
 import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
@@ -14,6 +14,7 @@ import { Dir, GlideFamily, GlidePuzzle, GlideState } from '../core/families/glid
 import { SliderPuzzle, SliderState, tapTile } from '../core/families/slider';
 import { RibbonsFamily, RibbonsPuzzle, RibbonsState, pinColour } from '../core/families/ribbons';
 import { FirefliesPuzzle, FirefliesState } from '../core/families/fireflies';
+import { ConstellationsPuzzle, ConstellationsState } from '../core/families/constellations';
 import { BridgesFamily, BridgesPuzzle, BridgesState, edgesOf, linkKey } from '../core/families/bridges';
 import { useStore } from '../game/store';
 import type { BoardProps } from './boards';
@@ -33,6 +34,7 @@ export function Board4(props: BoardProps) {
     case 'RU': return <Ribbons {...props} />;
     case 'LU': return <Fireflies {...props} />;
     case 'PA': return <Bridges {...props} />;
+    case 'CO': return <Constellations {...props} />;
     default: return null;
   }
 }
@@ -444,6 +446,51 @@ function Fireflies({ s, width, onPlay, tap }: BoardProps) {
       ))}
       <View style={{ flexDirection: 'row', marginRight: 26 }}>
         {p.colCounts.map((v, c) => <Text key={c} style={[{ width: size, textAlign: 'center', fontSize: 15, fontWeight: '800', marginTop: 4 }, met(count([...Array(p.rows)].map((_, r) => r * p.cols + c)) === v)]}>{v}</Text>)}
+      </View>
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------- Constellations
+/** Night tints for the constellations; their thick borders tell them apart without colour. */
+const SKY_TINTS = ['#1E2A66', '#3A1F5C', '#0F3D4F', '#4A2140', '#1F4A35', '#3B3566', '#5A3A1E', '#203F6E', '#4D2A5E', '#2A4A4A'];
+
+function Constellations({ s, width, onPlay, tap }: BoardProps) {
+  const p = s.data as ConstellationsPuzzle, st = s.state as ConstellationsState;
+  const aid = useStore().settings.colorAid;
+  const focus = focusOf(s), n = p.n;
+  const size = Math.floor(Math.min(46, (width - 28) / n)), W = size * n;
+  const press = (i: number) => { tap(); const cells = st.cells.slice(); cells[i] = (cells[i] + 1) % 3; onPlay({ cells }); };
+  // The grid in thin lines, the constellations' borders in thick ones.
+  const thin: string[] = [], thick: string[] = [];
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    const i = r * n + c;
+    if (c < n - 1) (p.regions[i] !== p.regions[i + 1] ? thick : thin).push(`M${(c + 1) * size} ${r * size}v${size}`);
+    if (r < n - 1) (p.regions[i] !== p.regions[i + n] ? thick : thin).push(`M${c * size} ${(r + 1) * size}h${size}`);
+  }
+  return (
+    <View style={[box, { padding: 14, alignItems: 'center' }]}>
+      <View style={{ width: W, height: W, borderRadius: 6, overflow: 'hidden' }}>
+        {[...Array(n)].map((_, r) => (
+          <View key={r} style={{ flexDirection: 'row' }}>
+            {[...Array(n)].map((__, c) => {
+              const i = r * n + c, v = st.cells[i], hot = has(focus, r, c);
+              return (
+                <Pressable key={c} accessibilityRole="button" accessibilityLabel={`${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])}, ${tr('constellation {0}', [p.regions[i] + 1])} : ${tr(v === 1 ? 'étoile' : v === 2 ? 'vide' : 'libre')}`} onPress={() => press(i)}
+                  style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', backgroundColor: hot ? 'rgba(232,138,138,0.35)' : SKY_TINTS[p.regions[i] % SKY_TINTS.length],
+                    ...(hot && aid ? { borderWidth: 2, borderColor: T.coral, borderStyle: 'dashed' as const } : null) }}>
+                  {v === 1 ? <Svg width={size * 0.72} height={size * 0.72} viewBox="0 0 24 24"><Circle cx={12} cy={12} r={11} fill="rgba(255,217,142,0.22)" /><Path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.2 6.1-.7z" fill="#FFD98E" /></Svg> : null}
+                  {v === 2 ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#C9CFEA' }} /> : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        ))}
+        <Svg width={W} height={W} pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0 }}>
+          <Path d={thin.join('')} stroke="rgba(201,207,234,0.22)" strokeWidth={1} />
+          <Path d={thick.join('')} stroke="#C9CFEA" strokeWidth={3} strokeLinecap="round" />
+          <Rect x={1.5} y={1.5} width={W - 3} height={W - 3} rx={5} stroke="#C9CFEA" strokeWidth={3} fill="none" />
+        </Svg>
       </View>
     </View>
   );

@@ -10,7 +10,7 @@ import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
 import { BackButton, Button, Card, GlyphCircle, Nilo, TierBars, tap } from '../ui/components';
 import { T, R, type } from '../ui/theme';
-import { FAMILIES, TIER_NAMES, WORLD, type Code } from '../game/catalog';
+import { CODES, FAMILIES, TIER_NAMES, WORLD, type Code } from '../game/catalog';
 import { FREE_CODES, freeTiers, makeFreePuzzle } from '../game/free';
 import { worldLanterns } from '../core/game/world';
 import { look } from '../game/rewards';
@@ -19,9 +19,10 @@ import type { Tier } from '../core/puzzlekit/types';
 
 export default function Free() {
   const { state, openFree, showToast } = useStore();
-  // Only the families the player has met (one lantern of theirs solved).
+  // The families the player has met (one lantern of theirs solved), and the new ones not yet in Vesper's lanterns.
   const met = new Set(worldLanterns(WORLD).filter((l) => state.solved.has(l.puzzle)).map((l) => l.family as Code));
-  const codes = FREE_CODES.filter((c) => met.has(c));
+  const fresh = (c: Code) => !CODES.includes(c);
+  const codes = met.size ? FREE_CODES.filter((c) => met.has(c) || fresh(c)) : [];
   const [code, setCode] = useState<Code | null>(codes[0] ?? null);
   const tiers = code ? freeTiers(code) : [];
   const [tier, setTier] = useState<Tier>(1);
@@ -63,6 +64,7 @@ export default function Free() {
                 <Pressable key={c} accessibilityRole="radio" accessibilityState={{ selected: on }} accessibilityLabel={FAMILIES[c].name} onPress={() => { tap(); setCode(c); }}
                   style={{ width: '30%', flexGrow: 1, alignItems: 'center', gap: 6, paddingVertical: 12, borderRadius: R.m, backgroundColor: T.s1, borderWidth: on ? 2 : 1, borderColor: on ? T.amber : T.line }}>
                   <GlyphCircle icon={c} size={40} color={on ? T.amber : T.tx2} />
+                  {fresh(c) ? <Text style={{ position: 'absolute', top: 6, right: 8, color: T.gold, fontSize: 10, fontWeight: '800' }}>{tr('NOUVEAU')}</Text> : null}
                   <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ color: on ? T.tx : T.tx2, fontSize: 13, fontWeight: '600', textAlign: 'center', paddingHorizontal: 4, alignSelf: 'stretch' }}>{FAMILIES[c].name}</Text>
                 </Pressable>
               );

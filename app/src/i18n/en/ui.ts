@@ -704,4 +704,8 @@ export const EN_UI: Record<string, string> = {
   'Fais monter 3 lanternes du Printemps des Lanternes': 'Send up 3 lanterns of the Lantern Spring',
   'Le Printemps des Lanternes': 'The Lantern Spring',
   'Sous les cerisiers du Quai, Vesper fait monter ses lanternes volantes. Neuf énigmes, à ton rythme, pour les envoyer dans le ciel.': 'Under the cherry trees of the Quay, Vesper sends up its sky lanterns. Nine puzzles, at your own pace, to send them into the sky.',
+  'NOUVEAU': 'NEW',
+  'Le ciel est découpé en constellations. Place une étoile dans chaque ligne, chaque colonne et chaque constellation. Deux étoiles ne se touchent jamais, même par un coin. Touche une case : étoile, puis point (vide), puis libre.': 'The sky is cut into constellations. Put one star in each row, each column and each constellation. Two stars never touch, not even by a corner. Tap a cell: star, then dot (empty), then free.',
+  'constellation {0}': 'constellation {0}',
+  'vide': 'empty',
 };

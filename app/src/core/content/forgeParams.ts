@@ -108,6 +108,8 @@ export const FORGE_PARAMS: Record<string, unknown[][]> = {
     [{ rows: 3, cols: 3, moves: [17, 20] }, { rows: 3, cols: 3, moves: [21, 23] }], [{ rows: 3, cols: 3, moves: [24, 31] }, { rows: 2, cols: 4, moves: [25, 32] }], [],
   ],
   RU: [[{ rows: 5, cols: 5, pairs: [4, 5] }, { rows: 6, cols: 6, pairs: [5, 6] }], [{ rows: 7, cols: 7, pairs: [6, 7] }], [{ rows: 8, cols: 8, pairs: [7, 8] }], [{ rows: 8, cols: 8, pairs: [5, 6] }], [{ rows: 9, cols: 9, pairs: [7, 8] }], []],
+  // Constellations: not in the shipped content yet (mode Libre only).
+  CO: [[{ n: 5 }], [{ n: 6 }, { n: 5 }], [{ n: 7 }, { n: 6 }], [{ n: 8 }, { n: 7 }], [{ n: 9 }, { n: 8 }], [{ n: 10 }, { n: 9 }]],
   LU: [[{ rows: 5, cols: 5, posts: [4, 5] }, { rows: 6, cols: 6, posts: [6, 7] }], [{ rows: 7, cols: 7, posts: [8, 10] }], [{ rows: 8, cols: 8, posts: [11, 13] }], [{ rows: 8, cols: 8, posts: [11, 13] }, { rows: 9, cols: 9, posts: [14, 16] }], [{ rows: 9, cols: 9, posts: [14, 16] }], []],
   PA: [[{ rows: 5, cols: 5, islands: [4, 5] }, { rows: 6, cols: 6, islands: [6, 8] }], [{ rows: 7, cols: 7, islands: [9, 11] }], [{ rows: 8, cols: 8, islands: [12, 14] }], [{ rows: 9, cols: 9, islands: [15, 18] }], [{ rows: 10, cols: 10, islands: [18, 22] }], []],
   BA: [

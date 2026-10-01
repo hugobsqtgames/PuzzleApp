@@ -362,6 +362,7 @@ export default function PuzzleScreen() {
 }
 
 const RULE_DETAILS: Record<string, string> = translated({
+  CO: 'Le ciel est découpé en constellations. Place une étoile dans chaque ligne, chaque colonne et chaque constellation. Deux étoiles ne se touchent jamais, même par un coin. Touche une case : étoile, puis point (vide), puis libre.',
   IN: 'Touche un bouton : il change d’état, avec ses voisins. Le compteur montre tes coups ; le nombre minimal s’affiche une fois la lanterne allumée.',
   CA: 'Chaque ligne est un essai. ● : un chiffre juste à la bonne place. ○ : un chiffre juste à la mauvaise place. Tourne les molettes, puis Valider.',
   LA: 'Touche une case : une lampe. Touche encore : un point (« pas de lampe ici »), pour t’aider. Une lampe éclaire sa ligne et sa colonne jusqu’au premier mur.',
