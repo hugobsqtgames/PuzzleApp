@@ -56,7 +56,7 @@ export default function EventScreen() {
       <SeasonFall kind={e.particle} accent={e.flame} w={Math.min(width, 600)} h={320} n={halloween ? 7 : 16} />
       <BackButton label={tr('Accueil')} onPress={() => goBack()} />
       <View style={{ alignItems: 'center', gap: 10 }}>
-        <Nilo size={110} mood="joy" look={{ ...look(state), ...(halloween ? { hat: 'witch' } : { costume: 'santa' as const }) }} still />
+        <Nilo size={110} mood="joy" look={{ ...look(state), costume: halloween ? 'witch' as const : 'santa' as const }} still />
         <Text style={[type.cap, { color: e.flame, textAlign: 'center' }]}>{tr('Événement · jusqu’au {0}', [dayMonth(eventEnd(e, year))])}</Text>
         <Text style={[type.display, { fontSize: 32, lineHeight: 38, textAlign: 'center' }]}>{tr(e.name)}</Text>
         <Text style={[type.body, { color: T.tx2, textAlign: 'center' }]}>{tr(e.story)}</Text>

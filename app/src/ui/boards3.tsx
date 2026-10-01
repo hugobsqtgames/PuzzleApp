@@ -57,11 +57,21 @@ function parseFragment(d: string): React.ReactNode[] {
 
 // ---------------------------------------------------------------- Carillon
 const BELL_COLORS = ['#E88A8A', '#F4B45E', '#FFD98E', '#9CCB8A', '#8FB8F0', '#B79CE0'];
+/** Each bell also has its own shape: the melody can be followed without hearing it. */
+const BELL_SHAPES = [
+  'M0-7a7 7 0 1 0 .01 0z', // circle
+  'M0-8l8 13h-16z', // triangle
+  'M-6.5-6.5h13v13h-13z', // square
+  'M0-8l8 8-8 8-8-8z', // diamond
+  'M0-8l2.4 5 5.5.6-4 3.8 1 5.4-4.9-2.6-4.9 2.6 1-5.4-4-3.8 5.5-.6z', // star
+  'M-4-7h8l4 7-4 7h-8l-4-7z', // hexagon
+];
+const BELL_SHAPE_NAMES = translated(['rond', 'triangle', 'carré', 'losange', 'étoile', 'hexagone']);
 
 function Bell({ i, size, lit, focus, onPress, swing }: { i: number; size: number; lit: boolean; focus: boolean; onPress: () => void; swing: Animated.Value }) {
   const c = BELL_COLORS[i % BELL_COLORS.length];
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={tr('Cloche {0}', [i + 1])} onPress={onPress} hitSlop={4}
+    <Pressable accessibilityRole="button" accessibilityLabel={`${tr('Cloche {0}', [i + 1])}, ${BELL_SHAPE_NAMES[i % 6]}`} onPress={onPress} hitSlop={4}
       style={{ width: size, height: size * 1.25, alignItems: 'center', justifyContent: 'flex-start' }}>
       <Animated.View style={{ transformOrigin: 'top', transform: [{ rotate: swing.interpolate({ inputRange: [-1, 1], outputRange: ['-14deg', '14deg'] }) }] }}>
         <Svg width={size} height={size * 1.15} viewBox="0 0 60 70">
@@ -70,6 +80,7 @@ function Bell({ i, size, lit, focus, onPress, swing }: { i: number; size: number
           <Path d="M8 52q2-36 22-40q20 4 22 40z" fill={lit ? c : '#262B52'} stroke={focus ? T.gold : c} strokeWidth={focus ? 3 : 2} />
           <Rect x="5" y="50" width="50" height="7" rx="3.5" fill={lit ? c : '#2E3360'} />
           <Circle cx="30" cy="62" r="5" fill={lit ? '#FFF3D6' : '#3a4180'} />
+          <Path d={BELL_SHAPES[i % 6]} transform="translate(30 36) scale(1.15)" fill={lit ? '#1E2347' : c} opacity={lit ? 0.8 : 0.9} />
         </Svg>
       </Animated.View>
       <Text style={{ color: T.tx3, fontSize: 12, fontWeight: '700', marginTop: -4 }}>{i + 1}</Text>
@@ -115,6 +126,15 @@ function Chimes({ s, width, onPlay, tap, note }: BoardProps) {
   };
   return (
     <View style={[box, { padding: 16, gap: 18, alignItems: 'center' }]}>
+      {/* The note being played, in large: its colour and shape (for those who do not hear it). */}
+      <View style={{ height: 44, alignItems: 'center', justifyContent: 'center' }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {lit !== null ? (
+          <Svg width={44} height={44} viewBox="-11 -11 22 22">
+            <Circle r={11} fill={BELL_COLORS[lit % 6]} opacity={0.2} />
+            <Path d={BELL_SHAPES[lit % 6]} fill={BELL_COLORS[lit % 6]} />
+          </Svg>
+        ) : <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: T.line }} />}
+      </View>
       <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center', alignItems: 'flex-end' }}>
         {[...Array(p.bells)].map((_, i) => (
           <View key={i} style={{ marginBottom: Math.abs(i - (p.bells - 1) / 2) * -6 + 12 }}>

@@ -70,7 +70,7 @@ export const iconXml = (name: string, color: string, sw = 1.6) =>
 // MARK: - Nilo
 
 export type Mood = 'neutral' | 'curious' | 'think' | 'joy' | 'oops' | 'hint' | 'wonder' | 'sleep';
-export interface Look { flame?: string; hat?: string; scarf?: string; comp?: string; /** A full costume, over the hat and scarf (the Veillée de Vesper). */ costume?: 'santa' }
+export interface Look { flame?: string; hat?: string; scarf?: string; comp?: string; /** A full costume, over the hat and scarf (the Veillée de Vesper). */ costume?: 'santa' | 'witch' }
 
 export const flameColor = (id = 'amber') => COSMETICS.find((c) => c.id === `flame.${id}`)?.color ?? T.amber;
 
@@ -78,6 +78,9 @@ export const flameColor = (id = 'amber') => COSMETICS.find((c) => c.id === `flam
 const SANTA_HAT = '<path d="M44 41Q47 18 66 16Q81 15 88 31L84 33Q78 25 71 27Q75 34 75 41Z" fill="#D9473F"/><path d="M50 38Q55 24 66 21" stroke="#F06A5E" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/><rect x="40" y="36" width="38" height="9" rx="4.5" fill="#FFF7EC"/><circle cx="87" cy="34" r="5.5" fill="#FFF7EC"/>';
 const SANTA_BEARD = '<path d="M41 75q2 13 9 19q4 6 8 7q4-1 8-7q7-6 9-19q-4 4-8 3q-4 3-9 3q-5 0-9-3q-4 1-8-3z" fill="#FFF7EC"/><path d="M45 84q4 3 6 0M54 92q4 3 8 0M64 84q4 3 6 0" stroke="#D8D2C6" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M58 76q-6-3-11 1q4 4 11 0q7 4 11 0q-5-4-11-1z" fill="#FFFFFF"/>';
 const santaCoat = (clip: string) => `<defs><clipPath id="${clip}"><path d="M58 34c22 0 32 22 32 42s-14 28-32 28-32-8-32-28 10-42 32-42z"/></clipPath></defs><g clip-path="url(#${clip})"><rect x="20" y="70" width="80" height="38" fill="#D9473F"/><rect x="54" y="88" width="8" height="20" fill="#FFF7EC"/><rect x="20" y="91" width="80" height="5" fill="#1B1F3A"/><rect x="54" y="90" width="8" height="7" rx="1.5" fill="none" stroke="#FFD98E" stroke-width="1.6"/><path d="M20 101q38 8 76 0v8H20z" fill="#FFF7EC"/></g>`;
+
+/** The Nuit des Citrouilles: a purple cape lined with orange, fastened by a little pumpkin. */
+const WITCH_CAPE = '<path d="M56 74L40 76Q27 88 29 106L47 106Q47 90 55 78Z" fill="#7A3590"/><path d="M60 74L76 76Q89 88 87 106L69 106Q69 90 61 78Z" fill="#7A3590"/><path d="M55 78Q47 90 47 106M61 78Q69 90 69 106" stroke="#F28C28" stroke-width="2" fill="none"/><path d="M40 75q18-6 36 0q-18 7-36 0z" fill="#5A2470"/><circle cx="58" cy="76" r="4" fill="#F28C28"/><path d="M58 72v-2" stroke="#6b8f3a" stroke-width="1.6"/>';
 
 const HATS: Record<string, string> = {
   none: '',
@@ -93,7 +96,7 @@ const HATS: Record<string, string> = {
   top: '<rect x="49" y="18" width="20" height="21" rx="2" fill="#1B1F3A"/><rect x="43" y="37" width="32" height="4" rx="2" fill="#1B1F3A"/><rect x="49" y="31" width="20" height="4" fill="#F4B45E"/>',
   nightcap: '<path d="M45 41q10-24 30-16q6 3 9 14" fill="#5C8FE0"/><path d="M44 41q15 5 31 0" stroke="#EFE8D8" stroke-width="3.2" fill="none" stroke-linecap="round"/><circle cx="85" cy="40" r="4" fill="#EFE8D8"/>',
   flowers: '<g><circle cx="45" cy="38" r="3.4" fill="#F29BC4"/><circle cx="52" cy="34" r="3.4" fill="#FFD98E"/><circle cx="60" cy="33" r="3.4" fill="#B79CE0"/><circle cx="68" cy="34" r="3.4" fill="#F29BC4"/><circle cx="75" cy="38" r="3.4" fill="#FFD98E"/></g><g fill="#FFF3D6"><circle cx="45" cy="38" r="1.2"/><circle cx="52" cy="34" r="1.2"/><circle cx="60" cy="33" r="1.2"/><circle cx="68" cy="34" r="1.2"/><circle cx="75" cy="38" r="1.2"/></g>',
-  witch: '<path d="M42 41q17 5 34 0l-3-3q-14 3-28 0z" fill="#2a1030"/><path d="M48 39q5-14 10-24q4-6 12-6q-6 3-7 9l3 21q-9 2-18 0z" fill="#2a1030"/><path d="M48.5 36q9 2 17 0" stroke="#F28C28" stroke-width="2.6" fill="none"/><rect x="55" y="33" width="5" height="4" rx="1" fill="#FFD98E"/>',
+  witch: '<path d="M42 41q17 5 34 0l-3-3q-14 3-28 0z" fill="#5A2470"/><path d="M48 39q5-14 10-24q4-6 12-6q-6 3-7 9l3 21q-9 2-18 0z" fill="#5A2470"/><path d="M48.5 36q9 2 17 0" stroke="#F28C28" stroke-width="2.6" fill="none"/><rect x="55" y="33" width="5" height="4" rx="1" fill="#FFD98E"/>',
   santa: SANTA_HAT,
   cap: '<path d="M46 40a13 10 0 0 1 26 0z" fill="#EFE8D8"/><path d="M44 40h31" stroke="#1E2347" stroke-width="3" stroke-linecap="round"/><path d="M68 40q10 0 13 3" stroke="#1E2347" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M56 33l3 2 3-2" stroke="#3A4D8A" stroke-width="1.6" fill="none"/>',
 };
@@ -165,8 +168,8 @@ export function niloParts(mood: Mood = 'neutral', look: Look = {}): NiloParts {
     earR: svg(`<g transform="rotate(${M.er} 73 50)"><path d="M80 54Q86 30 86 18q-1-4-5-1q-9 9-15 21z" fill="${body}"/><path d="M78 48Q82 32 82 24q-6 7-10 16z" fill="${inner}"/></g>`),
     body: svg(`<defs><linearGradient id="${id}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${hi}"/><stop offset=".55" stop-color="${body}"/></linearGradient></defs>
       <path d="M58 34c22 0 32 22 32 42s-14 28-32 28-32-8-32-28 10-42 32-42z" fill="url(#${id}b)"/>
-      <ellipse cx="58" cy="90" rx="17" ry="11" fill="${hi}" opacity=".6"/><ellipse cx="47" cy="104" rx="7" ry="3.2" fill="${hi}"/><ellipse cx="69" cy="104" rx="7" ry="3.2" fill="${hi}"/>${look.costume === 'santa' ? santaCoat(`${id}c`) : SCARVES[look.scarf ?? 'none'] ?? ''}`),
-    eyes: svg(look.costume === 'santa' ? eyes + SANTA_BEARD + SANTA_HAT : eyes + (HATS[look.hat ?? 'none'] ?? '')),
+      <ellipse cx="58" cy="90" rx="17" ry="11" fill="${hi}" opacity=".6"/><ellipse cx="47" cy="104" rx="7" ry="3.2" fill="${hi}"/><ellipse cx="69" cy="104" rx="7" ry="3.2" fill="${hi}"/>${look.costume === 'santa' ? santaCoat(`${id}c`) : look.costume === 'witch' ? WITCH_CAPE : SCARVES[look.scarf ?? 'none'] ?? ''}`),
+    eyes: svg(look.costume === 'santa' ? eyes + SANTA_BEARD + SANTA_HAT : look.costume === 'witch' ? eyes + HATS.witch : eyes + (HATS[look.hat ?? 'none'] ?? '')),
     deco: svg(sparkle + zz),
   };
 }

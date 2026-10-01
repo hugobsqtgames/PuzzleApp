@@ -38,7 +38,8 @@ const SEASONS = {
   Ete: { fl: '#FFD98E', sky: ['#061219', '#13414a'], accent: '#FFE89A', particle: 'firefly', extra: '' },
   Automne: { fl: '#E8744A', sky: ['#140a07', '#45231a'], accent: '#F0924A', particle: 'leaf', extra: '' },
   Hiver: { fl: '#BFE6F0', sky: ['#070c1c', '#22335a'], accent: '#EAF6FF', particle: 'snow', extra: '<path d="M28 84q30 10 60 0v8q-30 10-60 0z" fill="#E0625A"/>' },
-  Halloween: { fl: '#F28C28', sky: ['#0c0612', '#3b1640'], accent: '#F28C28', particle: 'bat', extra: '<path d="M38 26l20-22 20 22z" fill="#2a1030" stroke="#F28C28" stroke-width="1.5"/>',
+  Halloween: { fl: '#F28C28', sky: ['#0c0612', '#3b1640'], accent: '#F28C28', particle: 'bat', // Nilo as a witch: cape and hat (same drawing as the app, src/ui/art.ts).
+    extra: '<path d="M56 74L40 76Q27 88 29 106L47 106Q47 90 55 78Z" fill="#7A3590"/><path d="M60 74L76 76Q89 88 87 106L69 106Q69 90 61 78Z" fill="#7A3590"/><path d="M55 78Q47 90 47 106M61 78Q69 90 69 106" stroke="#F28C28" stroke-width="2" fill="none"/><path d="M40 75q18-6 36 0q-18 7-36 0z" fill="#5A2470"/><circle cx="58" cy="76" r="4" fill="#F28C28"/><path d="M58 72v-2" stroke="#6b8f3a" stroke-width="1.6"/><path d="M42 41q17 5 34 0l-3-3q-14 3-28 0z" fill="#5A2470"/><path d="M48 39q5-14 10-24q4-6 12-6q-6 3-7 9l3 21q-9 2-18 0z" fill="#5A2470"/><path d="M48.5 36q9 2 17 0" stroke="#F28C28" stroke-width="2.6" fill="none"/><rect x="55" y="33" width="5" height="4" rx="1" fill="#FFD98E"/>',
     deco: '<circle cx="82" cy="84" r="9" fill="#F28C28"/><path d="M82 75v-4" stroke="#6b8f3a" stroke-width="2"/><path d="M78 83l2-2 2 2M84 83l2-2 2 2M78 88q4 3 8 0" stroke="#3b1640" stroke-width="1.4" fill="none"/>' },
   // Nilo as Father Christmas: red coat with fur and belt, white beard, floppy hat (same drawing as the app, src/ui/art.ts).
   Noel: { fl: '#FFE6B0', sky: ['#060b1a', '#1d3a5a'], accent: '#E0625A', particle: 'snow',

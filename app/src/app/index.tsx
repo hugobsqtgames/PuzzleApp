@@ -54,8 +54,8 @@ export default function Home() {
   const fall = running ? { kind: running.event.particle, accent: running.event.flame } : { kind: season.particle, accent: season.accent };
   // In season, Nilo wears what fits, unless the player dressed him already.
   const dressed = look(state);
-  // During the Veillée de Vesper, Nilo is Father Christmas.
-  const niloLook = running?.event.id === 'noel' ? { ...dressed, costume: 'santa' as const } : { ...dressed, hat: dressed.hat === 'none' && season.wear.hat ? season.wear.hat : dressed.hat, scarf: dressed.scarf === 'none' && season.wear.scarf ? season.wear.scarf : dressed.scarf };
+  // During the events, Nilo is in costume: a witch for the pumpkins, Father Christmas for the Vigil.
+  const niloLook = running ? { ...dressed, costume: running.event.id === 'noel' ? 'santa' as const : 'witch' as const } : { ...dressed, hat: dressed.hat === 'none' && season.wear.hat ? season.wear.hat : dressed.hat, scarf: dressed.scarf === 'none' && season.wear.scarf ? season.wear.scarf : dressed.scarf };
   const windowXml = useMemo(() => vesperWindowXml(views, 358, 210, phase), [views, phase]);
   const cur = current(p, state);
   // Secret: between midnight and one, Nilo has fallen asleep on the window sill.

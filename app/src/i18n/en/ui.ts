@@ -577,4 +577,6 @@ export const EN_UI: Record<string, string> = {
   'Apparence': 'Appearance',
   'Icône de saison': 'Seasonal icon',
   'L’icône de Lampion change avec les saisons et les fêtes': 'Lampion\'s icon changes with the seasons and holidays',
+  // Carillon: the shape of each bell
+  'rond': 'circle', 'triangle': 'triangle', 'carré': 'square', 'losange': 'diamond', 'étoile': 'star', 'hexagone': 'hexagon',
 };
