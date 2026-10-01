@@ -11,6 +11,7 @@ import { NiloLive } from './NiloLive';
 import { MAX_W } from './layout';
 import { TIER_NAMES as TIERS } from '../game/catalog';
 import { tr, trn } from '../i18n';
+import { pressedShade, useAccent } from './accent';
 
 let hapticsOn = true;
 /** Follows the "Vibrations" setting. */
@@ -32,9 +33,9 @@ export function Icon({ name, size = 22, color = T.tx, sw = 1.6 }: { name: string
 }
 
 /** Nilo. Alive by default (see NiloLive); `still` for small thumbnails in lists. */
-export function Nilo({ size = 120, mood = 'neutral', look = {}, onPress, still = false }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void; still?: boolean }) {
+export function Nilo({ size = 120, mood = 'neutral', look = {}, onPress, onLongPress, longLabel, still = false }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void; onLongPress?: () => void; longLabel?: string; still?: boolean }) {
   const xml = useMemo(() => (still ? niloXml(mood, look) : ''), [still, mood, look.flame, look.hat, look.scarf, look.comp, look.costume]); // eslint-disable-line react-hooks/exhaustive-deps
-  if (!still) return <NiloLive size={size} mood={mood} look={look} onPress={onPress} />;
+  if (!still) return <NiloLive size={size} mood={mood} look={look} onPress={onPress} onLongPress={onLongPress} longLabel={longLabel} />;
   return <View accessible accessibilityLabel={tr('Nilo')}><SvgXml xml={xml} width={size} height={size * (120 / 132)} /></View>;
 }
 
@@ -71,7 +72,8 @@ function usePress(to = 0.96) {
 export function Button({ title, onPress, kind = 'primary', icon, disabled, style }: {
   title: string; onPress?: () => void; kind?: BtnKind; icon?: string; disabled?: boolean; style?: StyleProp<ViewStyle>;
 }) {
-  const base = kind === 'primary' ? s.btnP : kind === 'secondary' ? s.btnS : s.btnG;
+  const accent = useAccent();
+  const base = kind === 'primary' ? [s.btnP, accent !== T.amber ? { backgroundColor: accent, shadowColor: accent } : null] : kind === 'secondary' ? s.btnS : s.btnG;
   const color = kind === 'primary' ? '#0D0F1E' : kind === 'secondary' ? T.tx : T.amber;
   const press = usePress(0.97);
   const once = useOnce(onPress);
@@ -83,7 +85,7 @@ export function Button({ title, onPress, kind = 'primary', icon, disabled, style
         disabled={disabled}
         onPressIn={press.onPressIn} onPressOut={press.onPressOut}
         onPress={() => { tap(); once(); }}
-        style={({ pressed }) => [s.btn, base, pressed && kind === 'primary' ? { backgroundColor: T.amberP } : null, pressed && kind !== 'primary' ? { opacity: 0.8 } : null, disabled ? { opacity: 0.4 } : null]}
+        style={({ pressed }) => [s.btn, base, pressed && kind === 'primary' ? { backgroundColor: accent !== T.amber ? pressedShade(accent) : T.amberP } : null, pressed && kind !== 'primary' ? { opacity: 0.8 } : null, disabled ? { opacity: 0.4 } : null]}
       >
         {icon ? <Icon name={icon} size={20} color={color} sw={1.8} /> : null}
         <Text style={[s.btnText, { color }]}>{title}</Text>

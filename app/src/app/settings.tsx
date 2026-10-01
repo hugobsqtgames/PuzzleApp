@@ -31,6 +31,23 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
+/** Four steps of volume (25 % to 100 %), as large touch targets. */
+function VolumeRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  const steps = [0.25, 0.5, 0.75, 1];
+  return (
+    <View accessible accessibilityRole="adjustable" accessibilityLabel={label} accessibilityValue={{ text: `${Math.round(value * 100)} %` }}
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={(e) => { const i = steps.findIndex((x) => x >= value - 0.01); onChange(steps[Math.max(0, Math.min(3, i + (e.nativeEvent.actionName === 'increment' ? 1 : -1)))]); }}
+      style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6, paddingLeft: 34, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: T.line }}>
+      {steps.map((v, i) => (
+        <Pressable key={v} accessibilityRole="button" accessibilityLabel={`${label} ${Math.round(v * 100)} %`} onPress={() => { tap(); onChange(v); }} hitSlop={6}
+          style={{ flex: 1, height: 10 + i * 6, borderRadius: 4, backgroundColor: v <= value + 0.01 ? T.amber : T.s2, borderWidth: 1, borderColor: T.line }} />
+      ))}
+      <Text style={[type.foot, { width: 44, textAlign: 'right' }]}>{Math.round(value * 100)} %</Text>
+    </View>
+  );
+}
+
 function LinkRow({ label, onPress, color = T.tx, icon = 'chev' }: { label: string; onPress: () => void; color?: string; icon?: string }) {
   return (
     <Pressable accessibilityRole="button" onPress={() => { tap(); onPress(); }} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, borderBottomWidth: 1, borderBottomColor: T.line }}>
@@ -90,7 +107,9 @@ export default function Settings() {
       ) : null}
       <Group title={tr('Son')}>
         <ToggleRow icon="music" label={tr('Musique')} value={settings.music} onChange={(v) => setSettings({ music: v })} />
+        {settings.music ? <VolumeRow label={tr('Volume de la musique')} value={settings.musicVolume} onChange={(v) => setSettings({ musicVolume: v })} /> : null}
         <ToggleRow icon="sound" label={tr('Effets sonores')} value={settings.effects} onChange={(v) => setSettings({ effects: v })} />
+        {settings.effects ? <VolumeRow label={tr('Volume des effets')} value={settings.effectsVolume} onChange={(v) => { setSettings({ effectsVolume: v }); note(2); }} /> : null}
         <ToggleRow icon="light" label={tr('Vibrations')} value={settings.haptics} onChange={(v) => setSettings({ haptics: v })} />
         <Pressable accessibilityRole="button" accessibilityLabel={`${tr('Instrument du Carillon')} : ${chimeLabel(settings.chime)}`} onPress={() => { tap(); setSheet('chime'); }} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, paddingVertical: 8, gap: 12 }}>
           <Icon name="bell" size={20} color={T.tx2} />
@@ -100,6 +119,7 @@ export default function Settings() {
         </Pressable>
       </Group>
       <Group title={tr('Apparence')}>
+        <ToggleRow icon="map" label={tr('Couleur du quartier')} sub={tr('Les boutons prennent la teinte du quartier où tu es')} value={settings.districtTint} onChange={(v) => setSettings({ districtTint: v })} />
         <ToggleRow icon="star" label={tr('Icône de saison')} sub={tr('L’icône de Lampion change avec les saisons et les fêtes')} value={settings.seasonIcon} onChange={(v) => setSettings({ seasonIcon: v })} />
       </Group>
       <Group title={tr('Jeu')}>
@@ -110,6 +130,7 @@ export default function Settings() {
         {settings.reminder ? <LinkRow label={tr('Heure : {0} h {1}', [hh(settings.reminderHour), hh(settings.reminderMinute)])} onPress={() => setSheet('time')} /> : null}
       </Group>
       <Group title={tr('Accessibilité')}>
+        <ToggleRow icon="sound" label={tr('Sous-titres des sons')} sub={tr('Une petite légende à l’écran pour les sons importants')} value={settings.soundCaptions} onChange={(v) => setSettings({ soundCaptions: v })} />
         <ToggleRow icon="eye" label={tr('Aide aux couleurs')} sub={tr('Motifs, lettres et repères en plus des couleurs')} value={settings.colorAid} onChange={(v) => setSettings({ colorAid: v })} />
         <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, borderBottomWidth: 1, borderBottomColor: T.line, gap: 12 }}>
           <Icon name="light" size={20} color={T.tx2} />

@@ -78,6 +78,8 @@ interface Store {
   note(i: number): void;
   enterPlace(place: Parameters<SoundEngine['enter']>[0]): void;
   haptic(kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium'): void;
+  /** Listens to the sound events (sound captions). Returns an unsubscribe. */
+  onSound(cb: (e: SoundEvent) => void): () => void;
   resetProgress(): Promise<void>;
   exportProgress(): string;
   importProgress(text: string): boolean;
@@ -172,6 +174,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       setProfile(side.profile);
       sound.setSettings({ music: side.settings.music, effects: side.settings.effects, haptics: side.settings.haptics, interfaceTaps: false });
       sound.setChime(side.settings.chime);
+      sound.setVolumes(side.settings.musicVolume, side.settings.effectsVolume);
       void syncAppIcon(side.settings.seasonIcon);
       setReady(true);
     })();
@@ -414,6 +417,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setSettingsState(next);
     sound.setSettings({ music: next.music, effects: next.effects, haptics: next.haptics, interfaceTaps: false } as AudioSettings);
     sound.setChime(next.chime);
+    sound.setVolumes(next.musicVolume, next.effectsVolume);
     if (patch.seasonIcon !== undefined) void syncAppIcon(next.seasonIcon);
     void writeSide(next, profileRef.current);
   }, [sound, writeSide]);
@@ -490,7 +494,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<Store>(() => ({
     ready, readOnly, state, engine, settings, profile, result, toast, today, daysAway,
     showToast, openLantern, openDaily, openEvent, openFree, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
-    completeOnboarding, markSeen, noteProfile, findEgg, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), enterPlace, haptic, resetProgress, exportProgress, importProgress,
+    completeOnboarding, markSeen, noteProfile, findEgg, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), onSound: (cb) => sound.onSound(cb), enterPlace, haptic, resetProgress, exportProgress, importProgress,
   }), [ready, readOnly, state, settings, profile, result, toast, today, daysAway, showToast, openLantern, openDaily, openEvent, openFree, updateSession, leaveSession, finishSession,
     buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, findEgg, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
 

@@ -14,7 +14,10 @@ import { HOUSE_SLOTS, look } from '../game/rewards';
 import { allRooms } from '../game/views';
 import { objectSvg } from '../ui/scenes/objects';
 import { useContentSize } from '../ui/layout';
-import { tr } from '../i18n';
+import { tr, translated } from '../i18n';
+import { DECOR, DECOR_SLOTS, DEFAULT_DECOR, type DecorSlot, decorOwned, decorXml } from '../game/house';
+
+const SLOT_LABEL: Record<DecorSlot, string> = translated({ rug: 'Tapis', painting: 'Tableau', lamp: 'Lampe', plant: 'Plante' });
 
 /** The room: wooden walls, a window on the night, two shelves, a rug. */
 const roomXml = (w: number, h: number) => `<svg viewBox="0 0 ${w} ${h}">
@@ -28,12 +31,13 @@ const roomXml = (w: number, h: number) => `<svg viewBox="0 0 ${w} ${h}">
   <rect x="${w * 0.05}" y="${h * 0.45}" width="${w * 0.9}" height="8" rx="3" fill="#8a6d45"/>
   <rect x="${w * 0.05}" y="${h * 0.7}" width="${w * 0.9}" height="8" rx="3" fill="#8a6d45"/>
   <rect y="${h * 0.8}" width="${w}" height="${h * 0.2}" fill="#4a3324"/>
-  <ellipse cx="${w * 0.6}" cy="${h * 0.91}" rx="${w * 0.3}" ry="${h * 0.06}" fill="#8E3B46" opacity=".8"/>
   <rect width="${w}" height="${h}" fill="url(#hl)"/>
 </svg>`;
 
 export default function House() {
-  const { state, profile, noteProfile } = useStore();
+  const { state, engine, profile, noteProfile } = useStore();
+  const [decorSlot, setDecorSlot] = useState<DecorSlot | null>(null);
+  const decor = { ...DEFAULT_DECOR, ...profile.house.decor } as Record<DecorSlot, string>;
   const { width } = useContentSize();
   const rooms = useMemo(() => allRooms(), []);
   const found = rooms.filter((r) => profile.picked.includes(r.room.id));
@@ -63,6 +67,7 @@ export default function House() {
 
       <View style={{ width: W, height: H, borderRadius: R.l, overflow: 'hidden', borderWidth: 1, borderColor: T.line, alignSelf: 'center' }}>
         <SvgXml xml={roomXml(W, H)} width={W} height={H} />
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0 }}><SvgXml xml={`<svg viewBox="0 0 ${W} ${H}">${decorXml(decor, W, H)}</svg>`} width={W} height={H} /></View>
         {Array.from({ length: HOUSE_SLOTS }, (_, i) => {
           const row = Math.floor(i / 4), col = i % 4;
           const obj = objectOf(profile.house.shelf[i]);
@@ -79,6 +84,34 @@ export default function House() {
         </View>
       </View>
 
+      {/* Decorate: a rug, a painting, a lamp, a plant, earned by lighting Vesper. */}
+      <Text style={type.cap}>{tr('Décorer')}</Text>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        {DECOR_SLOTS.map((k) => (
+          <Pressable key={k} accessibilityRole="button" onPress={() => { tap(); setDecorSlot(k); }}
+            style={{ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, borderRadius: R.m, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line }}>
+            <Text style={{ color: T.tx, fontSize: 13, fontWeight: '600' }}>{SLOT_LABEL[k]}</Text>
+            <Text style={{ color: T.tx3, fontSize: 11, textAlign: 'center' }} numberOfLines={1}>{tr(DECOR.find((d) => d.id === decor[k])?.name ?? '')}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Sheet visible={decorSlot !== null} onClose={() => setDecorSlot(null)}>
+        <Text style={[type.title2, { marginBottom: 10 }]}>{decorSlot ? SLOT_LABEL[decorSlot] : ''}</Text>
+        {DECOR.filter((d) => d.slot === decorSlot).map((d) => {
+          const owned = decorOwned(d, engine.progression, state), on = decor[d.slot] === d.id;
+          return (
+            <Pressable key={d.id} accessibilityRole="radio" accessibilityState={{ selected: on, disabled: !owned }} disabled={!owned}
+              onPress={() => { tap(); noteProfile((p) => ({ ...p, house: { ...p.house, decor: { ...p.house.decor, [d.slot]: d.id } } })); setDecorSlot(null); }}
+              style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, marginBottom: 8, borderRadius: R.m, backgroundColor: T.s1, borderWidth: on ? 2 : 1, borderColor: on ? T.gold : T.line, opacity: owned ? 1 : 0.55 }}>
+              <Icon name={owned ? (on ? 'check' : 'star') : 'lock'} size={18} color={on ? T.gold : T.tx2} />
+              <View style={{ flex: 1 }}>
+                <Text style={type.body}>{tr(d.name)}</Text>
+                {!owned && d.earn ? <Text style={type.foot}>{tr(d.earn.text)}</Text> : null}
+              </View>
+            </Pressable>
+          );
+        })}
+      </Sheet>
       <Sheet visible={slot !== null} onClose={() => setSlot(null)}>
         <Text style={[type.title2, { marginBottom: 10 }]}>{tr('Poser un objet')}</Text>
         {!found.length ? <Text style={[type.body, { color: T.tx2, marginBottom: 12 }]}>{tr('Tu n’as encore trouvé aucun objet. Éclaire une salle en entier, puis cherche ce qui brille.')}</Text> : (

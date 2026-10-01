@@ -34,10 +34,10 @@ export interface Profile {
   /** The album: a photo of each district fully lit, with its date. */
   photos: { d: string; at: string }[];
   /** The player's own little house in Vesper: its name and the objects on its shelves (room ids). */
-  house: { name: string; shelf: (string | null)[] };
+  house: { name: string; shelf: (string | null)[]; decor: Record<string, string> };
 }
 export const HOUSE_SLOTS = 8;
-export const newProfile = (): Profile => ({ murmures: 0, oops: 0, thrifty: 0, catchUps: 0, hatDrops: 0, eggs: [], lastSeen: null, themes: [], visited: [], durations: [[], [], [], [], [], []], history: [], picked: [], seenVersion: null, reviewAsked: false, photos: [], house: { name: '', shelf: Array(HOUSE_SLOTS).fill(null) } });
+export const newProfile = (): Profile => ({ murmures: 0, oops: 0, thrifty: 0, catchUps: 0, hatDrops: 0, eggs: [], lastSeen: null, themes: [], visited: [], durations: [[], [], [], [], [], []], history: [], picked: [], seenVersion: null, reviewAsked: false, photos: [], house: { name: '', shelf: Array(HOUSE_SLOTS).fill(null), decor: {} } });
 
 export interface Achievement { id: string; name: string; description: string; reward: number; hidden?: boolean; progress: (c: Ctx) => [number, number] }
 interface Ctx { s: GameState; p: Progression; profile: Profile; solvedByFamily: Record<string, Lantern[]> }

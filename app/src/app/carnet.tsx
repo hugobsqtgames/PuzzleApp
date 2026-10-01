@@ -22,8 +22,8 @@ import { districtLanterns, worldLanterns } from '../core/game/world';
 import { isClairvoyant } from '../core/game/state';
 import { lang, tr, trn, translated } from '../i18n';
 
-type Tab = 'objets' | 'succes' | 'stats' | 'vesper' | 'album';
-const TABS: [Tab, string][] = translated([['objets', 'Objets'], ['succes', 'Succès'], ['stats', 'Statistiques'], ['vesper', 'Vesper'], ['album', 'Album']]);
+type Tab = 'objets' | 'succes' | 'stats' | 'vesper' | 'album' | 'journal';
+const TABS: [Tab, string][] = translated([['objets', 'Objets'], ['succes', 'Succès'], ['stats', 'Statistiques'], ['vesper', 'Vesper'], ['album', 'Album'], ['journal', 'Journal']]);
 
 export default function Carnet() {
   const params = useLocalSearchParams<{ tab?: string }>();
@@ -40,7 +40,7 @@ export default function Carnet() {
           </Pressable>
         ))}
       </View>
-      {tab === 'objets' ? <Objects /> : tab === 'succes' ? <Achievements /> : tab === 'stats' ? <Stats /> : tab === 'album' ? <Album /> : <VesperTab />}
+      {tab === 'objets' ? <Objects /> : tab === 'succes' ? <Achievements /> : tab === 'stats' ? <Stats /> : tab === 'album' ? <Album /> : tab === 'journal' ? <Journal /> : <VesperTab />}
     </Screen>
   );
 }
@@ -244,6 +244,49 @@ function Stats() {
         <Text style={[type.foot, { flex: 1 }]}>{tr('Ces statistiques restent sur ton appareil. Rien n’est envoyé.')}</Text>
       </View>
     </>
+  );
+}
+
+/** Nilo's journal: the journey told in his words, from the player's own progress (newest first). */
+function Journal() {
+  const { state } = useStore();
+  const at = (id: string) => { const r = state.solved.get(id); const t = r ? Date.parse(r.solvedAt) : NaN; return Number.isNaN(t) ? null : t; };
+  const entries: { t: number; icon: string; text: string }[] = [];
+  const all = worldLanterns(WORLD).map((l) => at(l.puzzle)).filter((t): t is number => t !== null);
+  if (all.length) entries.push({ t: Math.min(...all), icon: 'light', text: tr('Ta toute première lanterne. Moi, j’ai cru que je rêvais : quelqu’un était venu.') });
+  for (const d of WORLD.districts) {
+    const ls = districtLanterns(d), ts = ls.map((l) => at(l.puzzle)).filter((t): t is number => t !== null);
+    if (!ts.length) continue;
+    const info = infoOf(d);
+    if (d.id !== 'phare') entries.push({ t: Math.min(...ts), icon: 'map', text: tr('Nous voilà à {0}. Ça sent la nouveauté, et un peu la poussière.', [lowerArticle(info.name)]) });
+    const feminine = !!info.keeper && (info.keeper.name.startsWith('La ') || info.keeper.name === 'L’Horlogère');
+    const awoke = feminine ? tr('{0} brille en entier. {1} s’est réveillée, et nous a dit merci.', [info.name, info.keeper?.name ?? '']) : tr('{0} brille en entier. {1} s’est réveillé, et nous a dit merci.', [info.name, info.keeper?.name ?? '']);
+    if (ts.length === ls.length) entries.push({ t: Math.max(...ts), icon: 'star', text: info.keeper ? awoke : tr('{0} brille en entier. Je n’oublierai jamais cette lumière.', [info.name]) });
+    for (const b of d.buildings) if (b.keystone && b.keystoneGivesLetter) { const t = at(b.keystone.puzzle); if (t !== null) entries.push({ t, icon: 'letter', text: tr('Une lettre de l’Allumeur, cachée dans la lanterne-clé. Je l’ai lue trois fois.') }); }
+  }
+  entries.sort((a, b) => b.t - a.t);
+  const fmt = (t: number) => new Date(t).toLocaleDateString(lang() === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const three = [...state.solved.values()].filter((r) => starsOf(r) === 3).length;
+  if (!entries.length) return <Card style={{ alignItems: 'center', gap: 10, padding: 22 }}><Nilo size={80} mood="think" look={look(state)} still /><Text style={[type.body, { textAlign: 'center', color: T.tx2 }]}>{tr('Mon journal est encore vide. Allume une lanterne, et j’écrirai la première page.')}</Text></Card>;
+  return (
+    <View style={{ gap: 12 }}>
+      <Card style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <Nilo size={60} mood="joy" look={look(state)} still />
+        <Text style={[type.dialogue, { flex: 1 }]}>{state.daily.bestStreak >= 3 ? tr('Notre plus longue série : {0} soirs d’affilée. Et {1} lanternes parfaites, sans aide ni erreur.', [state.daily.bestStreak, three]) : tr('{0} lanternes parfaites, sans aide ni erreur. Je les compte toutes.', [three])}</Text>
+      </Card>
+      {entries.map((e, i) => (
+        <View key={i} style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ alignItems: 'center', width: 26 }}>
+            <Icon name={e.icon} size={20} color={T.gold} />
+            {i < entries.length - 1 ? <View style={{ flex: 1, width: 1.5, backgroundColor: T.line, marginTop: 4 }} /> : null}
+          </View>
+          <View style={{ flex: 1, paddingBottom: 14 }}>
+            <Text style={type.foot}>{fmt(e.t)}</Text>
+            <Text style={[type.dialogue, { color: T.tx }]}>« {e.text} »</Text>
+          </View>
+        </View>
+      ))}
+    </View>
   );
 }
 

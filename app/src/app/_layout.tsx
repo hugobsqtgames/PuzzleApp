@@ -10,9 +10,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GameProvider, useStore } from '../game/store';
 import { setHapticsEnabled } from '../ui/components';
 import { FONTS, T } from '../ui/theme';
+import { SoundCaptions } from '../ui/SoundCaptions';
+import { AccentCtx } from '../ui/accent';
+import { current } from '../game/views';
+import { DISTRICT_BY_ID } from '../content/vesper';
 
 function Navigator() {
-  const { ready, settings } = useStore();
+  const { ready, settings, state, engine } = useStore();
+  // Buttons take the colour of the district the player is in (setting « Couleur du quartier »).
+  const accent = settings.districtTint ? DISTRICT_BY_ID[current(engine.progression, state).district.id as keyof typeof DISTRICT_BY_ID]?.hue ?? T.amber : T.amber;
   // The title font is bundled; if it ever fails to load, the system serif stands in.
   const [fontsLoaded, fontError] = useFonts(FONTS);
   useEffect(() => { setHapticsEnabled(settings.haptics); }, [settings.haptics]);
@@ -23,6 +29,7 @@ function Navigator() {
   setLang(language);
   if (!ready || (!fontsLoaded && !fontError)) return <View style={{ flex: 1, backgroundColor: '#05060f' }} />;
   return (
+    <AccentCtx.Provider value={accent}>
     <Stack key={language} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: T.bg }, animation: 'slide_from_right', animationDuration: 320 }}>
       <Stack.Screen name="index" options={{ animation: 'fade' }} />
       <Stack.Screen name="puzzle" options={{ gestureEnabled: false, animation: 'fade', animationDuration: 280 }} />
@@ -31,6 +38,8 @@ function Navigator() {
       <Stack.Screen name="welcome" options={{ gestureEnabled: false, animation: 'none' }} />
       <Stack.Screen name="ending" options={{ gestureEnabled: false, animation: 'fade', animationDuration: 900 }} />
     </Stack>
+    <SoundCaptions />
+    </AccentCtx.Provider>
   );
 }
 

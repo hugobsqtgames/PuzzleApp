@@ -104,9 +104,40 @@ function Embroidery({ s, width, onPlay, tap }: BoardProps) {
 const same = (a: number[], b: number[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 // ---------------------------------------------------------------- Signes & Toits
-function NumberPad({ n, onPick, onErase }: { n: number; onPick: (v: number) => void; onErase: () => void }) {
+/**
+ * Pencil notes (Signes, Toits): small candidate digits in a cell, as on paper.
+ * Kept for the puzzle while the app runs (not in the save: they are scribbles).
+ */
+const NOTES = new Map<string, Map<number, number[]>>();
+function usePencil(id: string) {
+  const [pencil, setPencil] = useState(false);
+  const [, bump] = useState(0);
+  const notes = NOTES.get(id) ?? new Map<number, number[]>();
+  if (!NOTES.has(id)) NOTES.set(id, notes);
+  const toggle = (cell: number, v: number) => { const cur = notes.get(cell) ?? []; notes.set(cell, cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v].sort()); bump((x) => x + 1); };
+  const clear = (cell: number) => { notes.delete(cell); bump((x) => x + 1); };
+  return { pencil, setPencil, notes, toggle, clear };
+}
+
+/** The candidates noted in a cell, small, in a 3-wide grid. */
+function CellNotes({ list, size }: { list?: number[]; size: number }) {
+  if (!list?.length) return null;
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', left: 3, right: 3, top: 2, bottom: 2, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center' }}>
+      {list.map((v) => <Text key={v} style={{ width: '33%', textAlign: 'center', color: T.moon, fontSize: Math.max(9, size * 0.22), lineHeight: Math.max(11, size * 0.27), fontWeight: '700' }}>{v}</Text>)}
+    </View>
+  );
+}
+
+function NumberPad({ n, onPick, onErase, pencil, onPencil }: { n: number; onPick: (v: number) => void; onErase: () => void; pencil?: boolean; onPencil?: () => void }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+      {onPencil ? (
+        <Pressable accessibilityRole="switch" accessibilityState={{ checked: !!pencil }} accessibilityLabel={tr('Crayon : noter des chiffres possibles')} onPress={onPencil}
+          style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: pencil ? T.moon : 'transparent', borderWidth: 1, borderColor: pencil ? T.moon : T.line, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="pencil" size={20} color={pencil ? T.bg : T.tx2} />
+        </Pressable>
+      ) : null}
       {[...Array(n)].map((_, k) => (
         <Pressable key={k} accessibilityRole="button" accessibilityLabel={tr('Chiffre {0}', [k + 1])} onPress={() => onPick(k + 1)}
           style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: T.s2, borderWidth: 1, borderColor: T.line, alignItems: 'center', justifyContent: 'center' }}>
@@ -122,9 +153,9 @@ function NumberPad({ n, onPick, onErase }: { n: number; onPick: (v: number) => v
 }
 
 /** A square of digits: select a cell, then a digit. `decor` draws around each cell. */
-function DigitSquare({ n, values, givens, size, focus, sel, onSelect, cellStyle, label }: {
+function DigitSquare({ n, values, givens, size, focus, sel, onSelect, cellStyle, label, notes }: {
   n: number; values: number[]; givens: number[]; size: number; focus: CellRef[]; sel: number | null; onSelect: (i: number) => void;
-  cellStyle?: (v: number) => object; label: (r: number, c: number, v: number) => string;
+  cellStyle?: (v: number) => object; label: (r: number, c: number, v: number) => string; notes?: Map<number, number[]>;
 }) {
   return (
     <View>
@@ -136,6 +167,7 @@ function DigitSquare({ n, values, givens, size, focus, sel, onSelect, cellStyle,
               <Pressable key={c} accessibilityRole="button" accessibilityState={{ selected: sel === i, disabled: given }} accessibilityLabel={label(r, c, v)} disabled={given} onPress={() => onSelect(i)}
                 style={[{ width: size, height: size, margin: 3, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#12152b', borderWidth: sel === i ? 2.5 : 1, borderColor: hot ? T.coral : sel === i ? T.moon : T.line }, v ? cellStyle?.(v) : null]}>
                 <Text style={{ color: given ? T.gold : T.tx, fontSize: size * 0.46, fontWeight: given ? '800' : '600', fontFamily: ROUND }}>{v || ''}</Text>
+                {!v ? <CellNotes list={notes?.get(i)} size={size} /> : null}
               </Pressable>
             );
           })}
@@ -148,9 +180,16 @@ function DigitSquare({ n, values, givens, size, focus, sel, onSelect, cellStyle,
 function Signs({ s, width, onPlay, tap }: BoardProps) {
   const p = s.data as SignsPuzzle, st = s.state as SignsState;
   const [sel, setSel] = useState<number | null>(null);
+  const pen = usePencil(s.id);
   const gap = 18, size = Math.floor(Math.min(52, (width - 28 - gap * (p.n - 1)) / p.n - 6));
   const step = size + 6 + gap;
-  const put = (v: number) => { if (sel === null) return; tap(); const values = st.values.slice(); values[sel] = v; onPlay({ values }); };
+  const put = (v: number) => {
+    if (sel === null) return;
+    tap();
+    if (pen.pencil && v) { pen.toggle(sel, v); return; }
+    if (!v) pen.clear(sel);
+    const values = st.values.slice(); values[sel] = v; onPlay({ values });
+  };
   return (
     <View style={{ gap: 14 }}>
       <View style={[box, { padding: 14, alignItems: 'center' }]}>
@@ -162,6 +201,7 @@ function Signs({ s, width, onPlay, tap }: BoardProps) {
                 onPress={() => { tap(); setSel(i); }}
                 style={{ position: 'absolute', left: c * step, top: r * step, width: size + 6, height: size + 6, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#12152b', borderWidth: sel === i ? 2.5 : 1, borderColor: hot ? T.coral : sel === i ? T.moon : T.line }}>
                 <Text style={{ color: given ? T.gold : T.tx, fontSize: size * 0.5, fontWeight: given ? '800' : '600', fontFamily: ROUND }}>{v || ''}</Text>
+                {!v ? <CellNotes list={pen.notes.get(i)} size={size} /> : null}
               </Pressable>
             );
           })}
@@ -176,7 +216,7 @@ function Signs({ s, width, onPlay, tap }: BoardProps) {
           })}
         </View>
       </View>
-      <NumberPad n={p.n} onPick={put} onErase={() => put(0)} />
+      <NumberPad n={p.n} onPick={put} onErase={() => put(0)} pencil={pen.pencil} onPencil={() => { tap(); pen.setPencil(!pen.pencil); }} />
     </View>
   );
 }
@@ -184,8 +224,15 @@ function Signs({ s, width, onPlay, tap }: BoardProps) {
 function Roofs({ s, width, onPlay, tap }: BoardProps) {
   const p = s.data as RoofsPuzzle, st = s.state as RoofsState;
   const [sel, setSel] = useState<number | null>(null);
+  const pen = usePencil(s.id);
   const clue = 26, size = Math.floor(Math.min(52, (width - 28 - clue * 2) / p.n - 6));
-  const put = (v: number) => { if (sel === null) return; tap(); const values = st.values.slice(); values[sel] = v; onPlay({ values }); };
+  const put = (v: number) => {
+    if (sel === null) return;
+    tap();
+    if (pen.pencil && v) { pen.toggle(sel, v); return; }
+    if (!v) pen.clear(sel);
+    const values = st.values.slice(); values[sel] = v; onPlay({ values });
+  };
   const line = (cells: number[]) => cells.map((i) => st.values[i]);
   const ok = (cells: number[], want: number) => !want || !line(cells).every(Boolean) ? null : seen(line(cells)) === want;
   const Clue = ({ v, good }: { v: number; good: boolean | null }) => (
@@ -203,12 +250,12 @@ function Roofs({ s, width, onPlay, tap }: BoardProps) {
         <View style={{ flexDirection: 'row' }}>
           <View>{[...Array(p.n)].map((_, r) => <View key={r} style={{ height: size + 6, justifyContent: 'center' }}><Clue v={p.left[r]} good={ok(row(r), p.left[r])} /></View>)}</View>
           <DigitSquare n={p.n} values={st.values} givens={p.givens} size={size} focus={focusOf(s)} sel={sel} onSelect={(i) => { tap(); setSel(i); }} cellStyle={shade}
-            label={(r, c, v) => `${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${v ? tr('cheminée de {0}', [v]) : tr('vide')}`} />
+            label={(r, c, v) => `${tr('Ligne {0}, colonne {1}', [r + 1, c + 1])} : ${v ? tr('cheminée de {0}', [v]) : tr('vide')}`} notes={pen.notes} />
           <View>{[...Array(p.n)].map((_, r) => <View key={r} style={{ height: size + 6, justifyContent: 'center' }}><Clue v={p.right[r]} good={ok([...row(r)].reverse(), p.right[r])} /></View>)}</View>
         </View>
         <View style={{ flexDirection: 'row', marginLeft: clue }}>{[...Array(p.n)].map((_, c) => <View key={c} style={{ width: size + 6, alignItems: 'center' }}><Clue v={p.bottom[c]} good={ok([...col(c)].reverse(), p.bottom[c])} /></View>)}</View>
       </View>
-      <NumberPad n={p.n} onPick={put} onErase={() => put(0)} />
+      <NumberPad n={p.n} onPick={put} onErase={() => put(0)} pencil={pen.pencil} onPencil={() => { tap(); pen.setPencil(!pen.pencil); }} />
     </View>
   );
 }

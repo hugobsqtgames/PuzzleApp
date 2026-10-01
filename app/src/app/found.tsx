@@ -12,15 +12,16 @@ import { useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
 import { Button, Icon, Nilo, Pill, Rise, ShardPill } from '../ui/components';
 import { useAnimatedValue, useReducedMotion } from '../ui/motion';
-import { districtXml, letterArtXml } from '../ui/art';
+import { districtXml, letterArtXml, type Look } from '../ui/art';
 import { objectSvg } from '../ui/scenes/objects';
 import { T, type } from '../ui/theme';
 import { LETTERS } from '../content/vesper';
-import { achievementContext, COSMETICS, look } from '../game/rewards';
+import { achievementContext, COSMETICS, look, starsOf } from '../game/rewards';
 import { allRooms, buildingName, districtById, infoOf, locateBuilding, locateRoom, lowerArticle, nextStep, roomName } from '../game/views';
-import { WORLD } from '../game/catalog';
+import { FAMILIES, WORLD } from '../game/catalog';
 import { followUps } from './success';
-import { inFrench, tr } from '../i18n';
+import { inFrench, lang, tr, trn } from '../i18n';
+import { districtLanterns } from '../core/game/world';
 import { askReview } from '../game/review';
 
 /**
@@ -45,6 +46,75 @@ function DistrictReel({ frames, width, height, label }: { frames: string[]; widt
       <Animated.View style={reduce ? null : { opacity: cam.interpolate({ inputRange: [0, 0.35, 1], outputRange: [0, 1, 1] }), transform: [{ scale: cam.interpolate({ inputRange: [0, 1], outputRange: [1.18, 1] }) }, { translateY: cam.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) }] }}>
         <SvgXml xml={frames[shown]} width={width} height={height} />
       </Animated.View>
+    </View>
+  );
+}
+
+/** Between two districts: Nilo crosses the bridge over the water, little hops, his flame bobbing. */
+function Crossing({ width, hue, look: lk }: { width: number; hue: string; look: Look }) {
+  const reduce = useReducedMotion();
+  const walk = useAnimatedValue(reduce ? 1 : 0);
+  const bob = useAnimatedValue(0);
+  useEffect(() => {
+    if (reduce) return;
+    Animated.timing(walk, { toValue: 1, duration: 2600, easing: Easing.inOut(Easing.quad), useNativeDriver: true }).start();
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(bob, { toValue: 1, duration: 170, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(bob, { toValue: 0, duration: 170, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+    ]), { iterations: 7 });
+    loop.start();
+    return () => loop.stop();
+  }, [walk, bob, reduce]);
+  const h = 96, n = 46;
+  const scene = `<svg viewBox="0 0 ${width} ${h}">
+    <rect width="${width}" height="${h}" fill="#0b0e22"/>
+    ${Array.from({ length: 6 }, (_, i) => `<path d="M${(i * 71) % width} ${h - 14 + (i % 3) * 4}q10-4 20 0" stroke="#2a3060" stroke-width="1.5" fill="none"/>`).join('')}
+    <path d="M0 ${h - 34}Q${width / 2} ${h - 62} ${width} ${h - 34}" stroke="#6b5a3c" stroke-width="6" fill="none"/>
+    <path d="M0 ${h - 34}Q${width / 2} ${h - 62} ${width} ${h - 34}" stroke="#8a6d45" stroke-width="2" fill="none" transform="translate(0 -9)"/>
+    ${[0.12, 0.37, 0.63, 0.88].map((t) => { const x = t * width, y = h - 34 - 28 * (1 - Math.pow(2 * t - 1, 2)) * (4 / 4); return `<path d="M${x} ${y}v-16" stroke="#8a6d45" stroke-width="2"/><circle cx="${x}" cy="${y - 19}" r="4" fill="${hue}"/><circle cx="${x}" cy="${y - 19}" r="9" fill="${hue}" opacity=".18"/>`; }).join('')}
+  </svg>`;
+  // Nilo follows the arch of the bridge: up in the middle, down at the ends.
+  const x = walk.interpolate({ inputRange: [0, 1], outputRange: [-n * 0.2, width - n * 0.9] });
+  const arch = walk.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, -26, 0] });
+  const hop = bob.interpolate({ inputRange: [0, 1], outputRange: [0, -4] });
+  return (
+    <View accessible accessibilityRole="image" accessibilityLabel={tr('Nilo traverse le pont vers le nouveau quartier')} style={{ width, height: h, borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: T.line }}>
+      <SvgXml xml={scene} width={width} height={h} />
+      <Animated.View style={{ position: 'absolute', left: 0, top: h - 34 - n * 0.95, transform: [{ translateX: x }, { translateY: Animated.add(arch, hop) }] }}>
+        <Nilo size={n} mood="joy" look={lk} still />
+      </Animated.View>
+    </View>
+  );
+}
+
+/** What the player went through in a district now fully lit: the days, the stars, their family, the help taken. */
+function DistrictRecap({ districtId }: { districtId: string }) {
+  const { state } = useStore();
+  const d = districtById(districtId);
+  const records = districtLanterns(d).map((l) => ({ l, r: state.solved.get(l.puzzle) })).filter((x) => x.r);
+  if (!records.length) return null;
+  const dates = records.map((x) => Date.parse(x.r!.solvedAt)).filter((t) => !Number.isNaN(t)).sort((a, b) => a - b);
+  const fmt = (t: number) => new Date(t).toLocaleDateString(lang() === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long' });
+  const days = dates.length ? Math.max(1, Math.round((dates[dates.length - 1] - dates[0]) / 86_400_000) + 1) : 0;
+  const three = records.filter((x) => starsOf(x.r) === 3).length;
+  const counts = new Map<string, number>();
+  records.forEach((x) => counts.set(x.l.family, (counts.get(x.l.family) ?? 0) + 1));
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+  const helped = records.filter((x) => x.r!.paidHints > 0 || x.r!.usedSolution).length;
+  const rows: [string, string][] = [
+    ...(dates.length ? [[tr('Ton voyage'), days > 1 ? tr('du {0} au {1}, en {2} jours', [fmt(dates[0]), fmt(dates[dates.length - 1]), days]) : tr('en une seule journée, le {0}', [fmt(dates[0])])]] as [string, string][] : []),
+    [tr('Lanternes à 3 étoiles'), `${three} / ${records.length}`],
+    ...(top ? [[tr('Ta famille dans ce quartier'), `${FAMILIES[top[0] as keyof typeof FAMILIES].name} · ${top[1]}`]] as [string, string][] : []),
+    [tr('Avec un coup de pouce'), helped ? trn(helped, '{0} lanterne', '{0} lanternes') : tr('aucune : bravo !')],
+  ];
+  return (
+    <View style={{ backgroundColor: T.s1, borderRadius: 18, borderWidth: 1, borderColor: T.line, padding: 14, gap: 8 }}>
+      {rows.map(([k, v]) => (
+        <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+          <Text style={type.foot}>{k}</Text>
+          <Text style={[type.sub, { color: T.tx, flexShrink: 1, textAlign: 'right' }]}>{v}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -170,6 +240,7 @@ export default function Found() {
         <Rise delay={500}><Text style={[type.title1, { textAlign: 'center' }]}>{info.name}</Text></Rise>
         {info.keeper ? <Rise delay={500 + d.buildings.length * 380}><Text style={[type.dialogue, { textAlign: 'center' }]}>{tr('{0} se réveille.', [info.keeper.name])} {info.keeper.line}</Text></Rise> : null}
         <Rise delay={700 + d.buildings.length * 380}><ShardPill n={`+${engine.economy.districtBonus}`} /></Rise>
+        <Rise delay={900 + d.buildings.length * 380} style={{ alignSelf: 'stretch' }}><DistrictRecap districtId={d.id} /></Rise>
       </>
     );
   }
@@ -194,6 +265,7 @@ export default function Found() {
     const families = [...new Set(d.buildings.flatMap((b) => b.rooms.flatMap((r) => r.lanterns.map((l) => l.family))))];
     body = (
       <>
+        <Crossing width={width - 32} hue={info.hue} look={look(state)} />
         {/* Out of the dark, the first building lights its first windows. */}
         <DistrictReel width={width - 32} height={220} label={tr('{0}, une première fenêtre s’allume', [info.name])} frames={[0, 0.15].map((lit) => districtXml(d.id, info.hue, d.buildings.map((_, bi) => ({ name: buildingName(d, bi), open: bi === 0, lit: bi === 0 ? lit : 0 })), false))} />
         <Rise delay={400}><Text style={[type.cap, { color: info.hue, textAlign: 'center' }]}>{tr('Nouveau quartier')}</Text></Rise>
@@ -212,7 +284,7 @@ export default function Found() {
   }
 
   return (
-    <Screen style={{ gap: 12, paddingTop: 72 }} place={kind === 'district' ? infoOf(districtById(id)).sound : undefined}>
+    <Screen scroll style={{ gap: 12, paddingTop: 72, flexGrow: 1 }} place={kind === 'district' ? infoOf(districtById(id)).sound : undefined}>
       <View style={{ alignItems: 'center', gap: 12 }}>{body}</View>
       <View style={{ flex: 1 }} />
       <View style={{ gap: 4 }}>{buttons}</View>

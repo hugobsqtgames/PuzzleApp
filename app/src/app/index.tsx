@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '../ui/Text';
 import { useContentSize, useWide } from '../ui/layout';
@@ -54,6 +54,26 @@ export default function Home() {
   const running = eventOn(now);
   const weather = weatherOn(now);
   const fall = running ? { kind: running.event.particle, accent: running.event.flame } : weather === 'rain' ? { kind: 'rain' as const, accent: '#9FC3E8' } : { kind: season.particle, accent: season.accent };
+  // Touching Nilo: he reacts (a purr, a sneeze, his flame flaring…); a long press opens his wardrobe.
+  const [reaction, setReaction] = useState<{ mood: 'joy' | 'oops' | 'wonder' | 'curious'; text: string } | null>(null);
+  const pokes = useRef(0);
+  const pokeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (pokeTimer.current) clearTimeout(pokeTimer.current); }, []);
+  const poke = () => {
+    pokes.current += 1;
+    const all: { mood: 'joy' | 'oops' | 'wonder' | 'curious'; text: string }[] = [
+      { mood: 'joy', text: tr('Rrrrrr…') },
+      { mood: 'oops', text: tr('Atchoum ! Pardon, c’est la poussière des lanternes.') },
+      { mood: 'wonder', text: tr('Regarde, ma flamme brille plus fort !') },
+      { mood: 'joy', text: tr('Hé, ça chatouille !') },
+      { mood: 'curious', text: tr('On rallume une lanterne ensemble ?') },
+    ];
+    // The second touch tells how to reach the wardrobe (it used to open with a touch).
+    const r = pokes.current === 2 ? { mood: 'curious' as const, text: tr('Appuie longtemps sur moi pour ma garde-robe.') } : all[Math.floor(Math.random() * all.length)];
+    setReaction(r);
+    if (pokeTimer.current) clearTimeout(pokeTimer.current);
+    pokeTimer.current = setTimeout(() => setReaction(null), 2600);
+  };
   // Nilo follows the hour: a coffee in the morning, yawns late in the evening (asleep after midnight, see below).
   const morning = hour >= 6 && hour < 10, late = hour >= 22;
   // In season, Nilo wears what fits, unless the player dressed him already.
@@ -155,7 +175,8 @@ export default function Home() {
           </View>
         </Pressable>
         <View style={{ position: 'absolute', right: 4, bottom: -26 }}>
-          <Nilo size={96} mood={midnight ? 'sleep' : late ? 'think' : 'curious'} look={niloLook} onPress={() => router.push('/nilo')} />
+          <Nilo size={96} mood={reaction?.mood ?? (midnight ? 'sleep' : late ? 'think' : 'curious')} look={niloLook} onPress={poke} onLongPress={() => router.push('/nilo')} longLabel={tr('Garde-robe de Nilo')} />
+          {reaction ? <View pointerEvents="none" style={{ position: 'absolute', right: 30, bottom: 96, maxWidth: 220, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: 14, borderBottomRightRadius: 4, paddingVertical: 7, paddingHorizontal: 11 }}><Text style={[type.callout, { color: T.tx }]}>{reaction.text}</Text></View> : null}
         </View>
       </View>
 
@@ -300,7 +321,8 @@ export default function Home() {
           </View>
         </Pressable>
         <View style={{ position: 'absolute', right: 4, bottom: -26 }}>
-          <Nilo size={96} mood={midnight ? 'sleep' : late ? 'think' : 'curious'} look={niloLook} onPress={() => router.push('/nilo')} />
+          <Nilo size={96} mood={reaction?.mood ?? (midnight ? 'sleep' : late ? 'think' : 'curious')} look={niloLook} onPress={poke} onLongPress={() => router.push('/nilo')} longLabel={tr('Garde-robe de Nilo')} />
+          {reaction ? <View pointerEvents="none" style={{ position: 'absolute', right: 30, bottom: 96, maxWidth: 220, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: 14, borderBottomRightRadius: 4, paddingVertical: 7, paddingHorizontal: 11 }}><Text style={[type.callout, { color: T.tx }]}>{reaction.text}</Text></View> : null}
         </View>
       </View>
 

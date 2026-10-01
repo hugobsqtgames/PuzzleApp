@@ -21,7 +21,7 @@ function around(p: Pivot, S: number, W: number, H: number, t: object[]) {
   return [{ translateX: dx }, { translateY: dy }, ...t, { translateX: -dx }, { translateY: -dy }] as any;
 }
 
-export function NiloLive({ size = 120, mood = 'neutral', look = {}, onPress, label = 'Nilo' }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void; label?: string }) {
+export function NiloLive({ size = 120, mood = 'neutral', look = {}, onPress, onLongPress, longLabel, label = 'Nilo' }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void; onLongPress?: () => void; longLabel?: string; label?: string }) {
   const reduce = useReducedMotion();
   const S = size / 132, W = size, H = size * (120 / 132);
   const parts = useMemo(() => niloParts(mood, look), [mood, look.flame, look.hat, look.scarf, look.comp, look.costume]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -170,5 +170,11 @@ export function NiloLive({ size = 120, mood = 'neutral', look = {}, onPress, lab
   // The deco of an initial mood shows at once.
   useEffect(() => { v.deco.setValue(1); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!onPress) return <View accessible accessibilityLabel={label}>{content}</View>;
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onTap} hitSlop={8}>{content}</Pressable>;
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onTap} onLongPress={onLongPress} delayLongPress={450} hitSlop={8}
+      accessibilityActions={onLongPress && longLabel ? [{ name: 'longpress', label: longLabel }] : undefined}
+      onAccessibilityAction={(e) => { if (e.nativeEvent.actionName === 'longpress') onLongPress?.(); }}>
+      {content}
+    </Pressable>
+  );
 }

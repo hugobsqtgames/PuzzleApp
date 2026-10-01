@@ -104,6 +104,12 @@ class AmbienceLoop {
     }
   }
 
+  /** The music volume changed in the settings: follow it at once. */
+  setTarget(v: number) {
+    this.target = v;
+    safe(() => { this.players[this.active].volume = v; });
+  }
+
   start(fadeMs: number) {
     const p = this.players[this.active];
     playFromStart(p, 0);
@@ -178,6 +184,8 @@ class AmbienceLoop {
   }
 }
 
+const clamp01 = (v: number) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1);
+
 export class SoundEngine {
   readonly director: AudioDirector;
   private ambience: AmbienceLoop | null = null;
@@ -185,6 +193,11 @@ export class SoundEngine {
   private sfx = new SoundPool((key) => (key.startsWith('bell_') ? 3 : 2));
   private place: AmbiencePlace = 'lighthouse';
   private chime: ChimeTheme = 'bells';
+  /** Volumes of the settings (0–1), on top of the mix baked into the files. */
+  private musicVolume = 1;
+  private effectsVolume = 1;
+  /** Who wants to know when a sound plays (the sound captions). */
+  private listeners = new Set<(e: SoundEvent) => void>();
   /** The family being played: its own touch under the finger (see play()). */
   private touch: Parameters<Haptic>[0] | null = null;
   private appState: AppStateStatus = AppState.currentState;
@@ -199,7 +212,7 @@ export class SoundEngine {
         this.unlocked = true;
         document.removeEventListener('pointerdown', unlock);
         const playing = this.director.playing;
-        if (playing) safe(() => { this.ambience = new AmbienceLoop(PLACE_AMBIENCE[playing], 1); this.ambience.start(1500); });
+        if (playing) safe(() => { this.ambience = new AmbienceLoop(PLACE_AMBIENCE[playing], this.musicVolume); this.ambience.start(1500); });
       };
       document.addEventListener('pointerdown', unlock);
     }
@@ -223,6 +236,15 @@ export class SoundEngine {
   /** Loads the Carillon's bells before its melody plays. */
   preloadBells() { if (this.unlocked) this.sfx.preload([0, 1, 2, 3, 4, 5].map((i) => this.bellKey(i))); }
 
+  setVolumes(music: number, effects: number) {
+    this.musicVolume = clamp01(music);
+    this.effectsVolume = clamp01(effects);
+    this.ambience?.setTarget(this.musicVolume);
+  }
+
+  /** Called with each sound event that plays (for the sound captions). Returns an unsubscribe. */
+  onSound(cb: (e: SoundEvent) => void) { this.listeners.add(cb); return () => { this.listeners.delete(cb); }; }
+
   setChime(theme: ChimeTheme) { this.chime = CHIME_THEMES.includes(theme) ? theme : 'bells'; }
 
   /** The haptic of a move, by family (null: the director's default). */
@@ -232,6 +254,8 @@ export class SoundEngine {
     const commands = this.director.trigger(event, Date.now());
     if (event === 'manipulate' && this.touch) for (const c of commands) if (c.kind === 'haptic') c.haptic = this.touch;
     this.run(commands);
+    // The captions show even with the effects off (that is when they help most).
+    this.listeners.forEach((l) => safe(() => l(event)));
   }
 
   private bellKey(i: number) {
@@ -242,7 +266,7 @@ export class SoundEngine {
   /** One bell of the Carillon (0…5), low to high. Follows the "Effets sonores" setting. */
   note(i: number) {
     if (!this.unlocked || !this.director.settings.effects) return;
-    this.sfx.play(this.bellKey(i), 0.9);
+    this.sfx.play(this.bellKey(i), 0.9 * this.effectsVolume);
   }
 
   private effectKey(event: SoundEvent): string | null {
@@ -261,7 +285,7 @@ export class SoundEngine {
           const ms = c.kind === 'startAmbience' ? c.fadeInMs : c.durationMs;
           if (this.ambience?.key === key) break; // two places share the same file: keep playing
           this.ambience?.stop(ms);
-          safe(() => { this.ambience = new AmbienceLoop(key, 1); this.ambience.start(ms); });
+          safe(() => { this.ambience = new AmbienceLoop(key, this.musicVolume); this.ambience.start(ms); });
           break;
         }
         case 'stopAmbience':
@@ -270,7 +294,7 @@ export class SoundEngine {
           break;
         case 'playEffect': {
           const key = this.effectKey(c.event);
-          if (key) this.sfx.play(key, c.volume);
+          if (key) this.sfx.play(key, c.volume * this.effectsVolume);
           break;
         }
         case 'haptic':

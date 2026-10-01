@@ -232,7 +232,9 @@ export default function PuzzleScreen() {
             {niloRow}
             {controls}
           </View>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false} scrollEnabled={!dragBoard} bounces={!dragBoard}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} scrollEnabled={!dragBoard} bounces={!dragBoard}
+            // Pinch to zoom on the big grids (iOS), except the boards played by dragging.
+            maximumZoomScale={dragBoard ? 1 : 2.5} minimumZoomScale={1} bouncesZoom={!dragBoard} pinchGestureEnabled={!dragBoard} centerContent>
             <Scaled base={BOARD_BASE} k={boardScale}>{board}</Scaled>
           </ScrollView>
         </View>
@@ -240,7 +242,9 @@ export default function PuzzleScreen() {
         <>
           {header}
           {rule}
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false} scrollEnabled={!dragBoard} bounces={!dragBoard}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} scrollEnabled={!dragBoard} bounces={!dragBoard}
+            // Pinch to zoom on the big grids (iOS), except the boards played by dragging.
+            maximumZoomScale={dragBoard ? 1 : 2.5} minimumZoomScale={1} bouncesZoom={!dragBoard} pinchGestureEnabled={!dragBoard} centerContent>
             {board}
           </ScrollView>
           {niloRow}

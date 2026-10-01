@@ -25,8 +25,15 @@ export interface Settings {
   chime: ChimeTheme;
   /** The app icon follows the season (iOS, outside Expo Go). */
   seasonIcon: boolean;
+  /** Volumes, 0–1 (with the music and effects switches on). */
+  musicVolume: number;
+  effectsVolume: number;
+  /** A small caption on screen for the important sounds. */
+  soundCaptions: boolean;
+  /** Buttons and glows take the colour of the district the player is in. */
+  districtTint: boolean;
 }
-export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto', chime: 'bells', seasonIcon: true };
+export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto', chime: 'bells', seasonIcon: true, musicVolume: 1, effectsVolume: 1, soundCaptions: false, districtTint: true };
 
 export function decodeSide(text: string): { settings: Settings; profile: Profile; legacyObjects?: boolean } {
   const out: { settings: Settings; profile: Profile; legacyObjects?: boolean } = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };
@@ -50,15 +57,18 @@ export function decodeSide(text: string): { settings: Settings; profile: Profile
       reviewAsked: p.reviewAsked === true,
       photos: Array.isArray(p.photos) ? p.photos.filter((x): x is { d: string; at: string } => !!x && typeof x.d === 'string' && typeof x.at === 'string').slice(0, 20) : [],
       house: (() => {
-        const h = (p.house ?? {}) as { name?: unknown; shelf?: unknown };
+        const h = (p.house ?? {}) as { name?: unknown; shelf?: unknown; decor?: unknown };
         const shelf = Array.from({ length: HOUSE_SLOTS }, (_, i) => (Array.isArray(h.shelf) && typeof h.shelf[i] === 'string' ? h.shelf[i] as string : null));
-        return { name: typeof h.name === 'string' ? h.name.slice(0, 30) : '', shelf };
+        const decor: Record<string, string> = {};
+        if (h.decor && typeof h.decor === 'object') for (const [k, v] of Object.entries(h.decor as Record<string, unknown>)) if (typeof v === 'string' && k.length < 20) decor[k] = v.slice(0, 40);
+        return { name: typeof h.name === 'string' ? h.name.slice(0, 30) : '', shelf, decor };
       })(),
       history: Array.isArray(p.history) ? p.history.filter((h): h is Profile['history'][number] => !!h && typeof h.label === 'string' && typeof h.amount === 'number' && typeof h.at === 'string').slice(-30) : [],
     };
   } catch { /* defaults */ }
   if (!['auto', 'fr', 'en'].includes(out.settings.language)) out.settings.language = 'auto';
   if (!CHIME_THEMES.includes(out.settings.chime)) out.settings.chime = 'bells';
+  for (const k of ['musicVolume', 'effectsVolume'] as const) out.settings[k] = Number.isFinite(out.settings[k]) ? Math.min(1, Math.max(0.25, out.settings[k])) : 1;
   out.settings.reminderHour = Math.min(23, Math.max(0, Math.trunc(out.settings.reminderHour)));
   out.settings.reminderMinute = Math.min(59, Math.max(0, Math.trunc(out.settings.reminderMinute)));
   return out;
