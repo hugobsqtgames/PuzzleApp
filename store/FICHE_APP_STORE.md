@@ -39,14 +39,17 @@ Captures prêtes (10 par appareil, refaites avec les événements, le mode Libre
 
 > Vesper s'est éteinte. L'Allumeur est parti, et toutes les lanternes de la ville dorment. Avec Nilo, ton petit compagnon à la flamme, rallume-les une à une : chaque énigme résolue rend un peu de lumière à la ville.
 >
-> 1 000 LANTERNES, 25 FAMILLES D'ÉNIGMES
-> Engrenages, vitraux, carillon, taquin, rubans, lucioles, menteurs, balances, enquêtes… 25 sortes de casse-têtes, de l'étincelle facile au brasier redoutable. Chaque nouvelle famille arrive avec une petite présentation, et la difficulté monte doucement.
+> 1 000 LANTERNES, 26 FAMILLES D'ÉNIGMES
+> Engrenages, vitraux, carillon, taquin, rubans, lucioles, constellations, menteurs, balances, enquêtes… 26 sortes de casse-têtes, de l'étincelle facile au brasier redoutable. Chaque nouvelle famille arrive avec une petite présentation, et la difficulté monte doucement.
 >
 > UNE VILLE À RÉVEILLER
 > Le Phare, la Bibliothèque Murmurante, l'Horlogerie, la Serre de Verre, le Marché Flottant, le Théâtre d'Ombres, l'Observatoire : sept quartiers, chacun avec sa musique, ses habitants endormis et ses salles uniques. Quand une salle est entièrement éclairée, un objet caché s'y révèle. Les lettres de l'Allumeur racontent où il est parti.
 >
 > LE DÉFI DU SOIR
 > Une énigme par jour, la même pour tout le monde. Garde ta flamme allumée soir après soir, et rattrape un soir manqué sans stress.
+>
+> AU FIL DE L'ANNÉE
+> Les saisons changent la ville. Trois fêtes reviennent chaque année : le Printemps des Lanternes, la Nuit des Citrouilles et la Veillée de Vesper, avec leurs énigmes et leurs récompenses. Et quand tu veux jouer encore, le mode Libre te prépare une énigme de la famille et de la difficulté de ton choix.
 >
 > À TON RYTHME
 > Pas de chrono, pas de vies, pas de pénalité. Bloqué ? Nilo te glisse un murmure, une piste, ou te montre la solution. Les indices se paient en Éclats gagnés en jouant, jamais en argent.
