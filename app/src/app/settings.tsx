@@ -10,11 +10,14 @@ import { BackButton, Button, Card, Icon, Sheet, ToggleRow, tap } from '../ui/com
 import { T, R, type } from '../ui/theme';
 import { askPermission, permissionStatus } from '../game/reminders';
 import { CONTENT_VERSION } from '../game/catalog';
+import { CHIME_THEMES, ChimeTheme } from '../audio/engine';
 import { LangSetting, tr } from '../i18n';
 
 const LANGS: LangSetting[] = ['auto', 'fr', 'en'];
 /** Each language is named in itself, so it can be found whatever the current one. */
 const langLabel = (l: LangSetting) => (l === 'fr' ? 'Français' : l === 'en' ? 'English' : tr('Langue du téléphone'));
+
+const chimeLabel = (c: ChimeTheme) => (c === 'xylo' ? tr('Xylophone') : c === 'harp' ? tr('Harpe') : tr('Cloches'));
 
 const TIMES = [[18, 0], [18, 30], [19, 0], [19, 30], [20, 0], [20, 30], [21, 0], [21, 30]];
 
@@ -37,8 +40,8 @@ function LinkRow({ label, onPress, color = T.tx, icon = 'chev' }: { label: strin
 }
 
 export default function Settings() {
-  const { settings, setSettings, resetProgress, exportProgress, importProgress, showToast, readOnly, findEgg } = useStore();
-  const [sheet, setSheet] = useState<'time' | 'import' | 'lang' | null>(null);
+  const { settings, setSettings, note, resetProgress, exportProgress, importProgress, showToast, readOnly, findEgg } = useStore();
+  const [sheet, setSheet] = useState<'time' | 'import' | 'lang' | 'chime' | null>(null);
   const [text, setText] = useState('');
   const hh = (n: number) => String(n).padStart(2, '0');
   const versionTaps = useRef<number[]>([]);
@@ -88,6 +91,12 @@ export default function Settings() {
         <ToggleRow icon="music" label={tr('Musique')} value={settings.music} onChange={(v) => setSettings({ music: v })} />
         <ToggleRow icon="sound" label={tr('Effets sonores')} value={settings.effects} onChange={(v) => setSettings({ effects: v })} />
         <ToggleRow icon="light" label={tr('Vibrations')} value={settings.haptics} onChange={(v) => setSettings({ haptics: v })} />
+        <Pressable accessibilityRole="button" accessibilityLabel={`${tr('Instrument du Carillon')} : ${chimeLabel(settings.chime)}`} onPress={() => { tap(); setSheet('chime'); }} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, gap: 12 }}>
+          <Icon name="bell" size={20} color={T.tx2} />
+          <Text style={[type.body, { flex: 1 }]}>{tr('Instrument du Carillon')}</Text>
+          <Text style={type.foot}>{chimeLabel(settings.chime)}</Text>
+          <Icon name="chev" size={18} color={T.tx3} />
+        </Pressable>
       </Group>
       <Group title={tr('Jeu')}>
         <ToggleRow icon="chev" label={tr('Ouvrir directement les puzzles')} sub={tr('Sans l’aperçu de la lanterne')} value={settings.direct} onChange={(v) => setSettings({ direct: v })} />
@@ -154,6 +163,20 @@ export default function Settings() {
             <Pressable key={l} accessibilityRole="radio" accessibilityState={{ selected: on }} onPress={() => { tap(); setSheet(null); setSettings({ language: l }); }}
               style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, marginBottom: 8, borderRadius: R.m, backgroundColor: T.s1, borderWidth: on ? 2 : 1, borderColor: on ? T.moon : T.line }}>
               <Text style={[type.body, { flex: 1 }]}>{langLabel(l)}</Text>
+              {on ? <Icon name="check" size={18} color={T.moon} /> : null}
+            </Pressable>
+          );
+        })}
+      </Sheet>
+      <Sheet visible={sheet === 'chime'} onClose={() => setSheet(null)}>
+        <Text style={[type.title2, { marginBottom: 4 }]}>{tr('Instrument du Carillon')}</Text>
+        <Text style={[type.foot, { marginBottom: 12 }]}>{tr('Touche un instrument pour l’écouter.')}</Text>
+        {CHIME_THEMES.map((c) => {
+          const on = settings.chime === c;
+          return (
+            <Pressable key={c} accessibilityRole="radio" accessibilityState={{ selected: on }} onPress={() => { setSettings({ chime: c }); [0, 2, 4].forEach((n, k) => setTimeout(() => note(n), k * 180)); }}
+              style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, marginBottom: 8, borderRadius: R.m, backgroundColor: T.s1, borderWidth: on ? 2 : 1, borderColor: on ? T.moon : T.line }}>
+              <Text style={[type.body, { flex: 1 }]}>{chimeLabel(c)}</Text>
               {on ? <Icon name="check" size={18} color={T.moon} /> : null}
             </Pressable>
           );

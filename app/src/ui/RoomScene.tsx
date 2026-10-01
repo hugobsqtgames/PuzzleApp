@@ -91,7 +91,7 @@ export function RoomScene({ roomId, w, h, lanterns, lit, recommended, justLit, o
   roomId: string; w: number; h: number;
   lanterns: { key: string; isKey?: boolean }[]; lit: boolean[]; recommended: number; justLit: number;
   open: boolean; object?: string; objectFound: boolean; digit?: number | null; glow: string;
-  labelOf(i: number, slot: Slot): string; onLantern(i: number): void;
+  labelOf(i: number, slot: Slot): string; onLantern(i: number, at: { x: number; y: number }): void;
   search?: SearchState;
 }) {
   const reduce = useReducedMotion();
@@ -161,7 +161,7 @@ export function RoomScene({ roomId, w, h, lanterns, lit, recommended, justLit, o
       {showHint && hide ? <View pointerEvents="none" style={{ position: 'absolute', left: ox + hide[0] * k - 40, top: oy + hide[1] * k - 40, width: 80, height: 80, alignItems: 'center', justifyContent: 'center' }}><PulseRing size={46} color={T.gold} /></View> : null}
       {lanterns.map((l, i) => (
         <Lantern key={l.key} index={i} slot={at(slots[i])} lit={lit[i]} isKey={l.isKey} recommended={i === recommended && open && !search?.active} justLit={i === justLit} k={k} hw={HIT_WIDTH * hk} hh={HIT_HEIGHT * hk}
-          disabled={!open} reduce={reduce} label={labelOf(i, slots[i])} onPress={() => onLantern(i)} />
+          disabled={!open} reduce={reduce} label={labelOf(i, slots[i])} onPress={() => onLantern(i, at(slots[i]))} />
       ))}
     </View>
   );

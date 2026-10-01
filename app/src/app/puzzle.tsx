@@ -13,7 +13,7 @@ import { BackButton, Button, GlyphCircle, Icon, IconButton, Nilo, Sheet, ShardPi
 import { Board, ruleFor } from '../ui/boards';
 import { T, R, type } from '../ui/theme';
 import { FAMILIES, TIER_NAMES, dailyPuzzle, puzzleFor } from '../game/catalog';
-import { Session, canSubmit, hintAvailable, hintCost, isComplete, play as playMove, redo, shownHint, startSession, submit, undo } from '../game/session';
+import { Session, canSubmit, giveHint, hintAvailable, hintCost, isComplete, play as playMove, redo, shownHint, startSession, submit, undo } from '../game/session';
 import { STANDARD_ECONOMY } from '../core/game/engine';
 import { t } from '../content/strings';
 import { look } from '../game/rewards';
@@ -34,10 +34,10 @@ const IDLE_MS = 90_000;
 export default function PuzzleScreen() {
   const store = useStore();
   const session = useSession();
-  const { state, engine, findEgg, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
+  const { state, engine, findEgg, markSeen, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
   const { width } = useContentSize();
   const { wide, width: wideWidth } = useWide();
-  const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | 'restart' | null>(null);
+  const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | 'restart' | 'intro' | null>(null);
   const [offered, setOffered] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   const shake = useAnimatedValue(0);
@@ -45,6 +45,14 @@ export default function PuzzleScreen() {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
   // A long silence on the board: Nilo offers a Murmure (never during the tutorial lantern).
+  // The first puzzle of a family: it is introduced (the tutorial lantern introduces the Interrupteurs itself).
+  const introKey = session ? `intro.${session.code}` : '';
+  useEffect(() => {
+    if (!session || session.id === 'phare.b1.r1.1') { if (session?.code === 'IN') markSeen('intro.IN'); return; }
+    // Already played this family (a save from before the introductions): nothing to introduce.
+    const known = [...state.solved.keys()].some((id) => engine.progression.locate(id)?.lantern.family === session.code);
+    if (!known && !state.seenDialogue.has(introKey)) { const id = setTimeout(() => setSheet('intro'), 450); return () => clearTimeout(id); }
+  }, [session?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const activity = `${session?.id}:${session?.history.length}:${session?.hint.level}:${session?.wrongAnswers}`;
   const activityRef = useRef(activity);
   useEffect(() => { activityRef.current = activity; }, [activity]);
@@ -277,8 +285,26 @@ export default function PuzzleScreen() {
 
       {/* One window whose page changes (pause, restart, rule): on iOS, closing one window while
           opening another can freeze the app. */}
-      <Sheet visible={sheet === 'pause' || sheet === 'restart' || sheet === 'rule'} onClose={() => setSheet(sheet === 'restart' ? 'pause' : null)}>
-        {sheet === 'restart' ? (
+      <Sheet visible={sheet === 'pause' || sheet === 'restart' || sheet === 'rule' || sheet === 'intro'} onClose={() => { if (sheet === 'intro') markSeen(introKey); setSheet(sheet === 'restart' ? 'pause' : null); }}>
+        {sheet === 'intro' ? (
+          <>
+            <View style={{ alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <Text style={[type.cap, { color: T.gold }]}>{tr('Nouveau type d’énigme')}</Text>
+              <GlyphCircle icon={s.code} size={64} />
+              <Text style={type.title1}>{fam.name}</Text>
+            </View>
+            <Text style={[type.body, { marginBottom: 10 }]}>{ruleFor(s)}</Text>
+            <Text style={[type.sub, { marginBottom: 16 }]}>{RULE_DETAILS[s.code]}</Text>
+            <Button title={tr('C’est parti')} onPress={() => { markSeen(introKey); setSheet(null); }} />
+            {/* A first move, shown for free: the family is new (it does not cost the Clairvoyance bonus). */}
+            {!fam.answer ? <Button title={tr('Montre-moi un premier coup')} kind="ghost" onPress={() => {
+              markSeen(introKey);
+              setSheet(null);
+              const q = giveHint(s, HintLevel.Insight, 0);
+              if (q) { updateSession(q); play('hint'); if (isComplete(q)) end(q, 700); }
+            }} style={{ marginTop: 4 }} /> : null}
+          </>
+        ) : sheet === 'restart' ? (
           <>
             <Text style={[type.title2, { marginBottom: 8 }]}>{tr('Recommencer ce puzzle ?')}</Text>
             <Text style={[type.sub, { marginBottom: 16 }]}>{tr('La grille revient à son état de départ. Les indices déjà utilisés restent comptés.')}</Text>

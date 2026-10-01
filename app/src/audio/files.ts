@@ -1,5 +1,5 @@
-// Generated from assets/audio/manifest.json (tools/audio/render.js). Do not edit.
- 
+// Generated from assets/audio/manifest.json (tools/audio/files.js). Do not edit.
+
 export const SFX_FILES: Record<string, number> = {
   "error": require("../../assets/audio/sfx_error.m4a"),
   "shards": require("../../assets/audio/sfx_shards.m4a"),
@@ -40,6 +40,36 @@ export const SFX_FILES: Record<string, number> = {
   "bell_3": require("../../assets/audio/sfx_bell_3.m4a"),
   "bell_4": require("../../assets/audio/sfx_bell_4.m4a"),
   "bell_5": require("../../assets/audio/sfx_bell_5.m4a"),
+  "manipulate_biblio": require("../../assets/audio/sfx_manipulate_biblio.m4a"),
+  "manipulate_theatre": require("../../assets/audio/sfx_manipulate_theatre.m4a"),
+  "manipulate_obs": require("../../assets/audio/sfx_manipulate_obs.m4a"),
+  "lanternLit_biblio": require("../../assets/audio/sfx_lanternLit_biblio.m4a"),
+  "lanternLit_theatre": require("../../assets/audio/sfx_lanternLit_theatre.m4a"),
+  "lanternLit_obs": require("../../assets/audio/sfx_lanternLit_obs.m4a"),
+  "roomComplete_biblio": require("../../assets/audio/sfx_roomComplete_biblio.m4a"),
+  "roomComplete_theatre": require("../../assets/audio/sfx_roomComplete_theatre.m4a"),
+  "roomComplete_obs": require("../../assets/audio/sfx_roomComplete_obs.m4a"),
+  "unlock_biblio": require("../../assets/audio/sfx_unlock_biblio.m4a"),
+  "unlock_theatre": require("../../assets/audio/sfx_unlock_theatre.m4a"),
+  "unlock_obs": require("../../assets/audio/sfx_unlock_obs.m4a"),
+  "newDistrict_biblio": require("../../assets/audio/sfx_newDistrict_biblio.m4a"),
+  "newDistrict_theatre": require("../../assets/audio/sfx_newDistrict_theatre.m4a"),
+  "newDistrict_obs": require("../../assets/audio/sfx_newDistrict_obs.m4a"),
+  "hint_biblio": require("../../assets/audio/sfx_hint_biblio.m4a"),
+  "hint_theatre": require("../../assets/audio/sfx_hint_theatre.m4a"),
+  "hint_obs": require("../../assets/audio/sfx_hint_obs.m4a"),
+  "bell_xylo_0": require("../../assets/audio/sfx_bell_xylo_0.m4a"),
+  "bell_harp_0": require("../../assets/audio/sfx_bell_harp_0.m4a"),
+  "bell_xylo_1": require("../../assets/audio/sfx_bell_xylo_1.m4a"),
+  "bell_harp_1": require("../../assets/audio/sfx_bell_harp_1.m4a"),
+  "bell_xylo_2": require("../../assets/audio/sfx_bell_xylo_2.m4a"),
+  "bell_harp_2": require("../../assets/audio/sfx_bell_harp_2.m4a"),
+  "bell_xylo_3": require("../../assets/audio/sfx_bell_xylo_3.m4a"),
+  "bell_harp_3": require("../../assets/audio/sfx_bell_harp_3.m4a"),
+  "bell_xylo_4": require("../../assets/audio/sfx_bell_xylo_4.m4a"),
+  "bell_harp_4": require("../../assets/audio/sfx_bell_harp_4.m4a"),
+  "bell_xylo_5": require("../../assets/audio/sfx_bell_xylo_5.m4a"),
+  "bell_harp_5": require("../../assets/audio/sfx_bell_harp_5.m4a"),
 };
 export const AMBIENCE_FILES: Record<string, number> = {
   "nuit": require("../../assets/audio/amb_nuit.m4a"),
@@ -47,6 +77,9 @@ export const AMBIENCE_FILES: Record<string, number> = {
   "horlo": require("../../assets/audio/amb_horlo.m4a"),
   "marche": require("../../assets/audio/amb_marche.m4a"),
   "serre": require("../../assets/audio/amb_serre.m4a"),
+  "biblio": require("../../assets/audio/amb_biblio.m4a"),
+  "theatre": require("../../assets/audio/amb_theatre.m4a"),
+  "obs": require("../../assets/audio/amb_obs.m4a"),
 };
 export const AMBIENCE_LOOP_SECONDS = 48;
 export const AMBIENCE_OVERLAP_SECONDS = 4;

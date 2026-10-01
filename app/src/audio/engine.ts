@@ -12,8 +12,8 @@ import { AMBIENCE_FILES, AMBIENCE_LOOP_SECONDS, AMBIENCE_OVERLAP_SECONDS, SFX_FI
 
 /** Rendered ambiences (tools/audio/render.js) for each place of the director. */
 export const PLACE_AMBIENCE: Record<AmbiencePlace, string> = {
-  night: 'nuit', lighthouse: 'phare', library: 'nuit', clockworks: 'horlo',
-  glasshouse: 'serre', market: 'marche', theatre: 'nuit', observatory: 'nuit',
+  night: 'nuit', lighthouse: 'phare', library: 'biblio', clockworks: 'horlo',
+  glasshouse: 'serre', market: 'marche', theatre: 'theatre', observatory: 'obs',
 };
 /** Effects whose notes follow the scale of the current place. */
 const PER_PLACE: Partial<Record<SoundEvent, string>> = {
@@ -29,6 +29,9 @@ const MANIFEST: SoundManifest = {
   ambiences: Object.fromEntries(Object.entries(STANDARD_MANIFEST.ambiences).map(([k, v]) => [k, { ...v, volume: 1 }])) as SoundManifest['ambiences'],
 };
 
+/** The Carillon's instrument, chosen in the settings. */
+export type ChimeTheme = 'bells' | 'xylo' | 'harp';
+export const CHIME_THEMES: ChimeTheme[] = ['bells', 'xylo', 'harp'];
 type Haptic = (kind: 'selection' | 'success' | 'error' | 'impactSoft' | 'impactMedium') => void;
 
 const safe = (f: () => void) => { try { f(); } catch { /* audio is never worth a crash */ } };
@@ -181,6 +184,9 @@ export class SoundEngine {
   // Bells can ring fast, one after the other: three players each; two for the other effects.
   private sfx = new SoundPool((key) => (key.startsWith('bell_') ? 3 : 2));
   private place: AmbiencePlace = 'lighthouse';
+  private chime: ChimeTheme = 'bells';
+  /** The family being played: its own touch under the finger (see play()). */
+  private touch: Parameters<Haptic>[0] | null = null;
   private appState: AppStateStatus = AppState.currentState;
   /** Browsers block audio until the first interaction; phones do not. */
   private unlocked = Platform.OS !== 'web';
@@ -215,16 +221,28 @@ export class SoundEngine {
   }
 
   /** Loads the Carillon's bells before its melody plays. */
-  preloadBells() { if (this.unlocked) this.sfx.preload([0, 1, 2, 3, 4, 5].map((i) => `bell_${i}`)); }
+  preloadBells() { if (this.unlocked) this.sfx.preload([0, 1, 2, 3, 4, 5].map((i) => this.bellKey(i))); }
+
+  setChime(theme: ChimeTheme) { this.chime = CHIME_THEMES.includes(theme) ? theme : 'bells'; }
+
+  /** The haptic of a move, by family (null: the director's default). */
+  setTouch(kind: Parameters<Haptic>[0] | null) { this.touch = kind; }
 
   play(event: SoundEvent) {
-    this.run(this.director.trigger(event, Date.now()));
+    const commands = this.director.trigger(event, Date.now());
+    if (event === 'manipulate' && this.touch) for (const c of commands) if (c.kind === 'haptic') c.haptic = this.touch;
+    this.run(commands);
+  }
+
+  private bellKey(i: number) {
+    const n = Math.max(0, Math.min(5, i));
+    return this.chime === 'bells' ? `bell_${n}` : `bell_${this.chime}_${n}`;
   }
 
   /** One bell of the Carillon (0…5), low to high. Follows the "Effets sonores" setting. */
   note(i: number) {
     if (!this.unlocked || !this.director.settings.effects) return;
-    this.sfx.play(`bell_${Math.max(0, Math.min(5, i))}`, 0.9);
+    this.sfx.play(this.bellKey(i), 0.9);
   }
 
   private effectKey(event: SoundEvent): string | null {

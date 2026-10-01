@@ -20,6 +20,13 @@ const engine = html.slice(start, end);
 
 const RATE = 44100;
 const AMB_SECONDS = 48;   // loop length
+// Districts added after the prototype: same instruments, each its own key and texture.
+const EXTRA_PLACES = `
+  PLACES.biblio = { n: 'La Bibliothèque', chord: [47, 54, 59, 62, 66], scale: [59, 62, 64, 66, 69, 71], texture: 'room', crickets: false, ticks: false, sparkle: [5, 10] };
+  PLACES.theatre = { n: 'Le Théâtre d’Ombres', chord: [46, 53, 58, 61, 65], scale: [58, 61, 63, 65, 68, 70], texture: 'room', crickets: false, ticks: false, sparkle: [3, 7] };
+  PLACES.obs = { n: 'L’Observatoire', chord: [52, 59, 64, 66, 71], scale: [64, 66, 71, 73, 76, 78], texture: 'wind', crickets: true, ticks: false, sparkle: [7, 13] };`;
+// node tools/audio/render.js --only biblio,theatre,obs : renders those places' effects and ambiences only.
+const ONLY = (() => { const i = process.argv.indexOf('--only'); return i > 0 ? process.argv[i + 1].split(',') : null; })();
 const XFADE = 4;          // overlap used by the app to chain loops
 
 async function main() {
@@ -31,6 +38,7 @@ async function main() {
     let _seed = 1;
     Math.random = () => { _seed = (_seed + 0x6D2B79F5) >>> 0; let t = _seed; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
     ${engine}
+    ${EXTRA_PLACES}
     window.__engine = { PLACES, SFX, noiseBuffer, noiseBurst, tone, celesta, mtof };
     function masterBus(c, busGain) {
       const comp = c.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
@@ -85,12 +93,13 @@ async function main() {
   };
   const trimSilence = s => { let n = s.length; while (n > RATE * .3 && Math.abs(s[n - 1]) < 1e-4) n--; return s.slice(0, n); };
 
-  const places = ['nuit', 'phare', 'horlo', 'marche', 'serre'];
+  const places = ONLY ?? ['nuit', 'phare', 'horlo', 'marche', 'serre', 'biblio', 'theatre', 'obs'];
   const perPlace = ['manipulate', 'lanternLit', 'roomComplete', 'unlock', 'newDistrict', 'hint'];
   const shared = ['error', 'shards', 'locked'];
-  let seed = 100;
-  const manifest = { rate: RATE, ambienceSeconds: AMB_SECONDS, crossfadeSeconds: XFADE, sfx: {}, ambiences: {} };
-  for (const name of shared) {
+  // --only keeps the other files (and their seeds) as they are.
+  let seed = ONLY ? 1000 : 100;
+  const manifest = ONLY ? JSON.parse(fs.readFileSync(path.join(OUT, 'manifest.json'), 'utf8')) : { rate: RATE, ambienceSeconds: AMB_SECONDS, crossfadeSeconds: XFADE, sfx: {}, ambiences: {} };
+  for (const name of ONLY ? [] : shared) {
     const f = `sfx_${name}`;
     wav(path.join(OUT, f + '.wav'), trimSilence(await page.evaluate(([n, s]) => window.renderSfx(n, 'phare', s), [name, seed++])));
     encode(path.join(OUT, f + '.wav'), path.join(OUT, f + '.m4a'), 128);

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Pressable, View } from 'react-native';
 import { useWide } from '../../ui/layout';
 import { Text } from '../../ui/Text';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { goBack } from '../../ui/nav';
@@ -20,6 +20,7 @@ import { sealDigitOf } from '../../game/seal';
 import { followUps } from '../success';
 import { lightsToOpenNextRoom } from '../../core/game/progression';
 import { tr } from '../../i18n';
+import { useAnimatedValue, useReducedMotion } from '../../ui/motion';
 
 const BG = '#0b0d1d';
 /** Lanterns already celebrated in their room (once per lighting). */
@@ -52,6 +53,13 @@ export default function RoomScreen() {
   const [feedback, setFeedback] = useState<string | null>(null);
   // Nilo's face: wonder when entering, then calm; he follows the search.
   const [niloMood, setNiloMood] = useState<Mood>('wonder');
+  // Where each lantern was touched (scene coordinates), for the light that opens the puzzle.
+  const points = useRef<Record<number, { x: number; y: number }>>({});
+  const [burstAt, setBurstAt] = useState<{ x: number; y: number } | null>(null);
+  const burst = useAnimatedValue(0);
+  const reduce = useReducedMotion();
+  // Back from the puzzle: the room is seen again, without the light over it.
+  useFocusEffect(useCallback(() => { setBurstAt(null); }, []));
   useEffect(() => { const t = setTimeout(() => setNiloMood('neutral'), 1800); return () => clearTimeout(t); }, [id]);
   const at = locateRoom(id ?? '');
   const p = engine.progression;
@@ -86,9 +94,16 @@ export default function RoomScreen() {
 
   const play_ = (i: number) => {
     setSelected(null);
-    if (openLantern(lanterns[i].puzzle)) router.push('/puzzle');
+    const p = points.current[i];
+    // The lantern's light grows over the room, then the puzzle opens in it.
+    if (!p || reduce) { if (openLantern(lanterns[i].puzzle)) router.push('/puzzle'); return; }
+    setBurstAt(p);
+    burst.setValue(0);
+    Animated.timing(burst, { toValue: 1, duration: 300, easing: Easing.in(Easing.quad), useNativeDriver: true }).start(() => {
+      if (openLantern(lanterns[i].puzzle)) router.push('/puzzle'); else setBurstAt(null);
+    });
   };
-  const choose = (i: number) => { tap(); if (settings.direct) play_(i); else setSelected(i); };
+  const choose = (i: number, p?: { x: number; y: number }) => { tap(); if (p) points.current[i] = p; if (settings.direct) play_(i); else setSelected(i); };
   const sel = selected !== null ? lanterns[selected] : null;
   const fam = (c: string) => FAMILIES[c as Code];
 
@@ -138,6 +153,8 @@ export default function RoomScreen() {
         ) : null}
         <Fade top height={28} />
         <Fade top={false} height={36} />
+        {burstAt ? <Animated.View pointerEvents="none" style={{ position: 'absolute', left: burstAt.x - 30, top: burstAt.y - 30, width: 60, height: 60, borderRadius: 30, backgroundColor: T.gold,
+          opacity: burst.interpolate({ inputRange: [0, 0.25, 1], outputRange: [0, 0.8, 1] }), transform: [{ scale: burst.interpolate({ inputRange: [0, 1], outputRange: [0.3, 26] }) }] }} /> : null}
       </View>
   );
   const bottomBlock = (

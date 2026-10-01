@@ -504,4 +504,18 @@ export const EN_UI: Record<string, string> = {
   'Sans indice et sans erreur. Belle lumière.': 'No hint and no mistake. A lovely light.',
   'Tu t’es trompé, puis tu as trouvé. C’est comme ça qu’on apprend.': 'You got it wrong, then you found it. That\'s how we learn.',
   'Un coup de pouce, et c’est allumé. Bien joué !': 'A little nudge, and it\'s lit. Well done!',
+  // Où en suis-je ?, family intros, Carillon instruments
+  'Où en suis-je ?': 'Where am I?',
+  'Tu es ici': 'You are here',
+  '{0} / {1} lanternes dans cette salle': '{0} / {1} lanterns in this room',
+  'Continuer ici': 'Continue here',
+  'Le chemin': 'The way',
+  'Nouveau type d’énigme': 'New kind of puzzle',
+  'C’est parti': 'Let\'s go',
+  'Montre-moi un premier coup': 'Show me a first move',
+  'Xylophone': 'Xylophone',
+  'Harpe': 'Harp',
+  'Cloches': 'Bells',
+  'Instrument du Carillon': 'Carillon instrument',
+  'Touche un instrument pour l’écouter.': 'Tap an instrument to hear it.',
 };

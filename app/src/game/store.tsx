@@ -14,7 +14,8 @@ import { SaveStore } from '../core/persistence/saveStore';
 import { localDayKey, DayKey } from '../core/game/dayKey';
 import { HintLevel } from '../core/puzzlekit/types';
 import { AudioSettings, SoundEvent } from '../core/audio/director';
-import { SoundEngine } from '../audio/engine';
+import { CHIME_THEMES, ChimeTheme, SoundEngine } from '../audio/engine';
+import type { Code } from './catalog';
 import { WORLD, dailyPuzzle, puzzleFor, FAMILIES, CONTENT_VERSION } from './catalog';
 import { Session, giveHint, hintCost, progressOf, record, startSession } from './session';
 import { ACHIEVEMENTS, COSMETICS, Profile, Slot, achievementContext, achievementStatus, newProfile, owns } from './rewards';
@@ -38,8 +39,10 @@ export interface Settings {
   colorAid: boolean;
   /** 'auto' follows the phone. */
   language: LangSetting;
+  /** The Carillon's instrument. */
+  chime: ChimeTheme;
 }
-export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto' };
+export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto', chime: 'bells' };
 
 export interface Result {
   session: Session;
@@ -90,6 +93,12 @@ interface Store {
   importProgress(text: string): boolean;
 }
 
+/** The haptic of a move, by family (the others: a light selection tick). */
+const FAMILY_TOUCH: Partial<Record<Code, 'impactSoft' | 'impactMedium'>> = {
+  GL: 'impactMedium', TQ: 'impactMedium',
+  IN: 'impactSoft', MI: 'impactSoft', BR: 'impactSoft', LU: 'impactSoft', PA: 'impactSoft', EN: 'impactSoft', FI: 'impactSoft', MA: 'impactSoft', RU: 'impactSoft',
+};
+
 const Ctx = createContext<Store | null>(null);
 /**
  * The puzzle being played, on its own: it changes at every move, and only the
@@ -122,6 +131,7 @@ function decodeSide(text: string): { settings: Settings; profile: Profile; legac
     };
   } catch { /* defaults */ }
   if (!['auto', 'fr', 'en'].includes(out.settings.language)) out.settings.language = 'auto';
+  if (!CHIME_THEMES.includes(out.settings.chime)) out.settings.chime = 'bells';
   out.settings.reminderHour = Math.min(23, Math.max(0, Math.trunc(out.settings.reminderHour)));
   out.settings.reminderMinute = Math.min(59, Math.max(0, Math.trunc(out.settings.reminderMinute)));
   return out;
@@ -156,6 +166,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     } catch { /* no haptics here */ }
   }, []);
   const sound = useMemo(() => new SoundEngine((k) => haptic(k)), [haptic]);
+  // Each family has its own touch under the finger: a heavy block, a soft thread, a light tap.
+  const sessionCode = session?.code;
+  useEffect(() => { sound.setTouch(sessionCode ? FAMILY_TOUCH[sessionCode] ?? null : null); }, [sound, sessionCode]);
 
   // ---------------------------------------------------------------- persistence
   const writeSide = useCallback(async (s: Settings, p: Profile) => {
@@ -192,6 +205,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       void writeSide(side.settings, side.profile);
       setProfile(side.profile);
       sound.setSettings({ music: side.settings.music, effects: side.settings.effects, haptics: side.settings.haptics, interfaceTaps: false });
+      sound.setChime(side.settings.chime);
       setReady(true);
     })();
     return () => { alive = false; };
@@ -398,6 +412,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     settingsRef.current = next;
     setSettingsState(next);
     sound.setSettings({ music: next.music, effects: next.effects, haptics: next.haptics, interfaceTaps: false } as AudioSettings);
+    sound.setChime(next.chime);
     void writeSide(next, profileRef.current);
   }, [sound, writeSide]);
 

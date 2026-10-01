@@ -111,6 +111,7 @@ export default function Home() {
           <Text style={type.title2}>{tr('Vesper est entièrement éclairée.')}</Text>
         )}
         <Button title={tr('Continuer')} icon="light" onPress={onContinue} style={{ marginTop: 4 }} />
+        <Button title={tr('Où en suis-je ?')} kind="ghost" onPress={() => router.push('/progress')} />
       </Card></Rise>
           </View>
           <View style={{ flex: 1, gap: 14 }}>
@@ -242,6 +243,7 @@ export default function Home() {
           <Text style={type.title2}>{tr('Vesper est entièrement éclairée.')}</Text>
         )}
         <Button title={tr('Continuer')} icon="light" onPress={onContinue} style={{ marginTop: 4 }} />
+        <Button title={tr('Où en suis-je ?')} kind="ghost" onPress={() => router.push('/progress')} />
       </Card></Rise>
 
       {dailyOpen && daily ? (
