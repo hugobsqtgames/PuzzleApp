@@ -653,7 +653,7 @@ export const EN_WORLD: Record<string, string> = {
   // Seasons and events
   'Chapeau de sorcière': 'Witch hat',
   'Allume les 7 citrouilles de la Nuit des Citrouilles': 'Relight all 7 pumpkins of the Night of Pumpkins',
-  'Bonnet de la Veillée': 'Vigil hat',
+  'Bonnet de Père Noël': 'Santa hat',
   'Veille 6 soirs pendant la Veillée de Vesper': 'Keep 6 evenings of the Vesper Vigil',
   'Écharpe de houx': 'Holly scarf',
   'Veille les 12 soirs de la Veillée de Vesper': 'Keep all 12 evenings of the Vesper Vigil',

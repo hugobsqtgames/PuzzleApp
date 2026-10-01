@@ -154,7 +154,7 @@ const COSMETICS_FR: Cosmetic[] = [
   { id: 'hat.crown', slot: 'hat', name: 'Couronne de papier', price: 400 },
   { id: 'hat.top', slot: 'hat', name: 'Haut-de-forme de l’Allumeur', price: 600 },
   { id: 'hat.witch', slot: 'hat', name: 'Chapeau de sorcière', earn: { text: 'Allume les 7 citrouilles de la Nuit des Citrouilles', when: flag('event.halloween.complete') } },
-  { id: 'hat.santa', slot: 'hat', name: 'Bonnet de la Veillée', earn: { text: 'Veille 6 soirs pendant la Veillée de Vesper', when: flag('event.noel.half') } },
+  { id: 'hat.santa', slot: 'hat', name: 'Bonnet de Père Noël', earn: { text: 'Veille 6 soirs pendant la Veillée de Vesper', when: flag('event.noel.half') } },
   { id: 'hat.nightcap', slot: 'hat', name: 'Bonnet de nuit', price: 140 },
   { id: 'hat.flowers', slot: 'hat', name: 'Couronne de fleurs', price: 220 },
   { id: 'hat.cap', slot: 'hat', name: 'Casquette de marin', price: 260 },

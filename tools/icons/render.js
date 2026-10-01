@@ -40,7 +40,11 @@ const SEASONS = {
   Hiver: { fl: '#BFE6F0', sky: ['#070c1c', '#22335a'], accent: '#EAF6FF', particle: 'snow', extra: '<path d="M28 84q30 10 60 0v8q-30 10-60 0z" fill="#E0625A"/>' },
   Halloween: { fl: '#F28C28', sky: ['#0c0612', '#3b1640'], accent: '#F28C28', particle: 'bat', extra: '<path d="M38 26l20-22 20 22z" fill="#2a1030" stroke="#F28C28" stroke-width="1.5"/>',
     deco: '<circle cx="82" cy="84" r="9" fill="#F28C28"/><path d="M82 75v-4" stroke="#6b8f3a" stroke-width="2"/><path d="M78 83l2-2 2 2M84 83l2-2 2 2M78 88q4 3 8 0" stroke="#3b1640" stroke-width="1.4" fill="none"/>' },
-  Noel: { fl: '#FFE6B0', sky: ['#060b1a', '#1d3a5a'], accent: '#E0625A', particle: 'snow', extra: '<path d="M28 84q30 10 60 0v8q-30 10-60 0z" fill="#E0625A"/>',
+  // Nilo as Father Christmas: red coat with fur and belt, white beard, floppy hat (same drawing as the app, src/ui/art.ts).
+  Noel: { fl: '#FFE6B0', sky: ['#060b1a', '#1d3a5a'], accent: '#E0625A', particle: 'snow',
+    extra: '<defs><clipPath id="nb"><path d="M58 34c22 0 32 22 32 42s-14 28-32 28-32-8-32-28 10-42 32-42z"/></clipPath></defs><g clip-path="url(#nb)"><rect x="20" y="70" width="80" height="38" fill="#D9473F"/><rect x="54" y="88" width="8" height="20" fill="#FFF7EC"/><rect x="20" y="91" width="80" height="5" fill="#1B1F3A"/><rect x="54" y="90" width="8" height="7" rx="1.5" fill="none" stroke="#FFD98E" stroke-width="1.6"/><path d="M20 101q38 8 76 0v8H20z" fill="#FFF7EC"/></g>'
+      + '<path d="M41 75q2 13 9 19q4 6 8 7q4-1 8-7q7-6 9-19q-4 4-8 3q-4 3-9 3q-5 0-9-3q-4 1-8-3z" fill="#FFF7EC"/><path d="M58 76q-6-3-11 1q4 4 11 0q7 4 11 0q-5-4-11-1z" fill="#FFFFFF"/>'
+      + '<path d="M44 41Q47 18 66 16Q81 15 88 31L84 33Q78 25 71 27Q75 34 75 41Z" fill="#D9473F"/><rect x="40" y="36" width="38" height="9" rx="4.5" fill="#FFF7EC"/><circle cx="87" cy="34" r="5.5" fill="#FFF7EC"/>',
     deco: '<path d="M18 14l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#FFE6B0"/>' },
 };
 function rng(seed) { let x = seed; return () => { x = (x * 16807) % 2147483647; return (x - 1) / 2147483646; }; }

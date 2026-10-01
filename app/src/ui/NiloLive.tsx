@@ -24,7 +24,7 @@ function around(p: Pivot, S: number, W: number, H: number, t: object[]) {
 export function NiloLive({ size = 120, mood = 'neutral', look = {}, onPress, label = 'Nilo' }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void; label?: string }) {
   const reduce = useReducedMotion();
   const S = size / 132, W = size, H = size * (120 / 132);
-  const parts = useMemo(() => niloParts(mood, look), [mood, look.flame, look.hat, look.scarf, look.comp]); // eslint-disable-line react-hooks/exhaustive-deps
+  const parts = useMemo(() => niloParts(mood, look), [mood, look.flame, look.hat, look.scarf, look.comp, look.costume]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const v = useState(() => ({
     breathe: new Animated.Value(0), blink: new Animated.Value(1), lookX: new Animated.Value(0), lookY: new Animated.Value(0),

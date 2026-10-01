@@ -33,7 +33,7 @@ export function Icon({ name, size = 22, color = T.tx, sw = 1.6 }: { name: string
 
 /** Nilo. Alive by default (see NiloLive); `still` for small thumbnails in lists. */
 export function Nilo({ size = 120, mood = 'neutral', look = {}, onPress, still = false }: { size?: number; mood?: Mood; look?: Look; onPress?: () => void; still?: boolean }) {
-  const xml = useMemo(() => (still ? niloXml(mood, look) : ''), [still, mood, look.flame, look.hat, look.scarf, look.comp]); // eslint-disable-line react-hooks/exhaustive-deps
+  const xml = useMemo(() => (still ? niloXml(mood, look) : ''), [still, mood, look.flame, look.hat, look.scarf, look.comp, look.costume]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!still) return <NiloLive size={size} mood={mood} look={look} onPress={onPress} />;
   return <View accessible accessibilityLabel={tr('Nilo')}><SvgXml xml={xml} width={size} height={size * (120 / 132)} /></View>;
 }
