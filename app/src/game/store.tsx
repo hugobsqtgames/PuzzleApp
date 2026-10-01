@@ -53,6 +53,8 @@ interface Store {
   openDaily(day: DayKey): boolean;
   /** The n-th puzzle (0-based) of this year's seasonal event. */
   openEvent(id: EventId, year: number, n: number): boolean;
+  /** A puzzle of the mode Libre (made by makeFreePuzzle). */
+  openFree(p: import('./catalog').PlayablePuzzle): void;
   updateSession(s: Session): void;
   leaveSession(): void;
   finishSession(s: Session): Result | null;
@@ -261,6 +263,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, [sound]);
 
+  const openFree = useCallback((p: import('./catalog').PlayablePuzzle) => {
+    if (p.code === 'CR') sound.preloadBells();
+    setSession({ ...startSession(p, 'free', new Date()), id: p.id });
+    setResult(null);
+  }, [sound]);
+
   const updateSession = useCallback((s: Session) => { sessionRef.current = s; setSession(s); }, []);
 
   /** Keeps the board of an unfinished lantern (GameState.inProgress). */
@@ -304,6 +312,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           if (c.kind === 'districtCompleted') p = addHistory(p, () => 'Quartier entièrement éclairé', c.shards);
         }
       }
+    } else if (s.kind === 'free') {
+      // Mode Libre: nothing is won or recorded, it is only for the pleasure of it.
+      celebrations = [];
     } else if (s.kind === 'event') {
       // event.<id>.<year>.<n>: a light for the event, a few Shards, and its milestones once and for all.
       const [, id, year] = s.id.split('.') as [string, EventId, string];
@@ -331,10 +342,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       const min = e.minimalSolution(s.data, s.data.initiallyLit);
       if (min) {
         minimalMoves = min.presses.filter(Boolean).length;
-        if (!s.usedSolution && s.state.moves === minimalMoves && !replay) p = { ...p, thrifty: p.thrifty + 1 };
+        if (!s.usedSolution && s.state.moves === minimalMoves && !replay && s.kind !== 'free') p = { ...p, thrifty: p.thrifty + 1 };
       }
     }
-    if (s.wrongAnswers === 1 && !s.usedSolution) p = { ...p, oops: p.oops + 1 };
+    if (s.wrongAnswers === 1 && !s.usedSolution && s.kind !== 'free') p = { ...p, oops: p.oops + 1 };
     const newAchievements = creditAchievements(next, p);
     for (const name of newAchievements) {
       const a = ACHIEVEMENTS.find((x) => x.name === name);
@@ -469,9 +480,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<Store>(() => ({
     ready, readOnly, state, engine, settings, profile, result, toast, today, daysAway,
-    showToast, openLantern, openDaily, openEvent, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
+    showToast, openLantern, openDaily, openEvent, openFree, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
     completeOnboarding, markSeen, noteProfile, findEgg, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), enterPlace, haptic, resetProgress, exportProgress, importProgress,
-  }), [ready, readOnly, state, settings, profile, result, toast, today, daysAway, showToast, openLantern, openDaily, openEvent, updateSession, leaveSession, finishSession,
+  }), [ready, readOnly, state, settings, profile, result, toast, today, daysAway, showToast, openLantern, openDaily, openEvent, openFree, updateSession, leaveSession, finishSession,
     buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, findEgg, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
 
   return <Ctx.Provider value={value}><SessionCtx.Provider value={session}>{children}</SessionCtx.Provider></Ctx.Provider>;

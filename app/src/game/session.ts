@@ -12,7 +12,7 @@ import { STANDARD_ECONOMY } from '../core/game/engine';
 import { t } from '../content/strings';
 import { Code, FAMILIES, PlayablePuzzle } from './catalog';
 
-export type SessionKind = 'lantern' | 'daily' | 'event';
+export type SessionKind = 'lantern' | 'daily' | 'event' | 'free';
 /** What each hint level costs: the engine's table, so the sheet always shows what is charged. */
 export const HINT_COSTS = STANDARD_ECONOMY.hintCosts;
 
@@ -114,6 +114,8 @@ export const shownHint = (s: Session) => (s.hint.stale ? 0 : s.hint.level);
 
 /** Price of a hint for this puzzle: the first Murmures are free, then they cost a little. */
 export function hintCost(s: Session, level: HintLevel): number {
+  // Mode Libre: nothing to win, so every hint is free.
+  if (s.kind === 'free') return 0;
   if (level === HintLevel.Whisper) return s.hint.freeWhispers < STANDARD_ECONOMY.freeWhispers ? 0 : STANDARD_ECONOMY.whisperPrice;
   return HINT_COSTS[level - 1];
 }

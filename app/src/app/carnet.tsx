@@ -73,6 +73,15 @@ function Objects() {
   const cardW = Math.floor((width - 32 - 20) / 3);
   return (
     <>
+      <Pressable accessibilityRole="button" onPress={() => { tap(); router.push('/house'); }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: T.s1, borderWidth: 1, borderColor: 'rgba(255,217,142,0.35)' }}>
+        <Icon name="light" size={22} color={T.gold} />
+        <View style={{ flex: 1 }}>
+          <Text style={type.headline}>{profile.house.name || tr('Ma maison')}</Text>
+          <Text style={type.foot}>{tr('Expose tes objets trouvés sur tes étagères')}</Text>
+        </View>
+        <Icon name="chev" size={18} color={T.tx3} />
+      </Pressable>
       <Text style={type.sub}>{tr('{0} / {1} objets trouvés', [count, rooms.length])}{waiting.some(Boolean) ? tr(' · {0} à chercher dans leur salle', [waiting.filter(Boolean).length]) : ''}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {visible.map(({ r, i }) => (

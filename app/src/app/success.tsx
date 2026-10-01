@@ -100,7 +100,7 @@ export default function Success() {
   const room = where?.room ?? null;
   const n = room ? engine.progression.lights(room.lanterns, state) : 0;
   const follow = followUps(result);
-  const title = evInfo ? (result.replay ? tr('Déjà rallumée') : evInfo.id === 'halloween' ? tr('Citrouille rallumée') : tr('Lanterne de la veillée allumée')) : tr(result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée');
+  const title = s.kind === 'free' ? tr('Énigme résolue') : evInfo ? (result.replay ? tr('Déjà rallumée') : evInfo.id === 'halloween' ? tr('Citrouille rallumée') : tr('Lanterne de la veillée allumée')) : tr(result.replay ? (s.kind === 'daily' ? 'Défi déjà réussi' : 'Lanterne déjà allumée') : s.kind === 'daily' ? 'Défi du soir réussi' : isTutorial ? 'Ta première lumière' : room ? 'Lanterne allumée' : 'Lanterne-clé allumée');
 
   const secs = (shownAt - Date.parse(s.startedAt)) / 1000;
   const clear = s.paidHints === 0 && s.wrongAnswers === 0 && !s.usedSolution;
@@ -123,6 +123,7 @@ export default function Success() {
   const next = () => {
     if (follow.length) { router.replace({ pathname: '/found', params: { step: '0' } }); return; }
     if (s.kind === 'event') { router.dismissTo('/event'); return; }
+    if (s.kind === 'free') { router.dismissTo('/free'); return; }
     if (s.kind === 'daily') {
       if (!settings.reminderOffered && !result.replay) { setOffer(true); return; }
       router.dismissTo('/');
@@ -159,7 +160,8 @@ export default function Success() {
         <Text style={[type.cap, { color: T.gold }]}>{FAMILIES[s.code].name} · {TIER_NAMES[s.tier]}</Text>
         <Text style={[type.title1, { textAlign: 'center' }]}>{title}</Text>
         {s.kind === 'lantern' && !isTutorial ? <Stars n={starsOf({ paidHints: s.paidHints, wrongAnswers: s.wrongAnswers, usedSolution: s.usedSolution })} size={24} /> : null}
-        {result.replay
+        {s.kind === 'free' ? <Text style={[type.sub, { textAlign: 'center' }]}>{tr('Pour le plaisir : rien à gagner, juste le goût de la réussite.')}</Text>
+          : result.replay
           ? <Text style={[type.sub, { textAlign: 'center' }]}>{tr('Bien joué. Les récompenses ne se gagnent qu’une fois.')}</Text>
           : (
             <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -171,7 +173,7 @@ export default function Success() {
             </View>
           )}
         {s.code === 'IN' && result.minimalMoves && !s.usedSolution ? <Text style={type.foot}>{trn(s.state.moves, 'Résolu en {0} coup · minimum possible : {1}', 'Résolu en {0} coups · minimum possible : {1}', [s.state.moves, result.minimalMoves])}</Text> : null}
-        {s.usedSolution ? <Text style={type.foot}>{tr('Solution consultée : la lumière est gagnée, sans bonus.')}</Text> : null}
+        {s.usedSolution && s.kind !== 'free' ? <Text style={type.foot}>{tr('Solution consultée : la lumière est gagnée, sans bonus.')}</Text> : null}
       </Rise>
 
       {evc && evInfo ? (

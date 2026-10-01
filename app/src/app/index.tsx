@@ -241,7 +241,7 @@ export default function Home() {
       ) : null}
 
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        {([['map', tr('Carte'), '/map'], ['book', tr('Carnet'), '/carnet'], ['gear', tr('Réglages'), '/settings']] as const).map(([icon, label, to]) => (
+        {([['map', tr('Carte'), '/map'], ['hint', tr('Libre'), '/free'], ['book', tr('Carnet'), '/carnet'], ['gear', tr('Réglages'), '/settings']] as const).map(([icon, label, to]) => (
           <Pressable key={label} accessibilityRole="button" onPress={() => { tap(); router.push(to); }}
             style={{ flex: 1, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: 16, paddingVertical: 10, alignItems: 'center', gap: 4 }}>
             <Icon name={icon} size={22} color={T.tx2} />
@@ -372,7 +372,7 @@ export default function Home() {
       ) : null}
 
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        {([['map', tr('Carte'), '/map'], ['book', tr('Carnet'), '/carnet'], ['gear', tr('Réglages'), '/settings']] as const).map(([icon, label, to]) => (
+        {([['map', tr('Carte'), '/map'], ['hint', tr('Libre'), '/free'], ['book', tr('Carnet'), '/carnet'], ['gear', tr('Réglages'), '/settings']] as const).map(([icon, label, to]) => (
           <Pressable key={label} accessibilityRole="button" onPress={() => { tap(); router.push(to); }}
             style={{ flex: 1, backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: 16, paddingVertical: 10, alignItems: 'center', gap: 4 }}>
             <Icon name={icon} size={22} color={T.tx2} />
