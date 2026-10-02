@@ -6,8 +6,7 @@ import { CandidatePipeline } from '../core/puzzlekit/pipeline';
 import { StableHash } from '../core/puzzlekit/rng';
 import type { Tier } from '../core/puzzlekit/types';
 import { FORGE_PARAMS } from '../core/content/forgeParams';
-import { FAMILIES, WORLD, puzzleFor, type Code, type PlayablePuzzle } from './catalog';
-import { worldLanterns } from '../core/game/world';
+import { FAMILIES, shippedOf, type Code, type PlayablePuzzle } from './catalog';
 
 /** Families that can be played freely (the seal of the buildings cannot). */
 export const FREE_CODES = (Object.keys(FAMILIES) as Code[]).filter((c) => c !== 'SC' && (FORGE_PARAMS[c] ?? []).some((l) => l.length));
@@ -19,22 +18,33 @@ const made = new Map<string, PlayablePuzzle>();
 /** A free puzzle made earlier in this run of the app (to start it again). */
 export const freePuzzle = (id: string) => made.get(id) ?? null;
 
-/** When making one takes too long (big puzzles on an older phone): one of the game's own, same family, same difficulty. */
+/**
+ * Families and difficulties too slow to make on a phone: a single try can take whole seconds,
+ * and the screen would freeze meanwhile. They are drawn from the game's own puzzles instead
+ * (its lanterns and evening challenges). Measured: free.test.ts keeps every other one quick.
+ */
+export const FROM_THE_GAME: Partial<Record<Code, Tier[]>> = { BA: [4, 5], CA: [4, 5], FI: [3, 4, 5], SG: [3, 4, 5], TO: [4, 5] };
+const fromTheGameOnly = (code: Code, tier: Tier) => !!FROM_THE_GAME[code]?.includes(tier);
+
+/** One of the game's own puzzles, same family, same difficulty (or the nearest). */
 function fromTheGame(code: Code, tier: Tier): PlayablePuzzle | null {
-  const pool = worldLanterns(WORLD).filter((l) => l.family === code && l.tier === tier);
-  const near = pool.length ? pool : worldLanterns(WORLD).filter((l) => l.family === code).sort((a, b) => Math.abs(a.tier - tier) - Math.abs(b.tier - tier)).slice(0, 20);
-  if (!near.length) return null;
-  const pick = puzzleFor(near[Math.floor(Math.random() * near.length)].puzzle);
-  if (!pick) return null;
-  const p: PlayablePuzzle = { ...pick, id: `free.${code}.g${Date.now().toString(36)}` };
-  made.set(p.id, p);
-  return p;
+  const all = shippedOf(code);
+  if (!all.length) return null;
+  const same = all.filter((x) => x.tier === tier);
+  const pool = same.length ? same : all.slice().sort((a, b) => Math.abs(a.tier - tier) - Math.abs(b.tier - tier)).slice(0, 40);
+  for (let k = 0; k < 5; k++) {
+    const pick = pool[Math.floor(Math.random() * pool.length)].open();
+    if (!pick) continue;
+    const p: PlayablePuzzle = { ...pick, id: `free.${code}.g${Date.now().toString(36)}${k}` };
+    made.set(p.id, p);
+    return p;
+  }
+  return null;
 }
 
 /** Makes a puzzle; calls back with it (or one of the game's own if it takes too long), or null. Returns a cancel function. */
 export function makeFreePuzzle(code: Code, tier: Tier, onDone: (p: PlayablePuzzle | null) => void, budgetMs = 5000): () => void {
-  // Too slow to make on a phone (several seconds even on a computer): straight to the game's own.
-  if (code === 'BA' && tier >= 4) { const t = setTimeout(() => onDone(fromTheGame(code, tier)), 0); return () => clearTimeout(t); }
+  if (fromTheGameOnly(code, tier)) { const t = setTimeout(() => onDone(fromTheGame(code, tier)), 0); return () => clearTimeout(t); }
   const pipe = new CandidatePipeline(FAMILIES[code].engine as never);
   const list = FORGE_PARAMS[code]?.[tier] ?? [];
   const base = StableHash.seed('libre', code, String(tier), String(Date.now()));

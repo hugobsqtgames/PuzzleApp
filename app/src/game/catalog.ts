@@ -159,6 +159,14 @@ const DAILY_FALLBACK: Record<Code, unknown> = {
   SC: { rooms: ['phare.b1.r1'] }, CO: { n: 6 },
 };
 
+/** Every puzzle the game ships for a family: its lanterns, then its evening challenges (opened on demand). */
+export function shippedOf(code: Code): { tier: Tier; open: () => PlayablePuzzle | null }[] {
+  const out: { tier: Tier; open: () => PlayablePuzzle | null }[] = [];
+  for (const [id, raw] of Object.entries(P.puzzles)) if (raw.f === code) out.push({ tier: raw.t, open: () => puzzleFor(id) });
+  for (const [day, raw] of Object.entries(P.daily.puzzles)) if (raw.f === code) out.push({ tier: raw.t, open: () => dailyPuzzle(day as DayKey) });
+  return out;
+}
+
 /** How many puzzles a seasonal event has (0 if this pack has none). */
 export const eventSize = (event: string) => P.events?.[event]?.length ?? 0;
 

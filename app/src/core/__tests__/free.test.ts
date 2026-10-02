@@ -1,5 +1,8 @@
 // Mode Libre: every family met can be made on the phone, at every difficulty offered, quickly.
-import { FREE_CODES, freeTiers, makeFreePuzzle } from '../../game/free';
+import { FREE_CODES, FROM_THE_GAME, freeTiers, makeFreePuzzle } from '../../game/free';
+import { CandidatePipeline } from '../puzzlekit/pipeline';
+import { StableHash } from '../puzzlekit/rng';
+import { FORGE_PARAMS } from '../content/forgeParams';
 import { FAMILIES } from '../../game/catalog';
 import { startSession, giveHint, hintAvailable, hintCost, isComplete, canSubmit, submit } from '../../game/session';
 import { HintLevel } from '../puzzlekit/types';
@@ -24,3 +27,31 @@ test.each(cases)('%s palier %i : prête à temps, et les indices la résolvent (
   if (FAMILIES[code].answer) expect(submit(s).correct).toBe(true);
   else expect(isComplete(s)).toBe(true);
 }, 15000);
+
+// The phone's screen freezes while one try runs: every family made on the phone must keep each
+// try short (the slow ones come from the game's own puzzles, see FROM_THE_GAME).
+test('aucune grille préparée sur le téléphone ne bloque l’écran (chaque essai reste court)', () => {
+  const slow: string[] = [];
+  for (const code of FREE_CODES) for (const tier of freeTiers(code)) {
+    if (FROM_THE_GAME[code]?.includes(tier)) continue;
+    const pipe = new CandidatePipeline(FAMILIES[code].engine as never);
+    const list = FORGE_PARAMS[code][tier];
+    for (let i = 0; i < 25; i++) {
+      const t = Date.now();
+      pipe.evaluate(list[i % list.length] as never, StableHash.seed('freeze', code, String(tier), String(i)));
+      const ms = Date.now() - t;
+      if (ms > 1000) { slow.push(`${code} ${tier}: ${ms} ms`); break; }
+    }
+  }
+  expect(slow).toEqual([]);
+}, 600000);
+
+test('les familles trop lentes viennent tout de suite des énigmes du jeu', async () => {
+  for (const [code, tiers] of Object.entries(FROM_THE_GAME)) for (const tier of tiers!) {
+    const t0 = Date.now();
+    const p = await new Promise<ReturnType<typeof import('../../game/free').freePuzzle>>((done) => { makeFreePuzzle(code as never, tier, done); });
+    expect(p).not.toBeNull();
+    expect(p!.code).toBe(code);
+    expect(Date.now() - t0).toBeLessThan(500);
+  }
+});

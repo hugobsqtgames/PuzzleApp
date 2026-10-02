@@ -4,7 +4,7 @@ import * as path from 'path';
 import { FR, SHELF_NAMES } from '../../content/strings';
 import { DISTRICT_INFO, LETTERS } from '../../content/vesper';
 import { ACHIEVEMENTS, COSMETICS, SLOT_NAMES } from '../../game/rewards';
-import { CODES, FAMILIES, TIER_NAMES, WORLD } from '../../game/catalog';
+import { FAMILIES, TIER_NAMES, WORLD } from '../../game/catalog';
 import { CHARACTERS } from '../families/liars';
 import { OBJECTS, PEOPLE, PLACES } from '../families/inquiries';
 import { ROOM_SPECS, roomSlotsOf } from '../../ui/scenes';

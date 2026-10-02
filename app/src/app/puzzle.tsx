@@ -5,7 +5,7 @@ import { useContentSize, useWide } from '../ui/layout';
 import { Scaled } from '../ui/Scaled';
 import { useAnimatedValue } from '../ui/motion';
 import { goBack } from '../ui/nav';
-import { router } from 'expo-router';
+import { router, Redirect } from 'expo-router';
 
 import { useSession, useStore } from '../game/store';
 import { Screen } from '../ui/Screen';
@@ -69,7 +69,8 @@ export default function PuzzleScreen() {
   }, []);
   const idle = clock.key === activity && clock.now - clock.since > IDLE_MS;
 
-  if (!session) return <Screen><BackButton label={tr('Accueil')} onPress={() => router.replace('/')} /></Screen>;
+  // Reached without a puzzle open (a link, a restored screen): back to the home screen.
+  if (!session) return <Redirect href="/" />;
   const s = session;
   const fam = FAMILIES[s.code];
   const where = s.kind === 'lantern' ? engine.progression.locate(s.id) : null;

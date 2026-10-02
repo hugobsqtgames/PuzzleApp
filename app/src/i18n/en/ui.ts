@@ -515,7 +515,7 @@ export const EN_UI: Record<string, string> = {
   'Xylophone': 'Xylophone',
   'Harpe': 'Harp',
   'Cloches': 'Bells',
-  'Instrument du Carillon': 'Carillon instrument',
+  'Instrument du Carillon': 'Chimes instrument',
   'Touche un instrument pour l’écouter.': 'Tap an instrument to hear it.',
   // Home window: time of day
   'à l’aube': 'at dawn',
