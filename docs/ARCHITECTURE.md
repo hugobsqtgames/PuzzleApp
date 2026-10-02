@@ -78,7 +78,7 @@ Le jeu est écrit en français ; l'anglais est un dictionnaire dont les clés so
 `app/targets/widget/` : un widget SwiftUI (petit et moyen format) qui affiche la série du soir et l'état du défi. L'app lui écrit quelques valeurs dans un App Group partagé (`src/game/widget.ts`, groupe `group.app.lampion.game`), le widget ne fait que les lire. Rien ne quitte le téléphone.
 
 Pour le compiler (build de développement ou App Store, jamais dans Expo Go) :
-1. Ajouter `"appleTeamId": "XXXXXXXXXX"` dans `ios` de `app.json` (Xcode › Signing, ou developer.apple.com › Membership).
+1. `appleTeamId` est dans `ios` de `app.json` (fait : `336SM4755V`).
 2. Sur developer.apple.com, créer l'App Group `group.app.lampion.game` et le cocher pour l'app (`app.lampion.game`) et pour le widget. EAS peut le faire seul à la première build.
 3. `eas build -p ios`. Le widget est produit par `@bacons/apple-targets` à la prébuild.
 
