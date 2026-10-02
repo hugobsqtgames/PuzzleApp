@@ -16,13 +16,14 @@ export interface EconomyRules {
   freeWhispers: number; whisperPrice: number;
 }
 /**
- * Balanced with a simulation of the 1000 lanterns (three kinds of players):
- * nobody is kept waiting for a hint, and shards keep a value to the end,
- * with Nilo's wardrobe as the long-term wish.
+ * Balanced with a simulation of the 1000 lanterns (tools/economy/simulate.ts, three kinds of
+ * players): nobody is kept waiting for a hint, a hint is a real choice (a Solution is worth about
+ * five easy lanterns), and Nilo's wardrobe stays a goal for the whole game (about 20, 26 and 30
+ * of its 32 pieces over the 1000 lanterns for a beginner, a regular and an expert player).
  */
 export const STANDARD_ECONOMY: EconomyRules = {
-  tierRewards: [3, 4, 5, 7, 9, 12], clairvoyancePercent: 50, roomBonus: 10, buildingBonus: 30, districtBonus: 80,
-  dailyReward: 10, dailyStreakBonusCap: 5, hintCosts: [0, 5, 10, 20], freeWhispers: 3, whisperPrice: 3,
+  tierRewards: [2, 3, 4, 5, 7, 9], clairvoyancePercent: 50, roomBonus: 5, buildingBonus: 20, districtBonus: 50,
+  dailyReward: 10, dailyStreakBonusCap: 5, hintCosts: [0, 6, 12, 25], freeWhispers: 3, whisperPrice: 3,
 };
 
 /** Shards given when the tutorial ends: the first Piste is never out of reach. */

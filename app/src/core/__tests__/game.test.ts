@@ -118,11 +118,12 @@ describe('Économie et moteur', () => {
   });
   test('indice acheté une fois par étape', () => {
     const s = newGameState();
-    credit(s.wallet, 12, 'seed');
+    const [, lead, insight] = engine.economy.hintCosts;
+    credit(s.wallet, lead + 7, 'seed');
     expect(engine.buyHint(HintLevel.Whisper, 'p', 0, s)).toEqual({ kind: 'granted', cost: 0 });
-    expect(engine.buyHint(HintLevel.Lead, 'p', 0, s)).toEqual({ kind: 'granted', cost: 5 });
+    expect(engine.buyHint(HintLevel.Lead, 'p', 0, s)).toEqual({ kind: 'granted', cost: lead });
     expect(engine.buyHint(HintLevel.Lead, 'p', 0, s)).toEqual({ kind: 'alreadyOwned' });
-    expect(engine.buyHint(HintLevel.Insight, 'p', 0, s)).toEqual({ kind: 'insufficientBalance', missing: 3 });
+    expect(engine.buyHint(HintLevel.Insight, 'p', 0, s)).toEqual({ kind: 'insufficientBalance', missing: insight - 7 });
   });
 });
 
