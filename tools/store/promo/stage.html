@@ -1,0 +1,269 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!--
+  Lampion — App Store preview, composed frame by frame (render.js calls renderAt(t) for each frame).
+  Only real footage of the app goes inside the phone (clips filmed by record.js, captures of capture.js).
+  The look follows the App Store images (compose.js): same night sky, warm glow, phone frame,
+  amber kicker, cream serif title, grey subtitle.
+-->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 886px; height: 1920px; overflow: hidden; background: #090a15; }
+  body { font-family: 'Liberation Sans', sans-serif; }
+  #bg { position: absolute; inset: 0; background: linear-gradient(180deg, #141833 0%, #0D0F1E 55%, #090a15 100%); }
+  #warm { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 45% at 50% 62%, #3a2a1c 0%, rgba(40,30,30,0) 70%); }
+  #stars i { position: absolute; border-radius: 50%; background: #FFF3D6; }
+  #stage { position: absolute; inset: 0; perspective: 2400px; perspective-origin: 50% 45%; }
+  #cam { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: 50% 55%; }
+  .dev { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+  .body { position: absolute; left: -272px; top: -587px; width: 544px; height: 1174px; padding: 12px; border-radius: 74px;
+    background: #1b1e36; box-shadow: 0 0 0 3px #2c3052, 0 40px 120px rgba(0,0,0,.6), 0 0 160px rgba(244,180,94,.18); }
+  .screen { position: relative; width: 520px; height: 1150px; border-radius: 62px; overflow: hidden; background: #0D0F1E; }
+  .screen img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
+  .sheen { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
+  .shadow { position: absolute; left: -230px; top: 560px; width: 460px; height: 70px; border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,.55), rgba(0,0,0,0) 70%); filter: blur(10px); transform: translateZ(-40px); }
+  #flame, #bloom { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  #flame .glow { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(244,180,94,.9) 0%, rgba(244,180,94,.35) 35%, rgba(244,180,94,0) 70%); }
+  #flame .core { position: absolute; border-radius: 50%; background: radial-gradient(circle, #FFF7E4 0%, #FFF7E4 30%, #F4B45E 60%, rgba(244,180,94,0) 72%); }
+  #bloom { border-radius: 50%; background: radial-gradient(circle, rgba(255,226,160,.85) 0%, rgba(244,180,94,.35) 30%, rgba(244,180,94,0) 68%); }
+  #lanterns i { position: absolute; border-radius: 50%; }
+  .txt { position: absolute; left: 0; right: 0; text-align: center; padding: 0 64px; }
+  .k { color: #F4B45E; font-size: 24px; letter-spacing: .18em; text-transform: uppercase; font-weight: 700; }
+  .t { color: #F6EEDC; font-family: 'Bitstream Charter', Georgia, serif; font-weight: 700; font-size: 62px; line-height: 1.08; margin-top: 18px; }
+  .s { color: #A9ADCB; font-size: 28px; line-height: 1.35; margin-top: 22px; }
+  .w { display: inline-block; white-space: pre; will-change: transform, opacity, filter; }
+  #logo { position: absolute; left: 0; right: 0; top: 0; text-align: center; }
+  #logo img { width: 196px; height: 196px; border-radius: 44px; box-shadow: 0 0 0 2px rgba(255,255,255,.06), 0 30px 90px rgba(0,0,0,.55), 0 0 140px rgba(244,180,94,.35); }
+  #vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 85% 70% at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,.45) 100%); pointer-events: none; }
+  #fade { position: absolute; inset: 0; background: #05060f; pointer-events: none; }
+</style></head>
+<body>
+<div id="bg"></div><div id="warm"></div><div id="stars"></div><div id="lanterns"></div>
+<div id="stage"><div id="cam"><div id="bloom"></div><div id="flame"><div class="glow"></div><div class="core"></div></div></div></div>
+<div id="texts"></div>
+<div id="logo"><img id="icon"></div>
+<div id="vignette"></div><div id="fade"></div>
+<script>
+// ---------------------------------------------------------------- helpers
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const E = {
+  lin: (k) => k,
+  out: (k) => 1 - Math.pow(1 - k, 3),
+  in: (k) => k * k * k,
+  io: (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2),
+  expo: (k) => (k === 1 ? 1 : 1 - Math.pow(2, -10 * k)),
+  soft: (k) => 0.5 - Math.cos(Math.PI * k) / 2,
+};
+/** Keyframes [[t, value, ease-to-next], …] → value at t (numbers, or arrays of numbers). */
+function kf(t, keys) {
+  if (t <= keys[0][0]) return keys[0][1];
+  for (let i = 0; i < keys.length - 1; i++) {
+    const [t0, v0, e = 'io'] = keys[i], [t1, v1] = keys[i + 1];
+    if (t <= t1) { const k = E[e](clamp((t - t0) / (t1 - t0))); return Array.isArray(v0) ? v0.map((x, j) => lerp(x, v1[j], k)) : lerp(v0, v1, k); }
+  }
+  return keys[keys.length - 1][1];
+}
+const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+
+// ---------------------------------------------------------------- footage
+const P = window.PROMO; // { clips: {name: {dir, frames:[{t,file}], events}}, stills: {name: url}, icon }
+/** The file shown by a clip at clip time `ct`. */
+function clipFrame(name, ct) {
+  const c = P.clips[name];
+  let lo = 0, hi = c.frames.length - 1;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (c.frames[m].t <= ct) lo = m; else hi = m - 1; }
+  return `${c.dir}/${c.frames[lo].file}`;
+}
+/** A shot: a clip played from clip time `from`, starting at timeline `at`, at `speed`. */
+const shot = (clip, at, from, speed = 1) => ({ clip, at, from, speed });
+const shotSrc = (s, t) => (s.still ? P.stills[s.still] : clipFrame(s.clip, s.from + Math.max(0, t - s.at) * s.speed));
+const still = (name) => ({ still: name });
+
+// ---------------------------------------------------------------- the film (29 s)
+// 1 Hook: the city is out.  2 Lampion appears.  3 The city to wake.  4 A real puzzle, played.
+// 5 Many kinds of puzzles.  6 The year goes round.  7 Lampion, no account, no ads: light Vesper again.
+const T = 29.0;
+const TEXTS = [
+  { id: 'hook', at: 0.95, out: 2.75, top: 1150, title: 'Vesper s’est éteinte.', sub: 'Une ville entière attend sa lumière.' },
+  { id: 's2', at: 3.55, out: 6.15, top: 150, kicker: 'Lampion', title: 'Chaque énigme\nrallume une lumière' },
+  { id: 's3', at: 6.7, out: 9.2, top: 150, kicker: 'Une ville à réveiller', title: 'Huit quartiers,\nune seule nuit' },
+  { id: 's4', at: 9.75, out: 12.0, top: 150, kicker: 'Des énigmes justes', title: 'La logique,\njamais le hasard' },
+  { id: 's5', at: 17.3, out: 20.9, top: 150, kicker: '26 familles d’énigmes', title: 'Écoute, observe,\ndéduis' },
+  { id: 's6', at: 21.6, out: 24.5, top: 150, kicker: 'Saisons et fêtes', title: 'Vesper vit\nau fil de l’année' },
+  { id: 'end', at: 26.05, out: 99, top: 1140, title: 'Lampion', sub: 'Sans compte. Sans pub. Sans pistage.', big: true },
+  { id: 'cta', at: 27.2, out: 99, top: 1395, cta: 'Rallume Vesper.' },
+];
+
+// Phones: position (x, y from the centre of the frame), depth, turns, scale, opacity; and what each shows.
+const W = 886, H = 1920, CX = W / 2, CY = 1110;
+const PHONES = [
+  { // the main phone
+    pose: (t) => ({
+      x: kf(t, [[3, 0], [6.4, 0, 'io'], [9.4, -14, 'io'], [10.3, 0], [16.8, 0, 'io'], [17.6, 0], [21.2, 0, 'io'], [24.8, 0, 'io'], [26.2, 0]]),
+      y: kf(t, [[3.0, 1150, 'expo'], [4.6, 40, 'io'], [6.4, 0, 'io'], [9.4, 0, 'io'], [10.3, 40, 'io'], [12.4, 40, 'io'], [12.9, -40, 'io'], [16.8, -40, 'io'], [17.7, 10, 'io'], [21.2, 10, 'io'], [22.0, 40, 'io'], [24.8, 40, 'io'], [26.2, -40]]),
+      z: kf(t, [[24.8, 0, 'io'], [26.2, -900]]),
+      rx: kf(t, [[3.0, 30, 'out'], [5.2, 6, 'io'], [9.4, 4, 'io'], [10.3, 0, 'io'], [16.8, 0, 'io'], [17.7, 4, 'io'], [24.8, 5, 'io'], [26.2, 18]]),
+      ry: kf(t, [[3.0, -16, 'out'], [5.4, -5, 'io'], [6.4, -5, 'io'], [9.4, 9, 'io'], [10.3, 0, 'io'], [16.8, 0, 'io'], [17.7, 0, 'io'], [21.2, 0, 'io'], [22.4, -7, 'io'], [24.8, 5, 'io']]),
+      rz: kf(t, [[3.0, 4, 'out'], [5.4, 0]]),
+      s: kf(t, [[3.0, 0.82, 'out'], [5.0, 1, 'io'], [9.4, 1, 'io'], [10.3, 1.08, 'io'], [16.8, 1.08, 'io'], [17.7, 0.88, 'io'], [21.2, 0.88, 'io'], [22.0, 0.95, 'io'], [24.8, 0.97]]),
+      o: kf(t, [[3.0, 0, 'out'], [3.5, 1], [25.3, 1, 'io'], [26.1, 0]]),
+    }),
+    shots: [
+      [3.0, shot('home', 3.0, 0.45)],
+      [6.45, shot('map', 6.45, 0.4)],
+      [9.6, shot('carillon', 9.6, 0.6)],
+      [12.6, shot('carillon', 12.6, 8.95)],
+      [17.0, shot('bridges', 17.0, 0.25, 1.4)],
+      [21.3, shot('spring', 21.3, 0.3)],
+      [23.25, shot('springHome', 23.25, 0.5)],
+    ],
+  },
+  { // left, for the many kinds of puzzles
+    pose: (t) => ({ x: kf(t, [[17.2, -700, 'out'], [18.1, -330, 'io'], [20.8, -300, 'in'], [21.6, -900]]), y: 50, z: -260, rx: 4, ry: 22, rz: -3,
+      s: 0.78, o: kf(t, [[17.2, 0, 'out'], [17.7, 1], [21.1, 1], [21.6, 0]]) }),
+    shots: [[17.0, still('vitraux')], [19.0, still('carillon')]],
+  },
+  { // right
+    pose: (t) => ({ x: kf(t, [[17.35, 700, 'out'], [18.25, 330, 'io'], [20.8, 300, 'in'], [21.6, 900]]), y: 50, z: -260, rx: 4, ry: -22, rz: 3,
+      s: 0.78, o: kf(t, [[17.35, 0, 'out'], [17.85, 1], [21.1, 1], [21.6, 0]]) }),
+    shots: [[17.0, still('constellations')], [19.15, still('ombres')]],
+  },
+];
+// The camera: a slow push in, a focus on the puzzle being played, then out.
+const camera = (t) => ({
+  s: kf(t, [[3, 1, 'io'], [9.4, 1.03, 'io'], [10.4, 1.08, 'io'], [12.4, 1.1, 'io'], [12.9, 1.34, 'io'], [14.9, 1.36, 'io'], [15.6, 1.16, 'io'], [16.8, 1.16, 'io'], [17.7, 1, 'io'], [29, 1.02]]),
+  y: kf(t, [[9.4, 0, 'io'], [10.4, 30, 'io'], [12.4, 30, 'io'], [12.9, -150, 'io'], [14.9, -150, 'io'], [15.6, -30, 'io'], [17.7, 0]]),
+});
+// Moments of light: the flame of the opening, and the lanterns lit in the puzzles.
+// The light passes behind the phone (a halo), never over what the screen shows.
+const BLOOMS = [{ at: 15.85, y: CY - 120 }, { at: 20.78, y: CY - 40 }];
+
+// ---------------------------------------------------------------- build the page
+const stars = document.getElementById('stars');
+const STARS = Array.from({ length: 150 }, () => ({ x: rnd() * W, y: rnd() * H * 0.7, z: 0.8 + rnd() * 2.4, a: 0.2 + rnd() * 0.6, p: rnd() * 6.28, f: 0.6 + rnd() * 1.6 }));
+for (const s of STARS) { const i = document.createElement('i'); i.style.cssText = `left:${s.x}px;top:${s.y}px;width:${s.z}px;height:${s.z}px`; stars.appendChild(i); s.el = i; }
+const lanterns = document.getElementById('lanterns');
+const LANTERNS = Array.from({ length: 22 }, () => ({ x: 40 + rnd() * (W - 80), d: rnd() * 1.6, v: 120 + rnd() * 160, r: 5 + rnd() * 9, pink: rnd() < 0.35, ph: rnd() * 6.28 }));
+for (const l of LANTERNS) { const i = document.createElement('i'); lanterns.appendChild(i); l.el = i; }
+const cam = document.getElementById('cam');
+for (const ph of PHONES) {
+  const d = document.createElement('div'); d.className = 'dev';
+  d.innerHTML = '<div class="shadow"></div><div class="body"><div class="screen"><img class="a"><img class="b"><div class="sheen"></div></div></div>';
+  cam.appendChild(d); ph.el = d; ph.imgs = [d.querySelector('.a'), d.querySelector('.b')]; ph.sheen = d.querySelector('.sheen');
+}
+const texts = document.getElementById('texts');
+for (const tx of TEXTS) {
+  const el = document.createElement('div'); el.className = 'txt'; el.style.top = tx.top + 'px';
+  const words = (s) => s.split('\n').map((line) => line.split(' ').map((w) => `<span class="w">${w} </span>`).join('')).join('<br>');
+  el.innerHTML = (tx.kicker ? `<div class="k">${words(tx.kicker)}</div>` : '')
+    + (tx.title ? `<div class="t" style="${tx.big ? 'font-size:96px;margin-top:0' : ''}">${words(tx.title)}</div>` : '')
+    + (tx.sub ? `<div class="s" style="${tx.big ? 'color:#F6EEDC;font-size:32px;margin-top:26px' : ''}">${words(tx.sub)}</div>` : '')
+    + (tx.cta ? `<div class="t" style="color:#FFD98E;font-size:46px;font-style:italic;margin-top:0">${words(tx.cta)}</div>` : '');
+  texts.appendChild(el); tx.el = el; tx.words = [...el.querySelectorAll('.w')];
+}
+document.getElementById('icon').src = P.icon;
+
+// ---------------------------------------------------------------- one frame
+async function renderAt(t) {
+  const waits = [];
+  // Sky: stars breathe, the sky drifts a little; the warm glow follows the story.
+  document.getElementById('fade').style.opacity = kf(t, [[0, 1, 'soft'], [0.6, 0]]);
+  for (const s of STARS) { s.el.style.opacity = s.a * (0.65 + 0.35 * Math.sin(t * s.f + s.p)); s.el.style.transform = `translateY(${-t * 4 * s.z}px)`; }
+  document.getElementById('warm').style.opacity = kf(t, [[0, 0.15], [1.4, 0.55, 'io'], [3.5, 1, 'io'], [24.8, 1, 'io'], [26.5, 0.75]]);
+  // Sky lanterns rising at the end.
+  for (const l of LANTERNS) {
+    const k = t - 24.9 - l.d, y = H + 40 - k * l.v, on = k > 0;
+    l.el.style.cssText = on ? `left:${l.x + Math.sin(k * 1.3 + l.ph) * 14}px;top:${y}px;width:${l.r * 2}px;height:${l.r * 2.4}px;opacity:${clamp(k * 1.5) * clamp((y - 200) / 600)};`
+      + `background:radial-gradient(circle,${l.pink ? '#FFE6F0' : '#FFF3D6'} 0%,${l.pink ? '#F7A8C8' : '#F4B45E'} 45%,rgba(244,180,94,0) 72%);box-shadow:0 0 ${l.r * 3}px ${l.pink ? 'rgba(247,168,200,.55)' : 'rgba(244,180,94,.6)'}` : 'display:none';
+  }
+  // The flame of the opening: it lights, then rises and melts into the warm glow.
+  const fl = document.getElementById('flame');
+  const fk = kf(t, [[0.35, 0, 'expo'], [1.3, 1, 'io'], [3.0, 1, 'io'], [4.2, 0]]);
+  const fy = kf(t, [[0, 760, 'io'], [3.0, 760, 'io'], [4.4, 420]]);
+  const flicker = 1 + 0.04 * Math.sin(t * 9.1) + 0.03 * Math.sin(t * 13.7);
+  fl.style.transform = `translate(${CX}px, ${fy}px)`;
+  fl.style.opacity = fk;
+  const g = fl.querySelector('.glow'), c = fl.querySelector('.core');
+  const gr = kf(t, [[0.35, 20, 'expo'], [1.6, 330], [3.0, 360, 'io'], [4.2, 520]]) * flicker, cr = kf(t, [[0.35, 4, 'expo'], [1.2, 34]]) * flicker;
+  g.style.cssText = `left:${-gr}px;top:${-gr}px;width:${gr * 2}px;height:${gr * 2}px`;
+  c.style.cssText = `left:${-cr}px;top:${-cr}px;width:${cr * 2}px;height:${cr * 2}px`;
+  // Light when a lantern catches in the phone.
+  const bl = document.getElementById('bloom');
+  let bo = 0, br = 0, by = CY;
+  for (const b of BLOOMS) { const k = t - b.at; if (k > -0.05 && k < 1.8) { bo = Math.max(bo, kf(k, [[0, 0, 'out'], [0.22, 1, 'io'], [1.7, 0]])); br = kf(k, [[0, 260, 'expo'], [1.7, 980]]); by = b.y; } }
+  bl.style.cssText = `left:${CX - br}px;top:${by - br}px;width:${br * 2}px;height:${br * 2}px;opacity:${bo};transform:translateZ(-160px)`;
+  // Camera.
+  const cm = camera(t);
+  cam.style.transform = `translateY(${cm.y}px) scale(${cm.s})`;
+  // Phones.
+  for (const ph of PHONES) {
+    const p = ph.pose(t);
+    ph.el.style.display = p.o <= 0.001 ? 'none' : 'block';
+    if (p.o <= 0.001) continue;
+    ph.el.style.opacity = p.o;
+    ph.el.style.transform = `translate3d(${CX + p.x}px, ${CY + p.y}px, ${p.z}px) rotateX(${p.rx}deg) rotateY(${p.ry}deg) rotateZ(${p.rz}deg) scale(${p.s})`;
+    // What it shows: the current shot, cross-faded with the previous one (0.35 s, with a breath of light).
+    let cur = 0;
+    for (let i = 0; i < ph.shots.length; i++) if (t >= ph.shots[i][0]) cur = i;
+    const [at, s] = ph.shots[cur];
+    const fade = cur > 0 ? clamp((t - at) / 0.35) : 1;
+    const [a, b2] = ph.imgs;
+    const srcA = shotSrc(s, t);
+    if (a.getAttribute('src') !== srcA) { a.setAttribute('src', srcA); waits.push(a.decode().catch(() => {})); }
+    a.style.opacity = E.soft(fade);
+    if (fade < 1) {
+      const srcB = shotSrc(ph.shots[cur - 1][1], t);
+      if (b2.getAttribute('src') !== srcB) { b2.setAttribute('src', srcB); waits.push(b2.decode().catch(() => {})); }
+      b2.style.opacity = 1; b2.style.zIndex = 0; a.style.zIndex = 1;
+    } else b2.style.opacity = 0;
+    // Glass: a soft sheen that slides with the turn of the phone, and the light of a change of shot.
+    const sh = 0.07 + Math.abs(p.ry) * 0.004 + (fade < 1 ? Math.sin(fade * Math.PI) * 0.12 : 0);
+    ph.sheen.style.background = `linear-gradient(${105 + p.ry * 2}deg, rgba(255,255,255,0) 30%, rgba(255,240,215,${sh}) 50%, rgba(255,255,255,0) 70%)`;
+  }
+  // Titles: each word rises out of a soft blur; the block lifts away when it leaves.
+  for (const tx of TEXTS) {
+    const outK = clamp((t - tx.out) / 0.4);
+    if (t < tx.at - 0.2 || outK >= 1) { tx.el.style.display = 'none'; continue; }
+    tx.el.style.display = 'block';
+    tx.el.style.opacity = 1 - E.soft(outK);
+    tx.el.style.transform = `translateY(${-18 * E.in(outK)}px)`;
+    tx.words.forEach((w, i) => {
+      const k = E.out(clamp((t - tx.at - i * 0.06) / 0.55));
+      w.style.opacity = k;
+      w.style.transform = `translateY(${(1 - k) * 22}px)`;
+      w.style.filter = `blur(${(1 - k) * 7}px)`;
+    });
+  }
+  // The icon of the end.
+  const lo = document.getElementById('logo');
+  const lk = clamp((t - 25.55) / 0.9);
+  lo.style.display = lk > 0 ? 'block' : 'none';
+  lo.style.top = '770px';
+  lo.style.opacity = E.out(lk);
+  lo.style.transform = `scale(${lerp(0.86, 1, E.expo(lk))}) translateY(${(1 - E.out(lk)) * 30}px)`;
+  await Promise.all(waits);
+}
+/** The sounds of the film: what the player really triggers in the shots kept, plus the light of the start and of the end. */
+function cues() {
+  const out = [{ t: 0.42, file: 'sfx_bell_harp_2.m4a', vol: 0.55 }, { t: 25.55, file: 'sfx_newDistrict_nuit.m4a', vol: 0.8 }];
+  const ph = PHONES[0];
+  ph.shots.forEach(([at, s], i) => {
+    if (s.still) return;
+    const end = i + 1 < ph.shots.length ? ph.shots[i + 1][0] : T;
+    for (const e of P.clips[s.clip].events) {
+      const t = at + (e.t - s.from) / s.speed;
+      if (t < at || t >= end) continue;
+      if (e.kind === 'bell') out.push({ t, file: `sfx_bell_${e.bell}.m4a`, vol: 0.9 });
+      if (e.kind === 'tap') out.push({ t, file: 'sfx_manipulate_marche.m4a', vol: 0.35 });
+      if (e.kind === 'solved') out.push({ t: t + 0.05, file: s.clip === 'carillon' ? 'sfx_lanternLit_horlo.m4a' : 'sfx_lanternLit_marche.m4a', vol: 0.85 });
+    }
+  });
+  return out;
+}
+window.cues = cues;
+window.renderAt = renderAt;
+window.DURATION = T;
+</script>
+</body></html>

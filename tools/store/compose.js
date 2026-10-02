@@ -1,8 +1,11 @@
-// Composes the App Store images from real captures. usage: node compose.js [iphone|ipad]
+// Composes the App Store images from real captures. usage: node compose.js [iphone|iphone65|ipad]
+// iphone65: the iPhone 6.5" set (1284 × 2778), the same composition as the 6.9" one, drawn 12 px
+// shorter (empty background at the bottom) and scaled to 97.3 %.
 const fs = require('fs');
 const { chromium } = require(process.env.PLAYWRIGHT || 'playwright');
 const KIND = process.argv[2] || 'iphone';
-const SIZE = KIND === 'ipad' ? { w: 2064, h: 2752 } : { w: 1320, h: 2868 };
+const SIZE = KIND === 'ipad' ? { w: 2064, h: 2752 } : KIND === 'iphone65' ? { w: 1320, h: 2856 } : { w: 1320, h: 2868 };
+const SCALE = KIND === 'iphone65' ? 1284 / 1320 : 1;
 const PFX = KIND === 'ipad' ? 'ipad' : 'app';
 const img = (n) => 'data:image/png;base64,' + fs.readFileSync(`store/${PFX}-${n}.png`).toString('base64');
 const SLIDES = [
@@ -54,7 +57,7 @@ function html(sl) {
 }
 (async () => {
   const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
-  const pg = await b.newPage({ viewport: { width: SIZE.w, height: SIZE.h }, deviceScaleFactor: 1 });
+  const pg = await b.newPage({ viewport: { width: SIZE.w, height: SIZE.h }, deviceScaleFactor: SCALE });
   for (let i = 0; i < SLIDES.length; i++) {
     if (SLIDES[i].shots.some((n) => !fs.existsSync(`store/${PFX}-${n}.png`))) { console.log('skip', i + 1); continue; }
     await pg.setContent(html(SLIDES[i])); await pg.waitForTimeout(300);

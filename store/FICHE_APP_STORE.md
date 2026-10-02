@@ -18,7 +18,7 @@ Les longueurs ont été vérifiées par rapport aux limites d'Apple.
 | Langues | Français, anglais |
 | Chiffrement (export) | Aucun (`ITSAppUsesNonExemptEncryption = false`, déjà dans `app.json`) |
 
-Captures prêtes (10 par appareil, refaites avec les événements, le mode Libre, la maison et les 26 familles) : `store/iphone-6.9/` (iPhone 6,9 pouces, 1320 × 2868) et `store/ipad-13/` (iPad 13 pouces, 2064 × 2752). Vidéo d'aperçu (29 s) : `store/video/apercu-iphone-6.9.mp4`. Pour les régénérer : `tools/store/README.md`.
+Captures prêtes (10 par appareil) : `store/iphone-6.5/` (iPhone 6,5 pouces, 1284 × 2778), `store/iphone-6.9/` (iPhone 6,9 pouces, 1320 × 2868) et `store/ipad-13/` (iPad 13 pouces, 2064 × 2752). Vidéo de présentation (29 s, 886 × 1920, pour les iPhone 6,5" et 6,9") : `store/video/presentation-iphone.mp4`. Pour les régénérer : `tools/store/README.md`.
 
 ---
 

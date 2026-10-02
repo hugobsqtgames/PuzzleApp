@@ -1,6 +1,6 @@
 # Images App Store
 
-Les images finales sont dans `store/iphone-6.9/` (1320 × 2868) et `store/ipad-13/` (2064 × 2752).
+Les images finales sont dans `store/iphone-6.5/` (1284 × 2778, iPhone 6,5"), `store/iphone-6.9/` (1320 × 2868) et `store/ipad-13/` (2064 × 2752). Les 6,5" sont la même composition que les 6,9", dessinée 12 px plus courte (fond vide en bas) et mise à 97,3 % : textes, écrans et mise en page identiques.
 Chaque image montre une vraie capture de l'app (rien n'est retouché). Le script cherche lui-même les énigmes de chaque famille dans le contenu, rejoue un vrai carillon pour l'écran de réussite, et fixe la date pour les trois événements.
 
 Pour les régénérer, depuis un dossier de travail :
@@ -11,17 +11,13 @@ node ../tools/store/spa.js web &            # sert le build sur http://localhost
 node ../tools/store/capture.js               # captures iPhone 430 × 932 @3x → store/app-*.png
 W=1032 H=1376 DSF=2 PREFIX=ipad node ../tools/store/capture.js   # idem pour l'iPad
 node ../tools/store/compose.js iphone        # → store/out/iphone-01…10.png
+node ../tools/store/compose.js iphone65      # → store/out/iphone65-01…10.png (6,5")
 node ../tools/store/compose.js ipad          # → store/out/ipad-01…10.png
 ```
 
 Il faut Playwright (`PLAYWRIGHT=/chemin/vers/playwright`, `CHROMIUM=/chemin/vers/chromium` si besoin).
 `saveMock.json` reproduit la progression de la maquette (184 lumières), `save800.json` une partie avancée.
 
-## Vidéo d'aperçu (App Preview)
+## Vidéo de présentation
 
-`store/video/apercu-iphone-6.9.mp4` : 29 s, 886 × 1920, 30 i/s, H.264 + AAC stéréo (format Apple pour les iPhone 6,9 pouces).
-Filmée dans la vraie app (capture d'écran image par image de Chromium, nette au pixel), avec la musique de l'Horlogerie et les cloches réellement jouées.
-
-```sh
-FFMPEG=/chemin/vers/ffmpeg node ../tools/store/preview.js   # → store/out/preview-iphone.mp4
-```
+Voir `promo/README.md` (storyboard, commandes, conseils App Store Connect).
