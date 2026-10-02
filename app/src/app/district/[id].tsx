@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
 import { useStore } from '../../game/store';
+import { WORLD } from '../../game/catalog';
 import { Screen } from '../../ui/Screen';
 import { BackButton, Button, Crumb, GaugeRow, Icon, tap } from '../../ui/components';
 import { PANORAMA, districtXml } from '../../ui/art';
@@ -18,10 +19,16 @@ import { tr } from '../../i18n';
 
 export default function DistrictScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  // An unknown district (an old link, a mistyped address) never breaks the screen.
+  if (!WORLD.districts.some((x) => x.id === (id ?? 'phare'))) return <Screen><BackButton label={tr('Vesper')} onPress={() => goBack()} /></Screen>;
+  return <District id={id ?? 'phare'} />;
+}
+
+function District({ id }: { id: string }) {
   const { state, engine, showToast, play } = useStore();
   const { width } = useContentSize();
   const p = engine.progression;
-  const d = districtById(id ?? 'phare');
+  const d = districtById(id);
   const info = infoOf(d);
   // French agrees the keeper's words with her or him (L’Horlogère, La Marchande…).
   const [talk, setTalk] = useState(0);

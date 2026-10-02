@@ -120,7 +120,8 @@
           }
         ]
       ],
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      "./plugins/withoutRemotePush"
     ],
     "scheme": "lampion",
     "backgroundColor": "#0D0F1E"
