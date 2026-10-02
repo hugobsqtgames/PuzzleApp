@@ -5,6 +5,7 @@ import { goBack } from '../ui/nav';
 import { router } from 'expo-router';
 
 import { useStore } from '../game/store';
+import { parseImport } from '../game/saveText';
 import { Screen } from '../ui/Screen';
 import { BackButton, Button, Card, Icon, Sheet, ToggleRow, tap } from '../ui/components';
 import { T, R, type } from '../ui/theme';
@@ -58,7 +59,7 @@ function LinkRow({ label, onPress, color = T.tx, icon = 'chev' }: { label: strin
 }
 
 export default function Settings() {
-  const { settings, setSettings, note, resetProgress, exportProgress, importProgress, showToast, readOnly, findEgg } = useStore();
+  const { settings, setSettings, note, resetProgress, exportProgress, importProgress, showToast, readOnly, findEgg, state, engine } = useStore();
   const [sheet, setSheet] = useState<'time' | 'import' | 'lang' | 'chime' | null>(null);
   const [text, setText] = useState('');
   const hh = (n: number) => String(n).padStart(2, '0');
@@ -83,8 +84,17 @@ export default function Settings() {
     try { await Share.share({ message: exportProgress(), title: tr('Ma progression Lampion') }); } catch { showToast(tr('Le partage n’est pas disponible ici.'), 'info'); }
   };
   const doImport = () => {
-    if (importProgress(text.trim())) { setSheet(null); setText(''); showToast(tr('Progression importée.'), 'check'); }
-    else showToast(tr('Ce texte n’est pas une progression Lampion.'), 'x');
+    const got = parseImport(text.trim());
+    if (!got) { showToast(tr('Ce texte n’est pas une progression Lampion, ou il a été abîmé en route.'), 'x'); return; }
+    const apply = () => {
+      if (importProgress(text.trim())) { setSheet(null); setText(''); showToast(tr('Progression importée.'), 'check'); }
+    };
+    // It replaces the whole game: say what is here and what comes, then ask.
+    const now = engine.progression.totalLights(state), coming = engine.progression.totalLights(got.state);
+    const title = tr('Remplacer ta progression ?');
+    const body = tr('Ici : {0} lumières. Progression importée : {1} lumières. La progression actuelle sera remplacée.', [now, coming]);
+    if (Platform.OS === 'web') { if (typeof window !== 'undefined' && window.confirm(`${title}\n${body}`)) apply(); return; }
+    Alert.alert(title, body, [{ text: tr('Annuler'), style: 'cancel' }, { text: tr('Remplacer'), style: 'destructive', onPress: apply }]);
   };
   const confirmReset = () => {
     const reset = () => { void resetProgress(); showToast(tr('Progression réinitialisée.'), 'check'); router.dismissTo('/'); };

@@ -51,7 +51,9 @@ Le fichier est déterministe : même code, même `pack.json`, octet pour octet. 
 
 ## La sauvegarde
 
-`core/persistence/saveStore.ts` écrit l'état dans un fichier temporaire puis le renomme, garde une copie de secours, et décode élément par élément : une entrée abîmée est écartée sans perdre le reste. Les réglages, le profil (objets trouvés, historique d'éclats, personnalisation) sont dans un second fichier. Une partie en cours n'est restaurée que sur le puzzle exact où elle a été commencée (empreinte des données du puzzle).
+`core/persistence/saveStore.ts` écrit l'état dans un fichier temporaire puis le renomme, garde une copie de secours, et décode élément par élément : une entrée abîmée est écartée sans perdre le reste. Les réglages, le profil (objets trouvés, maison, album, historique d'éclats, personnalisation) sont dans un second fichier, tenu par `core/persistence/sideFile.ts` avec les mêmes garanties.
+
+Sur iPhone, remplacer un fichier se fait en « effacer, puis déplacer » : si l'app meurt entre les deux, le fichier temporaire complet (somme de contrôle juste) est repris au lancement suivant. Un fichier illisible (pas abîmé : illisible) n'est jamais réécrit. « Tout effacer » et l'import remplacent aussi la copie de secours (`SaveStore.replace`), pour que l'ancienne partie ne puisse jamais revenir. Un export porte une somme de contrôle : un texte modifié en route est refusé en entier. `__tests__/saveCrash.test.ts` tue l'app à chaque étape d'une sauvegarde, sur un disque qui se comporte comme celui du téléphone. Une partie en cours n'est restaurée que sur le puzzle exact où elle a été commencée (empreinte des données du puzzle).
 
 Les identifiants de lanternes ne changent jamais : une sauvegarde reste valide quand le contenu grandit.
 

@@ -711,4 +711,9 @@ export const EN_UI: Record<string, string> = {
   'Bienvenue à Vesper ! Promène-toi, puis allume ta première lanterne quand tu veux.': 'Welcome to Vesper! Look around, then light your first lantern whenever you like.',
   'Commencer l’aventure': 'Start the adventure',
   'Entrer dans Vesper': 'Enter Vesper',
+  'Ce texte n’est pas une progression Lampion, ou il a été abîmé en route.': 'This text is not a Lampion progress, or it was damaged on the way.',
+  'Remplacer ta progression ?': 'Replace your progress?',
+  'Ici : {0} lumières. Progression importée : {1} lumières. La progression actuelle sera remplacée.': 'Here: {0} lights. Imported progress: {1} lights. The current progress will be replaced.',
+  'Remplacer': 'Replace',
+  'Ta sauvegarde n’a pas pu être lue. Pour ne rien abîmer, rien n’est enregistré jusqu’au prochain lancement : ferme complètement Lampion puis rouvre-le.': 'Your save could not be read. So that nothing gets damaged, nothing is saved until the next launch: fully close Lampion and open it again.',
 };

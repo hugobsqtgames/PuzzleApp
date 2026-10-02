@@ -1,7 +1,7 @@
 // What is written outside the main save: the settings and the profile
 // (profile.json), and the text of an exported progress. Pure functions, so
 // the tests can throw anything at them.
-import { GameState, decodeState, encodeState } from '../core/game/state';
+import { GameState, Losses, checksum, decodeState, encodeState } from '../core/game/state';
 import { CHIME_THEMES, ChimeTheme } from '../audio/chime';
 import { HOUSE_SLOTS, Profile, newProfile } from './rewards';
 import type { LangSetting } from '../i18n';
@@ -76,7 +76,8 @@ export function decodeSide(text: string): { settings: Settings; profile: Profile
 
 /** The text the player shares to move their progress elsewhere. */
 export function exportText(state: GameState, picked: string[], now = new Date()): string {
-  return JSON.stringify({ app: 'lampion', v: 1, exportedAt: now.toISOString(), state: encodeState(state), picked });
+  const encoded = encodeState(state);
+  return JSON.stringify({ app: 'lampion', v: 1, exportedAt: now.toISOString(), checksum: checksum(JSON.stringify(encoded)), state: encoded, picked });
 }
 
 /** An exported progress read back, or null if the text is not one. */
@@ -84,7 +85,11 @@ export function parseImport(text: string): { state: GameState; picked: string[] 
   try {
     const o = JSON.parse(text) as { app?: unknown; state?: unknown; picked?: unknown };
     if (!o || o.app !== 'lampion' || !o.state) return null;
-    const state = decodeState(o.state);
+    // An import replaces the whole game: a text altered on the way is refused, never half imported.
+    if (typeof (o as { checksum?: unknown }).checksum === 'string' && (o as { checksum: string }).checksum !== checksum(JSON.stringify(o.state))) return null;
+    const losses = new Losses();
+    const state = decodeState(o.state, losses);
+    if (losses.count > 0) return null;
     // Objects can only have been found in rooms the imported progress has fully lit. Older exports
     // did not carry them: those rooms' objects count as found rather than being lost.
     const lit = (id: string) => state.collectibles.has(`collectible.${id}`);

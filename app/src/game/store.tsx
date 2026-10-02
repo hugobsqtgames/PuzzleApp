@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { GameEngine, Celebration, WELCOME_SHARDS } from '../core/game/engine';
 import { GameState, cloneState, credit, debit, newGameState } from '../core/game/state';
 import { SaveStore } from '../core/persistence/saveStore';
+import { SideFile } from '../core/persistence/sideFile';
 import { localDayKey, DayKey } from '../core/game/dayKey';
 import { HintLevel } from '../core/puzzlekit/types';
 import { AudioSettings, SoundEvent } from '../core/audio/director';
@@ -101,7 +102,7 @@ const SessionCtx = createContext<Session | null>(null);
 export const EVENT_SHARDS = 15;
 const engine = new GameEngine(WORLD);
 const saveStore = new SaveStore(deviceFS, SAVE_DIRECTORY, `content-${CONTENT_VERSION}`);
-const SIDE_FILE = `${SAVE_DIRECTORY}/profile.json`;
+const sideFile = new SideFile(deviceFS, SAVE_DIRECTORY);
 
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
@@ -138,18 +139,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { sound.setTouch(sessionCode ? FAMILY_TOUCH[sessionCode] ?? null : null); }, [sound, sessionCode]);
 
   // ---------------------------------------------------------------- persistence
+  // Settings and profile (objects found, house, album…): their own file, kept as safely as the game.
   const writeSide = useCallback(async (s: Settings, p: Profile) => {
-    try {
-      await deviceFS.ensureDirectory(SAVE_DIRECTORY);
-      const tmp = `${SIDE_FILE}.tmp`;
-      await deviceFS.write(tmp, JSON.stringify({ v: 1, settings: s, profile: p }));
-      await deviceFS.move(tmp, SIDE_FILE);
-    } catch { /* retried at the next change */ }
+    try { await sideFile.write(JSON.stringify({ v: 1, at: new Date().toISOString(), settings: s, profile: p })); } catch { /* retried at the next change */ }
   }, []);
 
   const saving = useRef<Promise<void>>(Promise.resolve());
-  const save = useCallback((s: GameState) => {
-    saving.current = saving.current.then(() => saveStore.save(s)).catch(() => { /* not loaded or storage error: next save retries */ });
+  const save = useCallback((s: GameState, replace = false) => {
+    saving.current = saving.current.then(() => (replace ? saveStore.replace(s) : saveStore.save(s))).catch(() => { /* not loaded or storage error: next save retries */ });
   }, []);
 
   useEffect(() => {
@@ -157,7 +154,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       const loaded = await saveStore.load().catch(() => null);
       let side: ReturnType<typeof decodeSide> = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };
-      try { if (await deviceFS.exists(SIDE_FILE)) side = decodeSide(await deviceFS.read(SIDE_FILE)); } catch { /* defaults */ }
+      try { const got = await sideFile.read(); if (got.text !== null) side = decodeSide(got.text); } catch { /* defaults */ }
       if (!alive) return;
       if (loaded) { setState(loaded.state); setReadOnly(loaded.source === 'unavailable'); } else setReadOnly(true);
       if (side.legacyObjects && loaded) {
@@ -194,10 +191,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     void scheduleReminders({ enabled: settings.reminder, hour: settings.reminderHour, minute: settings.reminderMinute, doneToday: state.daily.completedDays.has(today), streak: state.daily.streak });
   }, [ready, settings.reminder, settings.reminderHour, settings.reminderMinute, settings.language, state.daily.completedDays, state.daily.streak, today]);
 
-  const commit = useCallback((next: GameState) => {
+  const commit = useCallback((next: GameState, replace = false) => {
     stateRef.current = next;
     setState(next);
-    save(next);
+    save(next, replace);
   }, [save]);
 
   const commitProfile = useCallback((next: Profile) => {
@@ -466,7 +463,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const resetProgress = useCallback(async () => {
     const fresh = newGameState();
     fresh.onboardingDone = true;
-    commit(fresh);
+    // The backup copy is erased too: the old game can never come back mixed into the new one.
+    commit(fresh, true);
     // A new game, but the app keeps knowing it already asked for a rating and which version's news were seen.
     commitProfile({ ...newProfile(), reviewAsked: profileRef.current.reviewAsked, seenVersion: profileRef.current.seenVersion });
     setSession(null);
@@ -479,7 +477,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const importProgress = useCallback((text: string) => {
     const got = parseImport(text);
     if (!got) return false;
-    commit(got.state);
+    commit(got.state, true);
     commitProfile({ ...profileRef.current, picked: got.picked });
     return true;
   }, [commit, commitProfile]);

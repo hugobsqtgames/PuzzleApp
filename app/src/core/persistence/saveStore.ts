@@ -48,7 +48,15 @@ export class SaveStore {
     return next;
   }
 
-  save(state: GameState): Promise<void> {
+  save(state: GameState): Promise<void> { return this.write(state, false); }
+
+  /**
+   * Replaces the whole game (reset, import): the backup copy becomes this game too, so the
+   * previous game can never be merged back into it later.
+   */
+  replace(state: GameState): Promise<void> { return this.write(state, true); }
+
+  private write(state: GameState, replace: boolean): Promise<void> {
     return this.serial(async () => {
       if (!this.writable) throw new SaveError('notLoaded');
       await this.fs.ensureDirectory(this.directory);
@@ -56,19 +64,34 @@ export class SaveStore {
       const envelope = { appVersion: this.appVersion, checksum: checksum(JSON.stringify(encoded)), savedAt: this.now().toISOString(), schemaVersion: CURRENT_SCHEMA_VERSION, state: encoded };
       const temp = `${this.directory}/save.${Date.now().toString(36)}${Math.random().toString(36).slice(2)}.tmp`;
       await this.fs.write(temp, JSON.stringify(envelope));
-      if (await this.fs.exists(this.mainPath)) {
+      if (!replace && await this.fs.exists(this.mainPath)) {
         if (await this.fs.exists(this.backupPath)) await this.fs.remove(this.backupPath);
         await this.fs.copy(this.mainPath, this.backupPath);
       }
+      // On the phone, replacing a file is « delete, then move »: if the app dies in between,
+      // the complete temporary file is found again at the next launch (see recoverTemporary).
       try { await this.fs.move(temp, this.mainPath); } catch (e) { await this.fs.remove(temp).catch(() => undefined); throw e; }
+      if (replace) {
+        if (await this.fs.exists(this.backupPath)) await this.fs.remove(this.backupPath);
+        await this.fs.copy(this.mainPath, this.backupPath);
+      }
     });
   }
 
   load(): Promise<LoadResult> {
     return this.serial(async () => {
-      await this.removeStaleTemporaryFiles();
       const quarantined: string[] = [];
-      let unreadable = false;
+      // A main file that exists but cannot be read (not damaged: unreadable) is never touched or written over.
+      let mainUnreadable = false;
+      if (await this.fs.exists(this.mainPath).catch(() => false)) {
+        try { await this.fs.read(this.mainPath); } catch { mainUnreadable = true; }
+      }
+      if (!mainUnreadable) {
+        const recovered = await this.recoverTemporary();
+        if (recovered) quarantined.push(...recovered);
+        await this.removeStaleTemporaryFiles();
+      }
+      let unreadable = mainUnreadable;
       for (const [path, source] of [[this.mainPath, 'main'], [this.backupPath, 'backup']] as const) {
         if (!(await this.fs.exists(path).catch(() => false))) continue;
         let text: string;
@@ -76,6 +99,8 @@ export class SaveStore {
         try {
           const decoded = this.decode(text);
           if (decoded.schema > CURRENT_SCHEMA_VERSION) await this.preserveNewer(path, decoded.schema);
+          // The main file could not be read: its backup is shown, but nothing is written until a launch reads it.
+          if (mainUnreadable) { this.writable = false; return { state: decoded.state, source: 'unavailable', quarantined, migrated: decoded.migrated, mergedWithBackup: false }; }
           this.writable = true;
           if (source === 'main' && (decoded.losses > 0 || !decoded.intact) && (await this.fs.exists(this.backupPath).catch(() => false))) {
             try {
@@ -96,7 +121,44 @@ export class SaveStore {
     });
   }
 
-  private decode(text: string): { state: GameState; migrated: boolean; schema: number; losses: number; intact: boolean } {
+  /**
+   * The app died while saving: a complete temporary file newer than the main one (whole, checksum
+   * right, nothing lost) is the latest save. It becomes the main file; the previous main becomes the
+   * backup (or, if damaged, is set aside). Returns the files set aside.
+   */
+  private async recoverTemporary(): Promise<string[] | null> {
+    const names = await this.fs.list(this.directory).catch(() => [] as string[]);
+    let best: { path: string; savedAt: number } | null = null;
+    for (const n of names) {
+      if (!n.startsWith('save.') || !n.endsWith('.tmp')) continue;
+      const path = `${this.directory}/${n}`;
+      try {
+        const d = this.decode(await this.fs.read(path));
+        if (!d.intact || d.losses > 0 || d.migrated || !d.savedAt) continue;
+        if (!best || d.savedAt > best.savedAt) best = { path, savedAt: d.savedAt };
+      } catch { /* incomplete: the app died while writing it */ }
+    }
+    if (!best) return null;
+    let main: { savedAt: number; ok: boolean } | null = null;
+    if (await this.fs.exists(this.mainPath).catch(() => false)) {
+      try { const d = this.decode(await this.fs.read(this.mainPath)); main = { savedAt: d.savedAt, ok: d.intact && d.losses === 0 }; } catch { main = { savedAt: 0, ok: false }; }
+    }
+    if (main && main.ok && main.savedAt >= best.savedAt) return null;
+    const setAside: string[] = [];
+    try {
+      if (main && main.ok) {
+        if (await this.fs.exists(this.backupPath)) await this.fs.remove(this.backupPath);
+        await this.fs.copy(this.mainPath, this.backupPath);
+      } else if (main) {
+        const moved = await this.quarantine(this.mainPath);
+        if (moved) setAside.push(moved);
+      }
+      await this.fs.move(best.path, this.mainPath);
+    } catch { /* left as it was: the usual reading below still applies */ }
+    return setAside;
+  }
+
+  private decode(text: string): { state: GameState; migrated: boolean; schema: number; losses: number; intact: boolean; savedAt: number } {
     const json = JSON.parse(text) as unknown;
     if (typeof json !== 'object' || json === null || Array.isArray(json)) throw new Error('corrupt');
     const obj = json as Record<string, unknown>;
@@ -117,7 +179,8 @@ export class SaveStore {
     const intact = typeof obj.checksum !== 'string' || migrated || checksum(JSON.stringify(obj.state)) === obj.checksum;
     const losses = new Losses();
     const state = decodeState(obj.state, losses);
-    return { state, migrated, schema: original, losses: losses.count, intact };
+    const savedAt = typeof obj.savedAt === 'string' ? Date.parse(obj.savedAt) || 0 : 0;
+    return { state, migrated, schema: original, losses: losses.count, intact, savedAt };
   }
 
   private async removeStaleTemporaryFiles() {

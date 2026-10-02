@@ -35,7 +35,7 @@ export const DAILY_UNLOCK_LIGHTS = 6;
 const phaseLabel = (p: SkyPhase) => (p === 'dawn' ? tr('à l’aube') : p === 'day' ? tr('en plein jour') : p === 'dusk' ? tr('au crépuscule') : tr('la nuit'));
 
 export default function Home() {
-  const { state, engine, openLantern, today, findEgg, daysAway, profile, noteProfile } = useStore();
+  const { state, engine, openLantern, today, findEgg, daysAway, profile, noteProfile, readOnly } = useStore();
   const { width } = useContentSize();
   const reduce = useReducedMotion();
   const p = engine.progression;
@@ -206,7 +206,8 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Lumières', [total])} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })}><LightPill n={total} /></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
-      {fresh ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Bienvenue à Vesper ! Promène-toi, puis allume ta première lanterne quand tu veux.')}</Text>
+      {readOnly ? <Text style={[type.callout, { textAlign: 'center', color: T.coral }]}>{tr('Ta sauvegarde n’a pas pu être lue. Pour ne rien abîmer, rien n’est enregistré jusqu’au prochain lancement : ferme complètement Lampion puis rouvre-le.')}</Text>
+        : fresh ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Bienvenue à Vesper ! Promène-toi, puis allume ta première lanterne quand tu veux.')}</Text>
         : midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
         : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text>
         : morning ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo boit son café. Une petite énigme avant de commencer la journée ?')}</Text>
@@ -300,7 +301,8 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Lumières', [total])} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })}><LightPill n={total} /></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
-      {fresh ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Bienvenue à Vesper ! Promène-toi, puis allume ta première lanterne quand tu veux.')}</Text>
+      {readOnly ? <Text style={[type.callout, { textAlign: 'center', color: T.coral }]}>{tr('Ta sauvegarde n’a pas pu être lue. Pour ne rien abîmer, rien n’est enregistré jusqu’au prochain lancement : ferme complètement Lampion puis rouvre-le.')}</Text>
+        : fresh ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Bienvenue à Vesper ! Promène-toi, puis allume ta première lanterne quand tu veux.')}</Text>
         : midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
         : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text>
         : morning ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo boit son café. Une petite énigme avant de commencer la journée ?')}</Text>
