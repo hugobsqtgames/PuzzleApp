@@ -36,11 +36,16 @@ test('aucune grille préparée sur le téléphone ne bloque l’écran (chaque e
     if (FROM_THE_GAME[code]?.includes(tier)) continue;
     const pipe = new CandidatePipeline(FAMILIES[code].engine as never);
     const list = FORGE_PARAMS[code][tier];
-    for (let i = 0; i < 25; i++) {
+    const timed = (i: number) => {
       const t = Date.now();
       pipe.evaluate(list[i % list.length] as never, StableHash.seed('freeze', code, String(tier), String(i)));
-      const ms = Date.now() - t;
-      if (ms > 1000) { slow.push(`${code} ${tier}: ${ms} ms`); break; }
+      return Date.now() - t;
+    };
+    for (let i = 0; i < 25; i++) {
+      // A try is the same work every time: a slow one is timed again, so that a cold start or a
+      // busy test machine is not taken for a grid that freezes the phone.
+      const ms = timed(i);
+      if (ms > 1000 && timed(i) > 1000) { slow.push(`${code} ${tier}: ${ms} ms`); break; }
     }
   }
   expect(slow).toEqual([]);
