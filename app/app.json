@@ -124,6 +124,12 @@
       "./plugins/withoutRemotePush"
     ],
     "scheme": "lampion",
-    "backgroundColor": "#0D0F1E"
+    "backgroundColor": "#0D0F1E",
+    "owner": "aazerty12",
+    "extra": {
+      "eas": {
+        "projectId": "f1c8d653-cc2d-446f-bd44-d68ed6d4d7ab"
+      }
+    }
   }
 }

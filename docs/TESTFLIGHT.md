@@ -13,7 +13,7 @@ seul, chiffrement déclaré « aucun » (pas de question export à chaque build)
 ## 0. Ce qu'il te faut
 
 - Node.js 20 ou plus récent (https://nodejs.org), et le projet à jour : `git pull`, puis dans
-  `app/` : `npm install`.
+  `app/` : `npm ci` (jamais `npm install`, qui réécrit `package-lock.json` selon la version de npm du Mac, et le serveur de build le refuse ensuite).
 - Ton compte Apple Developer payant (99 €/an) actif.
 - Un compte Expo gratuit : https://expo.dev/signup
 
