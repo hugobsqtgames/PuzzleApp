@@ -144,6 +144,8 @@ export default function Home() {
     </Sheet>
   );
 
+  // A brand-new player lands here after the story: a welcome, and the first lantern one tap away.
+  const fresh = total === 0;
   const onContinue = () => {
     if (!cur.lantern) { router.push('/map'); return; }
     if (openLantern(cur.lantern.puzzle)) router.push('/puzzle');
@@ -195,7 +197,7 @@ export default function Home() {
         ) : (
           <Text style={type.title2}>{tr('Vesper est entièrement éclairée.')}</Text>
         )}
-        <Button title={tr('Continuer')} icon="light" onPress={onContinue} style={{ marginTop: 4 }} />
+        <Button title={fresh ? tr('Commencer l’aventure') : tr('Continuer')} icon="light" onPress={onContinue} style={{ marginTop: 4 }} />
         <Button title={tr('Où en suis-je ?')} kind="ghost" onPress={() => router.push('/progress')} />
       </Card></Rise>
           </View>
@@ -204,7 +206,8 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Lumières', [total])} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })}><LightPill n={total} /></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
-      {midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
+      {fresh ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Bienvenue à Vesper ! Promène-toi, puis allume ta première lanterne quand tu veux.')}</Text>
+        : midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
         : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text>
         : morning ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo boit son café. Une petite énigme avant de commencer la journée ?')}</Text>
         : late ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo bâille… Encore une lanterne, et au lit ?')}</Text>
@@ -297,7 +300,8 @@ export default function Home() {
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Lumières', [total])} onPress={() => router.push({ pathname: '/carnet', params: { tab: 'vesper' } })}><LightPill n={total} /></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel={tr('{0} Éclats', [state.wallet.balance])} onPress={() => router.push('/shards')}><ShardPill n={state.wallet.balance} /></Pressable>
       </View>
-      {midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
+      {fresh ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Bienvenue à Vesper ! Promène-toi, puis allume ta première lanterne quand tu veux.')}</Text>
+        : midnight ? <Text style={[type.foot, { textAlign: 'center', color: T.tx2 }]}>{tr('Minuit passé. Nilo s’est endormi… mais les lanternes t’attendent.')}</Text>
         : daysAway >= 3 ? <Text style={[type.callout, { textAlign: 'center', color: T.gold }]}>{tr('Te revoilà ! Vesper t’attendait depuis {0} jours.', [daysAway])}</Text>
         : morning ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo boit son café. Une petite énigme avant de commencer la journée ?')}</Text>
         : late ? <Text style={[type.foot, { textAlign: 'center', fontStyle: 'italic', color: T.tx2 }]}>{tr('Nilo bâille… Encore une lanterne, et au lit ?')}</Text>
@@ -341,7 +345,7 @@ export default function Home() {
         ) : (
           <Text style={type.title2}>{tr('Vesper est entièrement éclairée.')}</Text>
         )}
-        <Button title={tr('Continuer')} icon="light" onPress={onContinue} style={{ marginTop: 4 }} />
+        <Button title={fresh ? tr('Commencer l’aventure') : tr('Continuer')} icon="light" onPress={onContinue} style={{ marginTop: 4 }} />
         <Button title={tr('Où en suis-je ?')} kind="ghost" onPress={() => router.push('/progress')} />
       </Card></Rise>
 

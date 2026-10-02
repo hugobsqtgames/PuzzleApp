@@ -38,7 +38,7 @@ function views(mode: 'dark' | 'phare'): DistrictView[] {
 }
 
 export default function Welcome() {
-  const { state, openLantern } = useStore();
+  const { state, completeOnboarding } = useStore();
   const { width, height } = useContentSize();
   const season = seasonOn(useNow());
   const [page, setPage] = useState(-1); // -1 = splash
@@ -57,7 +57,8 @@ export default function Welcome() {
     return () => clearTimeout(id);
   }, [page]);
 
-  const start = () => { if (openLantern(TUTORIAL_LANTERN)) router.replace('/puzzle'); else router.replace('/'); };
+  // After the story, the player arrives on the home screen and starts when they like.
+  const start = () => { completeOnboarding(); router.replace('/'); };
 
   if (page === -1) {
     return (
@@ -91,7 +92,7 @@ export default function Welcome() {
         <View style={{ flexDirection: 'row', gap: 6, marginVertical: 6 }}>
           {[0, 1, 2].map((k) => <View key={k} style={{ width: k === page ? 22 : 8, height: 8, borderRadius: 4, backgroundColor: k === page ? T.amber : T.line }} />)}
         </View>
-        {page < 2 ? <Button title={tr('Continuer')} onPress={() => setPage(page + 1)} /> : <Button title={tr('Allumer la première lanterne')} onPress={start} />}
+        {page < 2 ? <Button title={tr('Continuer')} onPress={() => setPage(page + 1)} /> : <Button title={tr('Entrer dans Vesper')} onPress={start} />}
         <Button title={tr('Passer')} kind="ghost" onPress={start} />
       </View>
     </Screen>

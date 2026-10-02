@@ -708,4 +708,7 @@ export const EN_UI: Record<string, string> = {
   'constellation {0}': 'constellation {0}',
   'vide': 'empty',
   'Le widget de l’écran d’accueil lit ta série et le défi du soir dans un petit espace que l’app et le widget partagent, sur ton téléphone. Rien n’en sort.': 'The home-screen widget reads your streak and tonight’s challenge from a small space the app and the widget share, on your phone. Nothing leaves it.',
+  'Bienvenue à Vesper ! Promène-toi, puis allume ta première lanterne quand tu veux.': 'Welcome to Vesper! Look around, then light your first lantern whenever you like.',
+  'Commencer l’aventure': 'Start the adventure',
+  'Entrer dans Vesper': 'Enter Vesper',
 };
