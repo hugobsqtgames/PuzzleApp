@@ -233,7 +233,7 @@ Three yearly festivals appear automatically by date: spring lanterns (28 Mar - 1
 
 PERMISSIONS AND SYSTEM FEATURES
 - Notifications: local only (an evening reminder). Never requested at launch: after the first evening challenge, the app asks in its own words; the iOS prompt appears only if the player says yes. Changeable in Settings.
-- Seasonal app icon: on first launch the app switches to the icon of the current season (autumn now), so iOS shows its standard notice that the icon of "Lampion" has changed. This is expected, not an error. It happens again only when the season changes, and can be turned off in Settings > "Seasonal icon".
+- Seasonal app icon: on first launch the app switches to the icon of the current season (autumn now), so iOS shows its standard notice that the icon of "Lampion" has changed. This is expected, not an error. It happens again only when the season or a festival changes, and can be turned off in Settings > "Seasonal icon".
 - Home-screen widget: tonight's challenge and the evening streak.
 - Rating request: at most once, after a whole district is lit, never during a puzzle.
 - Settings > "Export my progress" opens the iOS share sheet with a text backup; "Import..." restores it. "Reset progress" asks for confirmation first.
