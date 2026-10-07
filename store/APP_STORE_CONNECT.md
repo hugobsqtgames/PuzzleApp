@@ -199,7 +199,7 @@ Décoché (Lampion n'utilise pas Game Center).
 | Notes | **le texte anglais ci-dessous, en entier** (les vérificateurs lisent l'anglais) |
 | Pièce jointe | rien |
 
-#### Notes à coller (anglais, 3 378 caractères sur 4 000 autorisés)
+#### Notes à coller (anglais, 3 552 caractères sur 4 000 autorisés, pour la build 1.0.0 (2))
 
 ```
 Thank you for reviewing Lampion.
@@ -233,10 +233,10 @@ Three yearly festivals appear automatically by date: spring lanterns (28 Mar - 1
 
 PERMISSIONS AND SYSTEM FEATURES
 - Notifications: local only (an evening reminder). Never requested at launch: after the first evening challenge, the app asks in its own words; the iOS prompt appears only if the player says yes. Changeable in Settings.
-- Seasonal app icon: off by default. If turned on in Settings > "Seasonal icon", iOS shows its standard "icon changed" notice.
+- Seasonal app icon: on first launch the app switches to the icon of the current season (autumn now), so iOS shows its standard notice that the icon of "Lampion" has changed. This is expected, not an error. It happens again only when the season changes, and can be turned off in Settings > "Seasonal icon".
 - Home-screen widget: tonight's challenge and the evening streak.
 - Rating request: at most once, after a whole district is lit, never during a puzzle.
-- Settings > "Export my progress" opens the iOS share sheet with a text backup; "Import progress" restores it. "Reset progress" asks for confirmation first.
+- Settings > "Export my progress" opens the iOS share sheet with a text backup; "Import..." restores it. "Reset progress" asks for confirmation first.
 
 ACCESSIBILITY
 VoiceOver labels on every control, Dynamic Type, colour aid (symbols on colours), sound captions, Reduce Motion respected.
