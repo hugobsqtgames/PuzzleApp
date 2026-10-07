@@ -196,7 +196,7 @@ export const EN_UI: Record<string, string> = {
   'Pas de compte, pas de publicité, pas de suivi, pas de serveur. Rien n’est envoyé, sauf si tu exportes toi-même ta progression.': 'No account, no ads, no tracking, no server. Nothing is sent, unless you export your progress yourself.',
   'Sauvegarde': 'Backup',
   'Exporter ma progression': 'Export my progress',
-  'Importer une progression': 'Import a progress',
+  'Importer une progression': 'Import progress',
   'Réinitialiser la progression': 'Reset progress',
   'contenu': 'content',
   'Heure du rappel': 'Reminder time',

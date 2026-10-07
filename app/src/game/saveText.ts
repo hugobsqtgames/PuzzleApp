@@ -33,7 +33,7 @@ export interface Settings {
   /** Buttons and glows take the colour of the district the player is in. */
   districtTint: boolean;
 }
-export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto', chime: 'bells', seasonIcon: true, musicVolume: 1, effectsVolume: 1, soundCaptions: false, districtTint: true };
+export const DEFAULT_SETTINGS: Settings = { music: true, effects: true, haptics: true, direct: false, reminder: false, reminderHour: 19, reminderMinute: 30, reminderOffered: false, colorAid: false, language: 'auto', chime: 'bells', seasonIcon: false, musicVolume: 1, effectsVolume: 1, soundCaptions: false, districtTint: true };
 
 export function decodeSide(text: string): { settings: Settings; profile: Profile; legacyObjects?: boolean } {
   const out: { settings: Settings; profile: Profile; legacyObjects?: boolean } = { settings: { ...DEFAULT_SETTINGS }, profile: newProfile() };

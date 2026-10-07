@@ -1,7 +1,8 @@
 // The app icon follows the season (and the two yearly events) on iPhone and iPad.
 // Needs a development or App Store build: Expo Go cannot change its icon, so
 // nothing happens there. iOS shows a short notice when the icon changes,
-// which happens at most six times a year.
+// which happens at most six times a year. Off until the player turns it on in Settings:
+// the icon never changes (and iOS never shows its notice) without the player asking.
 import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 

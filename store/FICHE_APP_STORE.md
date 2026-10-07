@@ -87,8 +87,8 @@ Captures prêtes (10 par appareil) : `store/iphone-6.5/` (iPhone 6,5 pouces, 128
 
 > Vesper has gone dark. The Lamplighter has left, and every lantern in the city is asleep. With Nilo, your little flame companion, light them again one by one: every puzzle you solve gives the city back a little light.
 >
-> 1,000 LANTERNS, 25 KINDS OF PUZZLES
-> Gears, stained glass, carillon, sliding tiles, ribbons, fireflies, liars, scales, investigations… 25 kinds of brain teasers, from the easy spark to the fearsome blaze. Every new kind comes with a short introduction, and the difficulty rises gently.
+> 1,000 LANTERNS, 26 KINDS OF PUZZLES
+> Gears, stained glass, carillon, sliding tiles, ribbons, fireflies, constellations, liars, scales, investigations… 26 kinds of brain teasers, from the easy spark to the fearsome blaze. Every new kind comes with a short introduction, and the difficulty rises gently.
 >
 > A CITY TO WAKE UP
 > The Lighthouse, the Whispering Library, the Clockworks, the Glass Greenhouse, the Floating Market, the Shadow Theatre, the Observatory: seven districts, each with its own music, sleeping residents and unique rooms. When a room is fully lit, a hidden object appears. The Lamplighter's letters tell where he went.
