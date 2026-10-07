@@ -1,14 +1,20 @@
 // Captures real app screens for the store pages (iPhone: 430 × 932 @3x; iPad: W=1032 H=1376 DSF=2 PREFIX=ipad).
+// LANG=en: the same screens with the app in English (PREFIX app-en, ipad-en…).
 // The puzzles are looked up in the content by family, so a rebalanced Forge does not break it.
 const fs = require('fs');
 const { chromium } = require(process.env.PLAYWRIGHT || 'playwright');
 const W = +(process.env.W || 430), H = +(process.env.H || 932), DSF = +(process.env.DSF || 3), P = process.env.PREFIX || 'app';
+const EN = process.env.LANG_ === 'en';
+/** The few labels the script looks for, in the app's language. */
+const L = EN
+  ? { lantern: 'Lantern', on: 'on', play: /^(Light|Resume)$/, open: /^(Light|Play again|Resume)$/, bell: 'Bell', shadow: /^Shadow 2/, hints: 'Hints', free: /^Free$/, back: 'Back to the puzzle', insight: /^(Insight|Solution)/, insightOnly: /^Insight/, key: /^Keystone lantern/, tier: 'Flame', go: 'Play', start: /^Let.s go$/, house: 'The house on the quay' }
+  : { lantern: 'Lanterne', on: 'sur', play: /^(Allumer|Reprendre)$/, open: /^(Allumer|Rejouer|Reprendre)$/, bell: 'Cloche', shadow: /^Ombre 2/, hints: 'Indices', free: /^Gratuit$/, back: 'Revenir au puzzle', insight: /^(Éclairage|Solution)/, insightOnly: /^Éclairage/, key: /^Lanterne-clé/, tier: 'Flamme', go: 'Jouer', start: /^C.est parti$/, house: 'La maison du quai' };
 (async () => {
   const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
   const page = async (saveFile, at) => {
-    const ctx = await b.newContext({ locale: 'fr-FR', viewport: { width: W, height: H }, deviceScaleFactor: DSF });
+    const ctx = await b.newContext({ locale: EN ? 'en-GB' : 'fr-FR', viewport: { width: W, height: H }, deviceScaleFactor: DSF });
     await ctx.addInitScript((s) => { if (!localStorage.getItem('fs:lampion/save.json')) localStorage.setItem('fs:lampion/save.json', s); }, fs.readFileSync(saveFile, 'utf8'));
-    await ctx.addInitScript(() => setInterval(() => { const el = [...document.querySelectorAll('div')].find((d) => d.childElementCount === 0 && /^C.est parti$/.test(d.textContent)); if (el) el.click(); }, 400));
+    await ctx.addInitScript((src) => { const re = new RegExp(src); setInterval(() => { const el = [...document.querySelectorAll('div')].find((d) => d.childElementCount === 0 && re.test(d.textContent)); if (el) el.click(); }, 400); }, L.start.source);
     const pg = await ctx.newPage();
     await pg.clock.install({ time: at });
     await pg.goto('http://localhost:8768/'); await pg.waitForTimeout(9000);
@@ -33,8 +39,8 @@ const W = +(process.env.W || 430), H = +(process.env.H || 932), DSF = +(process.
   const open = async (pg, code, wait = 1500, minTier = 2) => {
     const [room, n] = find(code, minTier);
     await pg.goto('http://localhost:8768/room/' + room); await pg.waitForTimeout(2500);
-    await vis(pg.getByLabel(new RegExp('^Lanterne ' + n + ' sur'))).first().click(); await pg.waitForTimeout(700);
-    await vis(pg.getByText(/^(Allumer|Rejouer|Reprendre)$/)).first().click(); await pg.waitForTimeout(wait);
+    await vis(pg.getByLabel(new RegExp(`^${L.lantern} ${n} ${L.on}`))).first().click(); await pg.waitForTimeout(700);
+    await vis(pg.getByText(L.open)).first().click(); await pg.waitForTimeout(wait);
   };
   const night = new Date(2026, 8, 30, 20, 30);
 
@@ -48,9 +54,9 @@ const W = +(process.env.W || 430), H = +(process.env.H || 932), DSF = +(process.
     const k = room.lanterns.findIndex((l) => l.family === 'CR' && !MOCK.has(l.id));
     const cr = PACK.puzzles[room.lanterns[k].id].p;
     await pg.goto('http://localhost:8768/room/' + room.id); await pg.waitForTimeout(2500);
-    await vis(pg.getByLabel(new RegExp('^Lanterne ' + (k + 1) + ' sur'))).first().click(); await pg.waitForTimeout(700);
-    await vis(pg.getByText(/^(Allumer|Reprendre)$/)).first().click(); await pg.waitForTimeout(7000);
-    for (const bell of (cr.reverse ? cr.melody.slice().reverse() : cr.melody)) { await vis(pg.getByLabel('Cloche ' + (bell + 1))).first().click(); await pg.waitForTimeout(500); }
+    await vis(pg.getByLabel(new RegExp(`^${L.lantern} ${k + 1} ${L.on}`))).first().click(); await pg.waitForTimeout(700);
+    await vis(pg.getByText(L.play)).first().click(); await pg.waitForTimeout(7000);
+    for (const bell of (cr.reverse ? cr.melody.slice().reverse() : cr.melody)) { await vis(pg.getByLabel(`${L.bell} ${bell + 1}`)).first().click(); await pg.waitForTimeout(500); }
     await pg.waitForTimeout(1800); await shot(pg, 'success');
     await pg.context().close();
   }
@@ -63,23 +69,23 @@ const W = +(process.env.W || 430), H = +(process.env.H || 932), DSF = +(process.
     await open(pg, 'VI', 6000); await shot(pg, 'vitraux');
     await open(pg, 'CR', 9000); await shot(pg, 'carillon');
     await open(pg, 'DI'); await shot(pg, 'differences');
-    await open(pg, 'OM'); await vis(pg.getByLabel(/^Ombre 2/)).first().click().catch(() => {}); await pg.waitForTimeout(400); await shot(pg, 'ombres');
+    await open(pg, 'OM'); await vis(pg.getByLabel(L.shadow)).first().click().catch(() => {}); await pg.waitForTimeout(400); await shot(pg, 'ombres');
     await open(pg, 'PA'); await shot(pg, 'passerelles');
     await open(pg, 'RU'); await shot(pg, 'rubans');
     // Hints, then a success caught while the lantern catches.
     await open(pg, 'EN');
-    await vis(pg.getByLabel('Indices')).last().click(); await pg.waitForTimeout(900); await shot(pg, 'hints');
-    await vis(pg.getByRole('button', { name: /^Gratuit$/ })).last().click().catch(() => {}); await pg.waitForTimeout(1200); await shot(pg, 'hint-shown');
-    const closeSheet = async () => { const back = vis(pg.getByText('Revenir au puzzle')); if (await back.count()) { await back.last().click({ force: true, timeout: 3000 }).catch(() => {}); await pg.waitForTimeout(700); } };
+    await vis(pg.getByLabel(L.hints)).last().click(); await pg.waitForTimeout(900); await shot(pg, 'hints');
+    await vis(pg.getByRole('button', { name: L.free })).last().click().catch(() => {}); await pg.waitForTimeout(1200); await shot(pg, 'hint-shown');
+    const closeSheet = async () => { const back = vis(pg.getByText(L.back)); if (await back.count()) { await back.last().click({ force: true, timeout: 3000 }).catch(() => {}); await pg.waitForTimeout(700); } };
     for (let k = 0; k < 6 && !pg.url().includes('success'); k++) {
       await closeSheet();
-      await vis(pg.getByLabel('Indices')).last().click({ timeout: 5000 }).catch(() => {}); await pg.waitForTimeout(450);
-      const bt = vis(pg.getByLabel(/^(Éclairage|Solution)/));
+      await vis(pg.getByLabel(L.hints)).last().click({ timeout: 5000 }).catch(() => {}); await pg.waitForTimeout(450);
+      const bt = vis(pg.getByLabel(L.insight));
       if (await bt.count()) { await bt.last().click(); await pg.waitForTimeout(700); }
-      const back = vis(pg.getByText('Revenir au puzzle')); if (await back.count()) { await back.last().click({ force: true, timeout: 3000 }).catch(() => {}); await pg.waitForTimeout(600); }
+      const back = vis(pg.getByText(L.back)); if (await back.count()) { await back.last().click({ force: true, timeout: 3000 }).catch(() => {}); await pg.waitForTimeout(600); }
     }
     await pg.goto('http://localhost:8768/building/biblio.b1'); await pg.waitForTimeout(2500);
-    await vis(pg.getByLabel(/^Lanterne-clé/)).first().click().catch(() => {}); await pg.waitForTimeout(1800); await shot(pg, 'seal');
+    await vis(pg.getByLabel(L.key)).first().click().catch(() => {}); await pg.waitForTimeout(1800); await shot(pg, 'seal');
     await pg.goto('http://localhost:8768/carnet'); await pg.waitForTimeout(2500); await shot(pg, 'carnet');
     await pg.context().close();
   }
@@ -94,22 +100,22 @@ const W = +(process.env.W || 430), H = +(process.env.H || 932), DSF = +(process.
 
   const pg = await page(save, night);
   // The house: objects found in the Phare, some on its shelves (seeded, as a player would have done).
-  await pg.evaluate((ROOMS) => {
+  await pg.evaluate(([ROOMS, HOUSE]) => {
     const rooms = ROOMS;
     const side = JSON.parse(localStorage.getItem('fs:lampion/profile.json') || '{}');
-    side.profile = { ...(side.profile || {}), picked: rooms, house: { name: 'La maison du quai', shelf: [rooms[0], null, rooms[2], rooms[3], rooms[5], null, rooms[6], rooms[7]], decor: { rug: 'rug.blue', painting: 'painting.phare', lamp: 'lamp.brass', plant: 'plant.glow' } } };
+    side.profile = { ...(side.profile || {}), picked: rooms, house: { name: HOUSE, shelf: [rooms[0], null, rooms[2], rooms[3], rooms[5], null, rooms[6], rooms[7]], decor: { rug: 'rug.blue', painting: 'painting.phare', lamp: 'lamp.brass', plant: 'plant.glow' } } };
     localStorage.setItem('fs:lampion/profile.json', JSON.stringify(side));
-  }, ['phare.b1.r1', 'phare.b1.r2', 'phare.b1.r3', 'phare.b1.r4', 'biblio.b1.r1', 'biblio.b1.r2', 'biblio.b1.r3', 'biblio.b2.r1']);
+  }, [['phare.b1.r1', 'phare.b1.r2', 'phare.b1.r3', 'phare.b1.r4', 'biblio.b1.r1', 'biblio.b1.r2', 'biblio.b1.r3', 'biblio.b2.r1'], L.house]);
   await pg.goto('http://localhost:8768/house'); await pg.waitForTimeout(3500); await shot(pg, 'house');
   // The mode Libre, then a Constellations sky with a few stars.
   await pg.goto('http://localhost:8768/free'); await pg.waitForTimeout(2500);
   await vis(pg.getByRole('radio', { name: 'Constellations' })).first().click(); await pg.waitForTimeout(400);
-  await vis(pg.getByRole('radio').filter({ hasText: 'Flamme' })).first().click(); await pg.waitForTimeout(400);
+  await vis(pg.getByRole('radio').filter({ hasText: L.tier })).first().click(); await pg.waitForTimeout(400);
   await shot(pg, 'free');
-  await vis(pg.getByText('Jouer', { exact: true })).first().click(); await pg.waitForTimeout(3500);
-  await vis(pg.getByLabel('Indices')).last().click(); await pg.waitForTimeout(600);
-  await vis(pg.getByLabel(/^Éclairage/)).first().click().catch(() => {}); await pg.waitForTimeout(800);
-  const back = vis(pg.getByText('Revenir au puzzle')); if (await back.count()) { await back.last().click(); await pg.waitForTimeout(600); }
+  await vis(pg.getByText(L.go, { exact: true })).first().click(); await pg.waitForTimeout(3500);
+  await vis(pg.getByLabel(L.hints)).last().click(); await pg.waitForTimeout(600);
+  await vis(pg.getByLabel(L.insightOnly)).first().click().catch(() => {}); await pg.waitForTimeout(800);
+  const back = vis(pg.getByText(L.back)); if (await back.count()) { await back.last().click(); await pg.waitForTimeout(600); }
   await shot(pg, 'constellations');
   await b.close(); console.log('done');
 })().catch((e) => { console.error('FAIL', e.message.slice(0, 400)); process.exit(1); });

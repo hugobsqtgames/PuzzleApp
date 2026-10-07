@@ -1,4 +1,6 @@
-// Composes the App Store images from real captures. usage: node compose.js [iphone|iphone65|iphone63|ipad]
+// Composes the App Store images from real captures. usage: node compose.js [iphone|iphone65|iphone63|duo|ipad]
+// LANG_=en: the English images (texts below, captures store/<prefix>-en-*.png) → store/out/<kind>-en-XX.png.
+// duo: « iPhone Duo » in App Store Connect (1398 × 2034), captures DUO prefix (699 × 1017 @2x).
 // iphone65: the iPhone 6.5" set (1284 × 2778), the same composition as the 6.9" one, drawn 12 px
 // shorter (empty background at the bottom) and scaled to 97.3 %.
 // iphone63: the iPhone 6.1"/6.3" set (1206 × 2622) asked by App Store Connect for « iPhone with
@@ -6,9 +8,10 @@
 const fs = require('fs');
 const { chromium } = require(process.env.PLAYWRIGHT || 'playwright');
 const KIND = process.argv[2] || 'iphone';
-const SIZE = KIND === 'ipad' ? { w: 2064, h: 2752 } : KIND === 'iphone65' ? { w: 1320, h: 2856 } : KIND === 'iphone63' ? { w: 1320, h: 2870 } : { w: 1320, h: 2868 };
+const SIZE = KIND === 'ipad' ? { w: 2064, h: 2752 } : KIND === 'duo' ? { w: 1398, h: 2034 } : KIND === 'iphone65' ? { w: 1320, h: 2856 } : KIND === 'iphone63' ? { w: 1320, h: 2870 } : { w: 1320, h: 2868 };
+const EN = process.env.LANG_ === 'en';
 const SCALE = KIND === 'iphone65' ? 1284 / 1320 : KIND === 'iphone63' ? 1206 / 1320 : 1;
-const PFX = KIND === 'ipad' ? 'ipad' : 'app';
+const PFX = (KIND === 'ipad' ? 'ipad' : KIND === 'duo' ? 'duo' : 'app') + (EN ? '-en' : '');
 const img = (n) => 'data:image/png;base64,' + fs.readFileSync(`store/${PFX}-${n}.png`).toString('base64');
 const SLIDES = [
   { k: 'Lampion', t: 'Chaque énigme<br>rallume une lumière', s: 'Vesper s’est endormie. À toi de rallumer ses lanternes, une à une.', shots: ['home'] },
@@ -22,25 +25,38 @@ const SLIDES = [
   { k: 'Chaque soir', t: 'Un défi du soir,<br>le même pour tous', s: 'Une nouvelle énigme chaque jour, une série à entretenir, un carnet à remplir.', shots: ['daily', 'carnet'] },
   { k: 'Rien que le jeu', t: 'Sans compte. Sans pub.<br>Sans pistage.', s: 'Tout reste sur ton appareil. Mode Libre, maison à décorer, et tout se joue hors ligne.', shots: ['house', 'success', 'free'] },
 ];
+const SLIDES_EN = [
+  { k: 'Lampion', t: 'Every puzzle<br>brings back a light', s: 'Vesper has fallen asleep. It’s up to you to relight its lanterns, one by one.' },
+  { k: 'A city to wake up', t: 'Eight districts,<br>one single night', s: 'From the Lighthouse to the Observatory, every light you bring back wakes the city a little more.' },
+  { k: '101 rooms', t: 'No two rooms<br>alike', s: 'Each room has its own setting, its own story and its hidden lanterns.' },
+  { k: 'Fair puzzles', t: 'Logic,<br>never luck', s: 'Every puzzle is solved by reasoning. No timer: take your time.' },
+  { k: '26 kinds of puzzles', t: 'Listen, look,<br>deduce', s: 'Melodies, stained glass, shadows, bridges, ribbons, constellations…' },
+  { k: 'Nilo', t: 'A companion<br>watching over you', s: 'Nilo blinks, wonders, rejoices… and whispers a hint when you’re stuck.' },
+  { k: 'More than a lantern', t: 'Hidden objects<br>and secret seals', s: 'Search the scenery, note each room’s number, open the keystone lanterns.' },
+  { k: 'Seasons and festivals', t: 'Vesper lives<br>through the year', s: 'The Lantern Spring, the Night of Pumpkins, the Vesper Vigil: three events every year.' },
+  { k: 'Every evening', t: 'An evening challenge,<br>the same for all', s: 'A new puzzle every day, a streak to keep, a notebook to fill.' },
+  { k: 'Just the game', t: 'No account. No ads.<br>No tracking.', s: 'Everything stays on your device. Free play, a house to decorate, and it all works offline.' },
+];
+if (EN) SLIDES.forEach((sl, i) => Object.assign(sl, SLIDES_EN[i]));
 const stars = (() => { let s = 7, o = ''; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 140; i++) { const x = r() * 100, y = r() * 62, z = 1 + r() * 3.2, a = 0.25 + r() * 0.6; o += `<i style="left:${x}%;top:${y}%;width:${z}px;height:${z}px;opacity:${a}"></i>`; } return o; })();
 function phone(src, w, extra = '') {
-  const b = Math.round(w * 0.022), r = Math.round(w * (KIND === 'ipad' ? 0.045 : 0.12));
+  const b = Math.round(w * 0.022), r = Math.round(w * (KIND === 'ipad' ? 0.045 : KIND === 'duo' ? 0.075 : 0.12));
   return `<div class="ph" style="width:${w}px;padding:${b}px;border-radius:${r + b}px;${extra}"><img src="${src}" style="width:100%;display:block;border-radius:${r}px"></div>`;
 }
 function html(sl) {
-  const W = SIZE.w, H = SIZE.h, ipad = KIND === 'ipad';
-  const top = ipad ? 660 : 680;
+  const W = SIZE.w, H = SIZE.h, ipad = KIND === 'ipad', duo = KIND === 'duo';
+  const top = ipad ? 660 : duo ? 640 : 680;
   const n = sl.shots.length;
   let dev = '';
   const aspect = ipad ? 2752 / 2064 : 2796 / 1290;
   const at = (src, w, cx, y, rot, z) => phone(src, w, `left:${Math.round(W / 2 + cx - w / 2)}px;top:${y}px;transform:rotate(${rot}deg);z-index:${z}`);
-  if (n === 1) { const w = ipad ? 1500 : 980; dev = at(img(sl.shots[0]), w, 0, top, 0, 1); }
+  if (n === 1) { const w = ipad ? 1500 : duo ? 900 : 980; dev = at(img(sl.shots[0]), w, 0, top, 0, 1); }
   else if (n === 2) {
-    const w = ipad ? 1000 : 720, dx = ipad ? 500 : 340;
-    dev = at(img(sl.shots[0]), w, -dx, top, -3, 1) + at(img(sl.shots[1]), w, dx, top + (ipad ? 260 : 420), 3, 2);
+    const w = ipad ? 1000 : duo ? 640 : 720, dx = ipad ? 500 : duo ? 340 : 340;
+    dev = at(img(sl.shots[0]), w, -dx, top, -3, 1) + at(img(sl.shots[1]), w, dx, top + (ipad ? 260 : duo ? 300 : 420), 3, 2);
   } else {
-    const w = ipad ? 820 : 600, c = ipad ? 960 : 720, dx = ipad ? 640 : 440;
-    dev = at(img(sl.shots[0]), w, -dx, top + (ipad ? 220 : 340), -6, 1) + at(img(sl.shots[2]), w, dx, top + (ipad ? 220 : 340), 6, 1) + at(img(sl.shots[1]), c, 0, top, 0, 3);
+    const w = ipad ? 820 : duo ? 540 : 600, c = ipad ? 960 : duo ? 660 : 720, dx = ipad ? 640 : duo ? 440 : 440;
+    dev = at(img(sl.shots[0]), w, -dx, top + (ipad ? 220 : duo ? 220 : 340), -6, 1) + at(img(sl.shots[2]), w, dx, top + (ipad ? 220 : duo ? 220 : 340), 6, 1) + at(img(sl.shots[1]), c, 0, top, 0, 3);
   }
   const f = ipad ? 1.15 : 1;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -63,7 +79,7 @@ function html(sl) {
   for (let i = 0; i < SLIDES.length; i++) {
     if (SLIDES[i].shots.some((n) => !fs.existsSync(`store/${PFX}-${n}.png`))) { console.log('skip', i + 1); continue; }
     await pg.setContent(html(SLIDES[i])); await pg.waitForTimeout(300);
-    await pg.screenshot({ path: `store/out/${KIND}-${String(i + 1).padStart(2, '0')}.png` });
+    await pg.screenshot({ path: `store/out/${KIND}${EN ? '-en' : ''}-${String(i + 1).padStart(2, '0')}.png` });
   }
   await b.close(); console.log('done');
 })();

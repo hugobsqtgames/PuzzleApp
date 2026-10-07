@@ -1,6 +1,6 @@
 # Images App Store
 
-Les images finales sont dans `store/iphone-6.3/` (1206 × 2622, iPhone 6,1"/6,3", la taille demandée par App Store Connect pour « iPhone avec Dynamic Island »), `store/iphone-6.5/` (1284 × 2778, iPhone 6,5"), `store/iphone-6.9/` (1320 × 2868) et `store/ipad-13/` (2064 × 2752). Les 6,5" sont la même composition que les 6,9", dessinée 12 px plus courte (fond vide en bas) et mise à 97,3 % : textes, écrans et mise en page identiques.
+Les images finales sont dans `store/iphone-duo/` (1398 × 2034, « iPhone Duo »), `store/iphone-6.3/` (1206 × 2622, iPhone 6,1"/6,3", la taille demandée par App Store Connect pour « iPhone avec Dynamic Island »), `store/iphone-6.5/` (1284 × 2778, iPhone 6,5"), `store/iphone-6.9/` (1320 × 2868) et `store/ipad-13/` (2064 × 2752). Les versions anglaises sont dans `store/en/` (mêmes formats, app et textes en anglais). Les 6,5" sont la même composition que les 6,9", dessinée 12 px plus courte (fond vide en bas) et mise à 97,3 % : textes, écrans et mise en page identiques.
 Chaque image montre une vraie capture de l'app (rien n'est retouché). Le script cherche lui-même les énigmes de chaque famille dans le contenu, rejoue un vrai carillon pour l'écran de réussite, et fixe la date pour les trois événements.
 
 Pour les régénérer, depuis un dossier de travail :
@@ -13,6 +13,9 @@ W=1032 H=1376 DSF=2 PREFIX=ipad node ../tools/store/capture.js   # idem pour l'i
 node ../tools/store/compose.js iphone        # → store/out/iphone-01…10.png
 node ../tools/store/compose.js iphone65      # → store/out/iphone65-01…10.png (6,5")
 node ../tools/store/compose.js iphone63      # → store/out/iphone63-01…10.png (6,3", 1206 × 2622)
+W=699 H=1017 DSF=2 PREFIX=duo node ../tools/store/capture.js   # captures « iPhone Duo »
+node ../tools/store/compose.js duo           # → store/out/duo-01…10.png (1398 × 2034)
+# En anglais : LANG_=en sur capture.js (PREFIX app-en, ipad-en, duo-en) puis sur compose.js (→ <kind>-en-XX.png)
 node ../tools/store/compose.js ipad          # → store/out/ipad-01…10.png
 ```
 

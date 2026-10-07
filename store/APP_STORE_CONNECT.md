@@ -129,16 +129,24 @@ une fois en **Français**, puis repasse en **English** pour les champs marqués 
 
 ### 5.1 Aperçus et captures d'écran (par langue)
 
-Les images sont en français. Mets-les dans la langue Français ; pour l'anglais, tu peux
-laisser vide : App Store Connect reprend alors celles de la langue principale.
+Chaque langue a ses propres images : remplis l'onglet de chaque appareil une fois en
+**Français**, puis repasse en **English** (menu des langues en haut à droite) et recommence avec
+les images anglaises. Glisse les 10 images d'un coup, puis vérifie l'ordre 01 → 10.
 
-| Taille dans App Store Connect | Fichiers à glisser (dans l'ordre 01 → 10) |
+| Onglet dans App Store Connect | Français | English |
+|---|---|---|
+| **iPhone avec Dynamic Island (écran moyen)**, 1206 × 2622 | `store/iphone-6.3/` | `store/en/iphone-6.3/` |
+| **iPhone Duo**, 1398 × 2034 | `store/iphone-duo/` | `store/en/iphone-duo/` |
+| **iPad – Écran de 13 pouces**, 2064 × 2752 | `store/ipad-13/` | `store/en/ipad-13/` |
+| Apple Watch | rien | rien |
+| (si une taille « grand écran » 6,9" ou 6,5" est demandée) | `store/iphone-6.9/`, `store/iphone-6.5/` | `store/en/iphone-6.9/`, `store/en/iphone-6.5/` |
+
+Vidéos (aperçus d'app), les mêmes pour les deux langues (elles sont en français) :
+
+| Onglet | Fichier |
 |---|---|
-| **iPhone avec Dynamic Island (écran moyen)**, 1206 × 2622 | `store/iphone-6.3/iphone63-01.png` … `iphone63-10.png` |
-| (si App Store Connect demande aussi une taille « grand écran » 6,9" ou 6,5") | `store/iphone-6.9/` (1320 × 2868) ou `store/iphone-6.5/` (1284 × 2778) |
-| **iPad 13"** | `store/ipad-13/ipad-01.png` … `ipad-10.png` |
-| Aperçu vidéo (App Preview), dans l'onglet iPhone | `store/video/presentation-iphone.mp4` |
-| Aperçu vidéo iPad (App Preview), dans l'onglet **iPad – 13 pouces** | `store/video/presentation-ipad.mp4` (1200 × 1600) |
+| iPhone avec Dynamic Island **et** iPhone Duo | `store/video/presentation-iphone.mp4` (886 × 1920) |
+| iPad – 13 pouces | `store/video/presentation-ipad.mp4` (1200 × 1600) |
 
 Pour la vidéo : une fois envoyée, clique sur **Modifier l'image d'affiche** (*Poster Frame*) et
 choisis vers **4,5 s** (le téléphone avec l'accueil de Lampion bien visible).
