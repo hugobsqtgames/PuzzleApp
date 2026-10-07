@@ -134,10 +134,10 @@ laisser vide : App Store Connect reprend alors celles de la langue principale.
 
 | Taille dans App Store Connect | Fichiers à glisser (dans l'ordre 01 → 10) |
 |---|---|
-| **iPhone 6,9"** | `store/iphone-6.9/iphone-01.png` … `iphone-10.png` |
-| **iPhone 6,5"** | `store/iphone-6.5/iphone65-01.png` … `iphone65-10.png` |
+| **iPhone avec Dynamic Island (écran moyen)**, 1206 × 2622 | `store/iphone-6.3/iphone63-01.png` … `iphone63-10.png` |
+| (si App Store Connect demande aussi une taille « grand écran » 6,9" ou 6,5") | `store/iphone-6.9/` (1320 × 2868) ou `store/iphone-6.5/` (1284 × 2778) |
 | **iPad 13"** | `store/ipad-13/ipad-01.png` … `ipad-10.png` |
-| Aperçu vidéo (App Preview), dans iPhone 6,9" **et** 6,5" | `store/video/presentation-iphone.mp4` |
+| Aperçu vidéo (App Preview), dans l'onglet iPhone | `store/video/presentation-iphone.mp4` |
 
 Pour la vidéo : une fois envoyée, clique sur **Modifier l'image d'affiche** (*Poster Frame*) et
 choisis vers **4,5 s** (le téléphone avec l'accueil de Lampion bien visible).

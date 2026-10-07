@@ -1,11 +1,13 @@
-// Composes the App Store images from real captures. usage: node compose.js [iphone|iphone65|ipad]
+// Composes the App Store images from real captures. usage: node compose.js [iphone|iphone65|iphone63|ipad]
 // iphone65: the iPhone 6.5" set (1284 × 2778), the same composition as the 6.9" one, drawn 12 px
 // shorter (empty background at the bottom) and scaled to 97.3 %.
+// iphone63: the iPhone 6.1"/6.3" set (1206 × 2622) asked by App Store Connect for « iPhone with
+// Dynamic Island », the same composition drawn 2 px taller and scaled to 91.4 %.
 const fs = require('fs');
 const { chromium } = require(process.env.PLAYWRIGHT || 'playwright');
 const KIND = process.argv[2] || 'iphone';
-const SIZE = KIND === 'ipad' ? { w: 2064, h: 2752 } : KIND === 'iphone65' ? { w: 1320, h: 2856 } : { w: 1320, h: 2868 };
-const SCALE = KIND === 'iphone65' ? 1284 / 1320 : 1;
+const SIZE = KIND === 'ipad' ? { w: 2064, h: 2752 } : KIND === 'iphone65' ? { w: 1320, h: 2856 } : KIND === 'iphone63' ? { w: 1320, h: 2870 } : { w: 1320, h: 2868 };
+const SCALE = KIND === 'iphone65' ? 1284 / 1320 : KIND === 'iphone63' ? 1206 / 1320 : 1;
 const PFX = KIND === 'ipad' ? 'ipad' : 'app';
 const img = (n) => 'data:image/png;base64,' + fs.readFileSync(`store/${PFX}-${n}.png`).toString('base64');
 const SLIDES = [
