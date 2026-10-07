@@ -199,42 +199,44 @@ Décoché (Lampion n'utilise pas Game Center).
 | Notes | **le texte anglais ci-dessous, en entier** (les vérificateurs lisent l'anglais) |
 | Pièce jointe | rien |
 
-#### Notes à coller (anglais, 3 295 caractères sur 4 000 autorisés)
+#### Notes à coller (anglais, 3 378 caractères sur 4 000 autorisés)
 
 ```
 Thank you for reviewing Lampion.
 
 WHAT IT IS
-Lampion is a calm, offline logic-puzzle game for iPhone and iPad, in English and French (it follows the device language). The city of Vesper has gone dark; the player relights its 1,000 lanterns by solving puzzles (26 kinds: switches, codes, sliding tiles, bridges, a melody to play back, etc.). No timer, no lives.
+A calm, offline logic-puzzle game for iPhone and iPad, in English and French (it follows the device language; Settings > Language to switch). The city of Vesper has gone dark; the player relights its 1,000 lanterns by solving puzzles (26 kinds: switches, codes, sliding tiles, bridges, a melody to play back...). No timer, no lives. Portrait orientation by design.
 
 NO ACCOUNT, NO SIGN-IN, NO NETWORK
 - No login of any kind: the app opens straight into the game. No demo account is needed.
-- The app makes no network request. All content is inside the app. It works in airplane mode.
+- The app makes no network request. All content ships inside the app; it works in airplane mode.
 - No ads, no analytics, no tracking, no third-party SDK. Privacy label: Data Not Collected.
 
 NO IN-APP PURCHASES
 "Shards" are an in-game reward earned only by playing (puzzles, evening challenge, achievements). They pay for hints and cosmetic items for the mascot, Nilo. They can never be bought with real money and have no value outside the game.
 
 HOW TO TRY IT (about 3 minutes)
-1. First launch: a short story (a few screens, "Skip" available), then "Enter Vesper" leads to the home screen.
-2. Home > "Start the adventure" (later "Continue") opens the next puzzle. Each new kind of puzzle starts with a short explanation of its rules. In a room, tap any lantern, then "Light" to play it.
-3. Stuck? The bulb button ("Hints") gives hints: free whispers first, then hints paid in Shards. The last level shows the full solution, so every puzzle can be finished.
-4. Home > "Evening challenge": one puzzle a day, the same for everyone.
-5. Bottom bar: Map (the city), Free play (choose a puzzle type and difficulty among those already met), Notebook (achievements, statistics, found objects), Settings.
-6. Language: Settings > Language (English or French).
+1. First launch: a short story (a few screens, "Skip" available), then "Enter Vesper" opens the home screen.
+2. Home > "Start the adventure" (later "Continue") opens the next puzzle. Each new kind of puzzle starts with a short explanation. In a room, tap any lantern, then "Light".
+3. Stuck? The bulb button ("Hints"): free whispers, then hints paid in Shards. The last level shows the full solution, so every puzzle can always be finished.
+4. Home > "Evening challenge": one puzzle a day, the same for everyone; missed days can be caught up.
+5. Bottom bar: Map (the city), Free play (any puzzle type already met, at a chosen difficulty), Notebook (achievements, statistics, found objects, album), Settings.
+
+SOUND
+One puzzle type (Chimes) asks to replay a short melody. It also works with the sound off: each bell lights up while it rings. Settings has "Sound captions" too.
 
 PROGRESSIVE CONTENT (expected behaviour)
-Districts open with the number of lanterns lit: the Lighthouse first, the Library at 24 lanterns, then the others up to 494. A locked district shows how many lanterns are still needed. The final district appears late in the game. This is the game's progression, not a missing feature.
+Districts open with the number of lanterns lit: the Lighthouse first, the Library at 24, then others up to 494. A locked district shows how many lanterns are still needed. Keystone seals and the final area come late in the game. This is the game's progression, not a missing or broken feature.
 
 SEASONAL EVENTS
 Three yearly festivals appear automatically by date: spring lanterns (28 Mar - 10 Apr), Halloween (25 Oct - 2 Nov), winter (15 Dec - 6 Jan). Outside these dates they are not shown. To see one, set the device date within a festival period.
 
 PERMISSIONS AND SYSTEM FEATURES
-- Notifications: local only (an evening reminder). Never requested at launch: after the first evening challenge, the app asks in its own words whether the player wants a reminder, and the iOS permission appears only if the player says yes. Changeable in Settings.
-- Seasonal app icon: off by default. If the player turns it on in Settings > "Seasonal icon", the icon follows the season and iOS shows its standard "icon changed" notice.
+- Notifications: local only (an evening reminder). Never requested at launch: after the first evening challenge, the app asks in its own words; the iOS prompt appears only if the player says yes. Changeable in Settings.
+- Seasonal app icon: off by default. If turned on in Settings > "Seasonal icon", iOS shows its standard "icon changed" notice.
 - Home-screen widget: tonight's challenge and the evening streak.
 - Rating request: at most once, after a whole district is lit, never during a puzzle.
-- Settings > "Export my progress" opens the iOS share sheet with a text backup; "Import progress" restores it. The app itself sends nothing anywhere.
+- Settings > "Export my progress" opens the iOS share sheet with a text backup; "Import progress" restores it. "Reset progress" asks for confirmation first.
 
 ACCESSIBILITY
 VoiceOver labels on every control, Dynamic Type, colour aid (symbols on colours), sound captions, Reduce Motion respected.

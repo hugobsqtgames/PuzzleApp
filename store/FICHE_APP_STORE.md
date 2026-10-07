@@ -33,36 +33,53 @@ Captures prêtes (10 par appareil) : `store/iphone-6.3/` (iPhone 6,3 pouces, 120
 **Texte promotionnel** (127/170, modifiable sans nouvelle version)
 > Chaque soir, un nouveau défi. Et 1 000 lanternes à rallumer dans une ville endormie, à ton rythme, sans publicité ni connexion.
 
-**Mots-clés** (91/100 octets)
-> logique,casse-tête,énigme,sudoku,taquin,cerveau,réflexion,hors ligne,calme,zen,défi,jeu
+**Mots-clés** (99/100 octets)
+> logique,casse-tête,puzzle,réflexion,taquin,cerveau,hors ligne,zen,calme,défi,déduction,mémoire
 
-**Description**
+**Description** (3561/4000)
 
-> Vesper s'est éteinte. L'Allumeur est parti, et toutes les lanternes de la ville dorment. Avec Nilo, ton petit compagnon à la flamme, rallume-les une à une : chaque énigme résolue rend un peu de lumière à la ville.
+> Vesper s'est éteinte. L'Allumeur est parti sans prévenir, et toutes les lanternes de la ville se sont endormies. Avec Nilo, ton petit compagnon à la flamme, rallume-les une à une : chaque énigme résolue rend un peu de lumière à la ville, réveille ses habitants et rapproche du secret de l'Allumeur.
 >
 > 1 000 LANTERNES, 26 FAMILLES D'ÉNIGMES
-> Engrenages, vitraux, carillon, taquin, rubans, lucioles, constellations, menteurs, balances, enquêtes… 26 sortes de casse-têtes, de l'étincelle facile au brasier redoutable. Chaque nouvelle famille arrive avec une petite présentation, et la difficulté monte doucement.
+> Interrupteurs, Cadenas, Lampes, Engrenages, Suites, Balances, Motifs, Menteurs, Fil, Miroirs, Enquêtes, Marqueterie, Carillon, Vitraux, Différences, Étagère, Ombres, Broderie, Signes, Toits, Glissade, Taquin, Rubans, Lucioles, Passerelles, Constellations.
+> Logique, observation, déduction, écoute : chaque famille a ses règles, expliquées simplement la première fois que tu la rencontres. Six niveaux de difficulté, de l'Étincelle à l'Astre : de l'énigme de quelques secondes au vrai casse-tête qui occupe toute une soirée. Chaque énigme a été vérifiée : elle se résout par le raisonnement, jamais au hasard.
 >
 > UNE VILLE À RÉVEILLER
-> Le Phare, la Bibliothèque Murmurante, l'Horlogerie, la Serre de Verre, le Marché Flottant, le Théâtre d'Ombres, l'Observatoire : sept quartiers, chacun avec sa musique, ses habitants endormis et ses salles uniques. Quand une salle est entièrement éclairée, un objet caché s'y révèle. Les lettres de l'Allumeur racontent où il est parti.
+> Le Phare, la Bibliothèque Murmurante, l'Horlogerie, la Serre de Verre, le Marché Flottant, le Théâtre d'Ombres, l'Observatoire… et un dernier lieu que l'on découvre tout en haut. Plus de cent salles, toutes différentes, chacune avec son décor, son histoire, sa musique et ses habitants endormis. Les quartiers s'ouvrent au fil des lumières rendues.
+> Une ambiance pensée pour les soirées calmes : musique douce, sons apaisants, ciel qui change avec l'heure.
+>
+> PLUS QU'UNE LANTERNE
+> • Des objets cachés dans les salles entièrement éclairées
+> • Des sceaux secrets : relève les chiffres peints dans les décors pour ouvrir les lanternes-clés
+> • Les lettres de l'Allumeur, à retrouver une à une pour savoir où il est parti
+> • Un album, un journal de tes soirées et plus de cinquante succès
 >
 > LE DÉFI DU SOIR
-> Une énigme par jour, la même pour tout le monde. Garde ta flamme allumée soir après soir, et rattrape un soir manqué sans stress.
+> Une énigme par jour, la même pour tout le monde. Entretiens ta série soir après soir, rattrape un soir manqué sans stress, et reçois si tu le souhaites un petit rappel à l'heure de ton choix.
 >
 > AU FIL DE L'ANNÉE
-> Les saisons changent la ville. Trois fêtes reviennent chaque année : le Printemps des Lanternes, la Nuit des Citrouilles et la Veillée de Vesper, avec leurs énigmes et leurs récompenses. Et quand tu veux jouer encore, le mode Libre te prépare une énigme de la famille et de la difficulté de ton choix.
+> Les saisons changent la ville : pétales au printemps, lucioles en été, feuilles en automne, neige en hiver. Trois fêtes reviennent chaque année avec leurs énigmes et leurs récompenses : le Printemps des Lanternes, la Nuit des Citrouilles et la Veillée de Vesper.
+>
+> TOUJOURS UNE ÉNIGME À JOUER
+> Le mode Libre te prépare à volonté une énigme de la famille et de la difficulté de ton choix, parmi celles que tu as déjà rencontrées.
+>
+> NILO, TON COMPAGNON
+> Nilo cligne des yeux, s'étonne, se réjouit, et réagit quand tu le touches ou quand tu bloques. Habille-le à ton goût : couleurs de flamme, chapeaux, écharpes, petits compagnons. Et décore ta maison avec les objets trouvés dans Vesper.
 >
 > À TON RYTHME
-> Pas de chrono, pas de vies, pas de pénalité. Bloqué ? Nilo te glisse un murmure, une piste, ou te montre la solution. Les indices se paient en Éclats gagnés en jouant, jamais en argent.
+> Pas de chrono, pas de vies, pas de pénalité, pas de pub entre deux énigmes. Bloqué ? Nilo te glisse un murmure, une piste, un éclairage, ou te montre la solution. Les indices se paient en Éclats gagnés en jouant, jamais avec de l'argent réel. Notes au crayon et zoom sur les grandes grilles.
 >
 > RESPECTUEUX DE TOI
-> • Aucune publicité, aucun achat intégré
-> • Aucun compte, aucun suivi : tes données restent sur ton téléphone
-> • Fonctionne entièrement hors ligne
-> • VoiceOver, grand texte, aide aux couleurs, animations réduites
-> • iPhone et iPad, en français et en anglais
+> • Aucune publicité, aucun achat intégré, aucun abonnement
+> • Aucun compte, aucun pistage, aucune donnée collectée : tout reste sur ton appareil
+> • Fonctionne entièrement hors ligne, même en mode avion
+> • Sauvegarde solide, que tu peux exporter et réimporter
+> • Accessibilité : VoiceOver, texte agrandi, aide aux couleurs, sous-titres des sons, animations réduites
+> • Widget pour l'écran d'accueil, icône qui change avec les saisons (au choix)
+> • iPhone et iPad, avec une mise en page dédiée à l'iPad
+> • En français et en anglais
 >
-> Allume une lanterne. Puis une autre.
+> Allume une lanterne. Puis une autre. Vesper t'attend.
 
 **Nouveautés de cette version**
 > Première version de Lampion. Bienvenue à Vesper !
