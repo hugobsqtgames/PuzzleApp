@@ -7,8 +7,8 @@ Les longueurs ont été vérifiées par rapport aux limites d'Apple.
 
 | Champ | Valeur |
 |---|---|
-| Catégorie principale | Jeux › Réflexion |
-| Catégorie secondaire | Jeux › Famille |
+| Catégorie principale | Jeux, sous-catégories Réflexion et Famille |
+| Catégorie secondaire | aucune |
 | Classification par âge | 4+ (aucun contenu sensible, aucun achat, aucun lien externe) |
 | Prix | Au choix d'Hugo (aucun achat intégré dans l'app) |
 | Confidentialité (étiquette « nutrition ») | **Aucune donnée collectée** |

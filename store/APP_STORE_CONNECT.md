@@ -57,8 +57,8 @@ Mots-clés… (à l'étape 5) : passe d'une langue à l'autre avec ce même menu
 |---|---|
 | Identifiant de lot (Bundle ID) | déjà rempli : `app.lampion.game` (ne pas toucher) |
 | SKU | déjà rempli (ne pas toucher) |
-| Catégorie principale (Primary category) | **Jeux** (Games), sous-catégorie **Réflexion** (Puzzle) |
-| Catégorie secondaire (Secondary) | **Jeux** (Games), sous-catégorie **Famille** (Family) |
+| Catégorie principale (Primary category) | **Jeux** (Games). Deux cases « sous-catégories » apparaissent alors : **Réflexion** (Puzzle) et **Famille** (Family) |
+| Catégorie secondaire (Secondary, facultatif) | **vide** (elle doit être autre chose que « Jeux », et aucune ne convient vraiment) |
 | Droits sur le contenu (Content Rights) | « Non, elle ne contient, n'affiche ni n'accède à aucun contenu de tiers » (*No, it does not contain, show, or access third-party content*). Tout (énigmes, dessins, musiques, textes) a été créé pour Lampion ; la police Newsreader est sous licence libre OFL, ça ne compte pas comme « contenu tiers ». |
 | Contrat de licence (License Agreement) | laisser le **contrat standard d'Apple** |
 
