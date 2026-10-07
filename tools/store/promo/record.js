@@ -2,13 +2,16 @@
 // frames taken by Chromium's screencast at the iPhone's pixels, with the time of each frame and of
 // each sound the player triggers. Nothing is staged: the puzzles are really played.
 //   node record.js   (from a work folder) → store/promo-clips/<clip>/f00001.jpg + clip.json
+//   IPAD=1 node record.js → store/promo-clips-ipad/… (the same scenes in the iPad layout)
 // Needs plan.json (npx tsx plan.ts) and Playwright (PLAYWRIGHT=…, CHROMIUM=…).
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require(process.env.PLAYWRIGHT || 'playwright');
 
-const W = 443, H = 960, OUT_W = 886, OUT_H = 1920;
-const OUT = path.resolve('store/promo-clips');
+// IPAD=1 films the iPad layout (1032 × 1376, the iPad 13" in portrait) into store/promo-clips-ipad.
+const IPAD = !!process.env.IPAD;
+const W = IPAD ? 1032 : 443, H = IPAD ? 1376 : 960, OUT_W = IPAD ? 1032 : 886, OUT_H = IPAD ? 1376 : 1920;
+const OUT = path.resolve(IPAD ? 'store/promo-clips-ipad' : 'store/promo-clips');
 const PLAN = require('./plan.json');
 const URL = 'http://localhost:8768';
 const night = new Date(2026, 8, 30, 20, 30);

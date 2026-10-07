@@ -138,6 +138,7 @@ laisser vide : App Store Connect reprend alors celles de la langue principale.
 | (si App Store Connect demande aussi une taille « grand écran » 6,9" ou 6,5") | `store/iphone-6.9/` (1320 × 2868) ou `store/iphone-6.5/` (1284 × 2778) |
 | **iPad 13"** | `store/ipad-13/ipad-01.png` … `ipad-10.png` |
 | Aperçu vidéo (App Preview), dans l'onglet iPhone | `store/video/presentation-iphone.mp4` |
+| Aperçu vidéo iPad (App Preview), dans l'onglet **iPad – 13 pouces** | `store/video/presentation-ipad.mp4` (1200 × 1600) |
 
 Pour la vidéo : une fois envoyée, clique sur **Modifier l'image d'affiche** (*Poster Frame*) et
 choisis vers **4,5 s** (le téléphone avec l'accueil de Lampion bien visible).

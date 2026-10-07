@@ -32,9 +32,13 @@ node ../tools/store/spa.js web &                              # le build web sur
 node ../tools/store/promo/record.js                           # filme la vraie app → store/promo-clips/
 FFMPEG=… node ../tools/store/promo/render.js                  # → store/out/promo-iphone.mp4
 SNAP=3,10,16 node ../tools/store/promo/render.js              # quelques images pour vérifier un cadrage
+# La version iPad (1200 × 1600, les mêmes scènes dans la mise en page iPad, captures store/ipad-*.png) :
+IPAD=1 node ../tools/store/promo/record.js                    # → store/promo-clips-ipad/
+IPAD=1 FFMPEG=… node ../tools/store/promo/render.js           # → store/out/promo-ipad.mp4
 ```
 
-Le montage (moments, mouvements de caméra, textes) est dans `stage.html`, en tête du script :
+Le montage (moments, mouvements de caméra, textes) est dans `stage.html` (iPhone) et `stage-ipad.html`
+(iPad : même histoire, une tablette, des coupes calées sur les scènes filmées en iPad), en tête du script :
 `TEXTS`, `PHONES` (poses et plans de chaque téléphone), `camera`, `BLOOMS`.
 
 ## À savoir pour App Store Connect

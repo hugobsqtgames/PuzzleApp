@@ -1,14 +1,14 @@
 <!doctype html>
 <html><head><meta charset="utf-8">
 <!--
-  Lampion — App Store preview, composed frame by frame (render.js calls renderAt(t) for each frame).
+  Lampion — App Store preview for iPad (1200 × 1600), composed frame by frame (render.js calls renderAt(t) for each frame).
   Only real footage of the app goes inside the phone (clips filmed by record.js, captures of capture.js).
   The look follows the App Store images (compose.js): same night sky, warm glow, phone frame,
   amber kicker, cream serif title, grey subtitle.
 -->
 <style>
   * { box-sizing: border-box; margin: 0; }
-  html, body { width: 886px; height: 1920px; overflow: hidden; background: #090a15; }
+  html, body { width: 1200px; height: 1600px; overflow: hidden; background: #090a15; }
   body { font-family: 'Liberation Sans', sans-serif; }
   #bg { position: absolute; inset: 0; background: linear-gradient(180deg, #141833 0%, #0D0F1E 55%, #090a15 100%); }
   #warm { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 45% at 50% 62%, #3a2a1c 0%, rgba(40,30,30,0) 70%); }
@@ -16,12 +16,12 @@
   #stage { position: absolute; inset: 0; perspective: 2400px; perspective-origin: 50% 45%; }
   #cam { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: 50% 55%; }
   .dev { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
-  .body { position: absolute; left: -272px; top: -587px; width: 544px; height: 1174px; padding: 12px; border-radius: 74px;
+  .body { position: absolute; left: -376px; top: -496px; width: 752px; height: 992px; padding: 16px; border-radius: 52px;
     background: #1b1e36; box-shadow: 0 0 0 3px #2c3052, 0 40px 120px rgba(0,0,0,.6), 0 0 160px rgba(244,180,94,.18); }
-  .screen { position: relative; width: 520px; height: 1150px; border-radius: 62px; overflow: hidden; background: #0D0F1E; }
+  .screen { position: relative; width: 720px; height: 960px; border-radius: 38px; overflow: hidden; background: #0D0F1E; }
   .screen img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
   .sheen { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
-  .shadow { position: absolute; left: -230px; top: 560px; width: 460px; height: 70px; border-radius: 50%;
+  .shadow { position: absolute; left: -330px; top: 470px; width: 660px; height: 70px; border-radius: 50%;
     background: radial-gradient(ellipse at center, rgba(0,0,0,.55), rgba(0,0,0,0) 70%); filter: blur(10px); transform: translateZ(-40px); }
   #flame, #bloom { position: absolute; left: 0; top: 0; width: 0; height: 0; }
   #flame .glow { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(244,180,94,.9) 0%, rgba(244,180,94,.35) 35%, rgba(244,180,94,0) 70%); }
@@ -87,18 +87,18 @@ const still = (name) => ({ still: name });
 // 5 Many kinds of puzzles.  6 The year goes round.  7 Lampion, no account, no ads: light Vesper again.
 const T = 29.0;
 const TEXTS = [
-  { id: 'hook', at: 0.95, out: 2.75, top: 1150, title: 'Vesper s’est éteinte.', sub: 'Une ville entière attend sa lumière.' },
-  { id: 's2', at: 3.55, out: 6.15, top: 150, kicker: 'Lampion', title: 'Chaque énigme\nrallume une lumière' },
-  { id: 's3', at: 6.7, out: 9.2, top: 150, kicker: 'Une ville à réveiller', title: 'Huit quartiers,\nune seule nuit' },
-  { id: 's4', at: 9.75, out: 12.0, top: 150, kicker: 'Des énigmes justes', title: 'La logique,\njamais le hasard' },
-  { id: 's5', at: 17.3, out: 20.9, top: 150, kicker: '26 familles d’énigmes', title: 'Écoute, observe,\ndéduis' },
-  { id: 's6', at: 21.6, out: 24.5, top: 150, kicker: 'Saisons et fêtes', title: 'Vesper vit\nau fil de l’année' },
-  { id: 'end', at: 26.05, out: 99, top: 1140, title: 'Lampion', sub: 'Sans compte. Sans pub. Sans pistage.', big: true },
-  { id: 'cta', at: 27.2, out: 99, top: 1395, cta: 'Rallume Vesper.' },
+  { id: 'hook', at: 0.95, out: 2.75, top: 960, title: 'Vesper s’est éteinte.', sub: 'Une ville entière attend sa lumière.' },
+  { id: 's2', at: 3.55, out: 6.15, top: 105, kicker: 'Lampion', title: 'Chaque énigme\nrallume une lumière' },
+  { id: 's3', at: 6.7, out: 9.2, top: 105, kicker: 'Une ville à réveiller', title: 'Huit quartiers,\nune seule nuit' },
+  { id: 's4', at: 9.75, out: 12.0, top: 105, kicker: 'Des énigmes justes', title: 'La logique,\njamais le hasard' },
+  { id: 's5', at: 17.3, out: 20.9, top: 105, kicker: '26 familles d’énigmes', title: 'Écoute, observe,\ndéduis' },
+  { id: 's6', at: 21.6, out: 24.5, top: 105, kicker: 'Saisons et fêtes', title: 'Vesper vit\nau fil de l’année' },
+  { id: 'end', at: 26.05, out: 99, top: 940, title: 'Lampion', sub: 'Sans compte. Sans pub. Sans pistage.', big: true },
+  { id: 'cta', at: 27.2, out: 99, top: 1170, cta: 'Rallume Vesper.' },
 ];
 
 // Phones: position (x, y from the centre of the frame), depth, turns, scale, opacity; and what each shows.
-const W = 886, H = 1920, CX = W / 2, CY = 1110;
+const W = 1200, H = 1600, CX = W / 2, CY = 930;
 const PHONES = [
   { // the main phone
     pose: (t) => ({
@@ -108,36 +108,38 @@ const PHONES = [
       rx: kf(t, [[3.0, 14, 'out'], [5.2, 6, 'io'], [9.4, 4, 'io'], [10.3, 0, 'io'], [16.8, 0, 'io'], [17.7, 4, 'io'], [24.8, 5, 'io'], [26.2, 18]]),
       ry: kf(t, [[3.0, -9, 'out'], [5.4, -5, 'io'], [6.4, -5, 'io'], [9.4, 9, 'io'], [10.3, 0, 'io'], [16.8, 0, 'io'], [17.7, 0, 'io'], [21.2, 0, 'io'], [22.4, -7, 'io'], [24.8, 5, 'io']]),
       rz: kf(t, [[3.0, 2, 'out'], [5.4, 0]]),
-      s: kf(t, [[3.0, 0.82, 'out'], [5.0, 1, 'io'], [9.4, 1, 'io'], [10.3, 1.08, 'io'], [16.8, 1.08, 'io'], [17.7, 0.88, 'io'], [21.2, 0.88, 'io'], [22.0, 0.95, 'io'], [24.8, 0.97]]),
+      s: kf(t, [[3.0, 0.74, 'out'], [5.0, 0.9, 'io'], [9.4, 0.9, 'io'], [10.3, 0.96, 'io'], [16.8, 0.96, 'io'], [17.7, 0.8, 'io'], [21.2, 0.8, 'io'], [22.0, 0.86, 'io'], [24.8, 0.88]]),
       o: kf(t, [[3.0, 0, 'out'], [3.5, 1], [24.95, 1, 'io'], [25.65, 0]]),
     }),
     shots: [
       [3.0, shot('home', 3.0, 0.45)],
       [6.45, shot('map', 6.45, 0.4, 1, 'dip')],
       [9.6, shot('carillon', 9.6, 0.6, 1, 'dip')],
-      [11.4, shot('carillon', 11.4, 3.5, 1, 'dip')], // over the app's flash of light
-      [12.6, shot('carillon', 12.6, 8.95, 1, 'cut')], // same screen: the melody, then the bells
-      [15.35, shot('carillon', 15.35, 12.15, 1, 'dip')], // straight to the lantern as it appears
-      [17.0, shot('bridges', 17.0, 0.25, 1.4, 'dip')],
+      [11.4, shot('carillon', 11.4, 3.76, 1, 'dip')], // over the app's flash of light
+      [12.6, shot('carillon', 12.6, 9.11, 1, 'cut')], // same screen: the melody, then the bells
+      [15.35, shot('carillon', 15.35, 12.65, 1, 'dip')], // straight to the lantern as it appears
+      [17.0, shot('bridges', 17.0, 0.58, 1.4, 'dip')],
       [20.95, shot('spring', 20.95, 0.3, 1, 'dip')], // before the success screen
       [23.25, shot('springHome', 23.25, 0.5, 1, 'dip')],
     ],
   },
   { // left, for the many kinds of puzzles
-    pose: (t) => ({ x: kf(t, [[17.2, -700, 'out'], [18.1, -330, 'io'], [20.8, -300, 'in'], [21.6, -900]]), y: 50, z: -260, rx: 4, ry: 22, rz: -3,
-      s: 0.78, o: kf(t, [[17.2, 0, 'out'], [17.7, 1], [21.1, 1], [21.6, 0]]) }),
+    pose: (t) => ({ x: kf(t, [[17.2, -950, 'out'], [18.1, -405, 'io'], [20.8, -375, 'in'], [21.6, -1220]]), y: 50, z: -260, rx: 4, ry: 22, rz: -3,
+      s: 0.7, o: kf(t, [[17.2, 0, 'out'], [17.7, 1], [21.1, 1], [21.6, 0]]) }),
     shots: [[17.0, still('vitraux')], [19.0, still('carillon')]],
   },
   { // right
-    pose: (t) => ({ x: kf(t, [[17.35, 700, 'out'], [18.25, 330, 'io'], [20.8, 300, 'in'], [21.6, 900]]), y: 50, z: -260, rx: 4, ry: -22, rz: 3,
-      s: 0.78, o: kf(t, [[17.35, 0, 'out'], [17.85, 1], [21.1, 1], [21.6, 0]]) }),
+    pose: (t) => ({ x: kf(t, [[17.35, 950, 'out'], [18.25, 405, 'io'], [20.8, 375, 'in'], [21.6, 1220]]), y: 50, z: -260, rx: 4, ry: -22, rz: 3,
+      s: 0.7, o: kf(t, [[17.35, 0, 'out'], [17.85, 1], [21.1, 1], [21.6, 0]]) }),
     shots: [[17.0, still('constellations')], [19.15, still('ombres')]],
   },
 ];
 // The camera: a slow push in, a focus on the puzzle being played, then out.
 const camera = (t) => ({
-  s: kf(t, [[3, 1, 'io'], [9.4, 1.03, 'io'], [10.4, 1.08, 'io'], [12.4, 1.1, 'io'], [12.9, 1.34, 'io'], [14.9, 1.36, 'io'], [15.6, 1.16, 'io'], [16.8, 1.16, 'io'], [17.7, 1, 'io'], [29, 1.02]]),
-  y: kf(t, [[9.4, 0, 'io'], [10.4, 30, 'io'], [12.4, 30, 'io'], [12.9, -150, 'io'], [14.9, -150, 'io'], [15.6, -30, 'io'], [17.7, 0]]),
+  s: kf(t, [[3, 1, 'io'], [9.4, 1.03, 'io'], [10.4, 1.08, 'io'], [12.4, 1.1, 'io'], [12.9, 1.55, 'io'], [14.9, 1.58, 'io'], [15.6, 1.16, 'io'], [16.8, 1.16, 'io'], [17.7, 1, 'io'], [29, 1.02]]),
+  y: kf(t, [[9.4, 0, 'io'], [10.4, 30, 'io'], [12.4, 30, 'io'], [12.9, -45, 'io'], [14.9, -45, 'io'], [15.6, -30, 'io'], [17.7, 0]]),
+  // On the iPad the bells sit right of centre: the camera slides to them.
+  x: kf(t, [[12.4, 0, 'io'], [12.9, -165, 'io'], [14.9, -165, 'io'], [15.6, 0]]),
 });
 // Moments of light: the flame of the opening, and the lanterns lit in the puzzles.
 // The light passes behind the phone (a halo), never over what the screen shows.
@@ -184,7 +186,7 @@ async function renderAt(t) {
   // The flame of the opening: it lights, then rises and melts into the warm glow.
   const fl = document.getElementById('flame');
   const fk = kf(t, [[0.35, 0, 'expo'], [1.3, 1, 'io'], [3.0, 1, 'io'], [4.2, 0]]);
-  const fy = kf(t, [[0, 760, 'io'], [3.0, 760, 'io'], [4.4, 420]]);
+  const fy = kf(t, [[0, 640, 'io'], [3.0, 640, 'io'], [4.4, 350]]);
   const flicker = 1 + 0.04 * Math.sin(t * 9.1) + 0.03 * Math.sin(t * 13.7);
   // Set back behind the phone (whose plane it would otherwise cut as it rises), drawn the same size and place.
   const back = 300, grow = (2400 + back) / 2400, oy = H * 0.45;
@@ -202,7 +204,7 @@ async function renderAt(t) {
   bl.style.cssText = bo <= 0.001 ? 'display:none' : `left:${CX - br}px;top:${by - br}px;width:${br * 2}px;height:${br * 2}px;opacity:${bo};transform:translateZ(-160px)`;
   // Camera.
   const cm = camera(t);
-  cam.style.transform = `translateY(${cm.y}px) scale(${cm.s})`;
+  cam.style.transform = `translate(${cm.x}px, ${cm.y}px) scale(${cm.s})`;
   // Phones.
   for (const ph of PHONES) {
     const p = ph.pose(t);
@@ -248,7 +250,7 @@ async function renderAt(t) {
   const lo = document.getElementById('logo');
   const lk = clamp((t - 25.65) / 0.9);
   lo.style.display = lk > 0 ? 'block' : 'none';
-  lo.style.top = '770px';
+  lo.style.top = '650px';
   lo.style.opacity = E.out(lk);
   lo.style.transform = `scale(${lerp(0.86, 1, E.expo(lk))}) translateY(${(1 - E.out(lk)) * 30}px)`;
   await Promise.all(waits);
