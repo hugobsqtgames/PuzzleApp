@@ -97,33 +97,53 @@ Captures prêtes (10 par appareil) : `store/iphone-6.3/` (iPhone 6,3 pouces, 120
 **Promotional text** (129/170)
 > A new challenge every evening, and 1,000 lanterns to relight in a sleeping city, at your own pace, with no ads and no connection.
 
-**Keywords** (90/100 bytes)
-> logic,brain,riddle,sudoku,sliding,offline,calm,relaxing,no ads,daily,challenge,mind,teaser
+**Keywords** (98/100 bytes)
+> logic,brain teaser,riddle,sliding,offline,calm,relaxing,no ads,daily,challenge,mind,deduction,cozy
 
-**Description**
+**Description** (3289/4000)
 
-> Vesper has gone dark. The Lamplighter has left, and every lantern in the city is asleep. With Nilo, your little flame companion, light them again one by one: every puzzle you solve gives the city back a little light.
+> Vesper has gone dark. The Lamplighter left without a word, and every lantern in the city has fallen asleep. With Nilo, your little flame companion, light them again one by one: every puzzle you solve gives the city back a little light, wakes its residents and brings you closer to the Lamplighter's secret.
 >
 > 1,000 LANTERNS, 26 KINDS OF PUZZLES
-> Gears, stained glass, carillon, sliding tiles, ribbons, fireflies, constellations, liars, scales, investigations… 26 kinds of brain teasers, from the easy spark to the fearsome blaze. Every new kind comes with a short introduction, and the difficulty rises gently.
+> Switches, Padlocks, Lamps, Gears, Sequences, Scales, Patterns, Liars, Thread, Mirrors, Inquiries, Marquetry, Chimes, Stained Glass, Differences, Shelf, Shadows, Embroidery, Signs, Rooftops, Glide, Sliding Tiles, Ribbons, Fireflies, Footbridges, Constellations.
+> Logic, observation, deduction, listening: each kind has its own rules, explained simply the first time you meet it. Six difficulty levels, from Spark to Star: from a puzzle of a few seconds to a real brain teaser that lasts a whole evening. Every puzzle has been checked: it is solved by reasoning, never by luck.
 >
 > A CITY TO WAKE UP
-> The Lighthouse, the Whispering Library, the Clockworks, the Glass Greenhouse, the Floating Market, the Shadow Theatre, the Observatory: seven districts, each with its own music, sleeping residents and unique rooms. When a room is fully lit, a hidden object appears. The Lamplighter's letters tell where he went.
+> The Lighthouse, the Whispering Library, the Clockworks, the Glass Greenhouse, the Floating Market, the Shadow Theatre, the Observatory… and one last place you discover at the very top. More than a hundred rooms, all different, each with its own setting, story, music and sleeping residents. Districts open as you bring the lights back.
+> A mood made for quiet evenings: gentle music, soothing sounds, a sky that changes with the hour.
+>
+> MORE THAN A LANTERN
+> • Hidden objects in fully lit rooms
+> • Secret seals: note the numbers painted in the scenery to open the keystone lanterns
+> • The Lamplighter's letters, to find one by one and learn where he went
+> • An album, a journal of your evenings and more than fifty achievements
 >
 > THE EVENING CHALLENGE
-> One puzzle a day, the same for everyone. Keep your flame burning evening after evening, and catch up on a missed one without stress.
+> One puzzle a day, the same for everyone. Keep your streak going evening after evening, catch up on a missed evening without stress, and get a gentle reminder at the time you choose, if you like.
+>
+> THROUGH THE YEAR
+> The seasons change the city: petals in spring, fireflies in summer, leaves in autumn, snow in winter. Three festivals come back every year with their own puzzles and rewards: the Lantern Spring, the Night of Pumpkins and the Vesper Vigil.
+>
+> ALWAYS A PUZZLE TO PLAY
+> Free play makes you a puzzle whenever you want, of the kind and difficulty of your choice, among those you have already met.
+>
+> NILO, YOUR COMPANION
+> Nilo blinks, wonders, rejoices, and reacts when you touch him or when you are stuck. Dress him your way: flame colours, hats, scarves, little companions. And decorate your house with the objects found in Vesper.
 >
 > AT YOUR OWN PACE
-> No timer, no lives, no penalty. Stuck? Nilo whispers a hint, gives you a lead, or shows you the solution. Hints cost Shards you earn by playing, never real money.
+> No timer, no lives, no penalty, no ads between puzzles. Stuck? Nilo gives you a whisper, a lead, an insight, or shows you the solution. Hints cost Shards earned by playing, never real money. Pencil notes and zoom on large grids.
 >
 > RESPECTFUL OF YOU
-> • No ads, no in-app purchases
-> • No account, no tracking: your data stays on your phone
-> • Works entirely offline
-> • VoiceOver, larger text, colour aid, reduced motion
-> • iPhone and iPad, in French and English
+> • No ads, no in-app purchases, no subscription
+> • No account, no tracking, no data collected: everything stays on your device
+> • Works entirely offline, even in airplane mode
+> • A sturdy save that you can export and import
+> • Accessibility: VoiceOver, larger text, colour aid, sound captions, reduced motion
+> • Home-screen widget, an icon that changes with the seasons (optional)
+> • iPhone and iPad, with a layout made for iPad
+> • In English and French
 >
-> Light one lantern. Then another.
+> Light one lantern. Then another. Vesper is waiting for you.
 
 **What's new**
 > The first version of Lampion. Welcome to Vesper!
