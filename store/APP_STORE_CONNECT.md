@@ -199,7 +199,7 @@ Décoché (Lampion n'utilise pas Game Center).
 | Notes | **le texte anglais ci-dessous, en entier** (les vérificateurs lisent l'anglais) |
 | Pièce jointe | rien |
 
-#### Notes à coller (anglais, 3 552 caractères sur 4 000 autorisés, pour la build 1.0.0 (2))
+#### Notes à coller (anglais, 3 921 caractères sur 4 000 autorisés, pour la build 1.0.0 (3))
 
 ```
 Thank you for reviewing Lampion.
@@ -211,6 +211,9 @@ NO ACCOUNT, NO SIGN-IN, NO NETWORK
 - No login of any kind: the app opens straight into the game. No demo account is needed.
 - The app makes no network request. All content ships inside the app; it works in airplane mode.
 - No ads, no analytics, no tracking, no third-party SDK. Privacy label: Data Not Collected.
+
+NO HIDDEN FEATURES
+There is no developer menu, debug mode, secret gesture, remote configuration or server. The app behaves the same for every user. The only things that depend on the date are the visible seasonal touches and the three festivals described below, all announced in the app. Build 3 removes the playful hidden taps of the previous build (one of them, seven taps on the version number, showed a joke message saying there is no developer mode).
 
 NO IN-APP PURCHASES
 "Shards" are an in-game reward earned only by playing (puzzles, evening challenge, achievements). They pay for hints and cosmetic items for the mascot, Nilo. They can never be bought with real money and have no value outside the game.
@@ -229,14 +232,14 @@ PROGRESSIVE CONTENT (expected behaviour)
 Districts open with the number of lanterns lit: the Lighthouse first, the Library at 24, then others up to 494. A locked district shows how many lanterns are still needed. Keystone seals and the final area come late in the game. This is the game's progression, not a missing or broken feature.
 
 SEASONAL EVENTS
-Three yearly festivals appear automatically by date: spring lanterns (28 Mar - 10 Apr), Halloween (25 Oct - 2 Nov), winter (15 Dec - 6 Jan). Outside these dates they are not shown. To see one, set the device date within a festival period.
+Three yearly festivals with their own puzzles: spring lanterns (28 Mar - 10 Apr), Halloween (25 Oct - 2 Nov), winter (15 Dec - 6 Jan). Between them, the home screen shows "Next festival" with its date, and opens the Events screen listing all three. To play one now, set the device date within a festival period.
 
 PERMISSIONS AND SYSTEM FEATURES
 - Notifications: local only (an evening reminder). Never requested at launch: after the first evening challenge, the app asks in its own words; the iOS prompt appears only if the player says yes. Changeable in Settings.
-- Seasonal app icon: on first launch the app switches to the icon of the current season (autumn now), so iOS shows its standard notice that the icon of "Lampion" has changed. This is expected, not an error. It happens again only when the season or a festival changes, and can be turned off in Settings > "Seasonal icon".
+- Seasonal app icon: off by default. If the player turns it on in Settings > "Seasonal icon", iOS shows its standard "icon changed" notice.
 - Home-screen widget: tonight's challenge and the evening streak.
 - Rating request: at most once, after a whole district is lit, never during a puzzle.
-- Settings > "Export my progress" opens the iOS share sheet with a text backup; "Import..." restores it. "Reset progress" asks for confirmation first.
+- Settings > "Export my progress" opens the iOS share sheet with a text backup; "Import progress" restores it. "Reset progress" asks for confirmation first.
 
 ACCESSIBILITY
 VoiceOver labels on every control, Dynamic Type, colour aid (symbols on colours), sound captions, Reduce Motion respected.
@@ -307,3 +310,32 @@ Pas de panique : c'est fréquent pour une première app, et ça se règle en gé
 réponse. Le message arrive dans **App Review** (centre de résolution, *Resolution Center*) avec
 le numéro de la règle (par ex. « Guideline 2.1 »). Copie-moi le message entier : je te prépare
 la réponse et, si besoin, la correction et un nouveau build.
+
+
+---
+
+## Refus « Guideline 5.6 » du 8 octobre 2026 : la réponse
+
+Cause probable : de petits secrets dans la build 2 (7 appuis sur le numéro de version qui affichaient
+« Mode développeur ? Il n'y en a pas. », 5 appuis sur le nom dans les crédits…), l'icône qui changeait
+toute seule au premier lancement, et des fêtes invisibles en dehors de leurs dates. Tout est corrigé
+dans la build 3. Réponse à envoyer dans App Review (« Répondre à l'équipe de vérification des apps »),
+après avoir rattaché la build 3 à la version :
+
+```
+Hello,
+
+Thank you for your review. Lampion has no hidden features and nothing is meant to behave differently during review. I understand what may have raised the concern, and I have changed it in build 1.0.0 (3):
+
+1. Playful hidden taps (removed). The previous build had small easter eggs: tapping the version number in Settings seven times showed a joke message ("Developer mode? There isn't one. But thanks for looking."), and tapping the author's name in Credits five times showed a thank-you line. They unlocked nothing, but I understand they look like a hidden developer menu. They are all removed, together with the hidden achievement that counted them.
+
+2. App icon (now off by default). The previous build switched to a seasonal icon on first launch. It now only changes if the player turns on Settings > "Seasonal icon".
+
+3. Seasonal festivals (now announced in the app). Three yearly festivals add their own puzzles during their dates (28 Mar - 10 Apr, 25 Oct - 2 Nov, 15 Dec - 6 Jan). Between them, the home screen now shows "Next festival" with its date, and the Events screen lists all three. Nothing else depends on the date.
+
+For completeness: the app has no server, no network request, no remote configuration, no analytics, no ads, no account and no in-app purchase. All content ships in the binary and is the same for every user. The review notes describe every feature and how to reach it.
+
+Build 1.0.0 (3) is attached to this version. Thank you for your time.
+
+Hugo Busquet
+```

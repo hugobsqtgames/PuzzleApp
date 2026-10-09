@@ -105,8 +105,7 @@ const ACHIEVEMENTS_FR: Achievement[] = [
   // Malice
   { id: 'hush', name: 'Chut', description: 'Utilise 50 Murmures. L’aide fait partie du jeu.', reward: 15, progress: ({ profile }) => [Math.min(50, profile.murmures), 50] },
   { id: 'oops', name: 'Oups', description: 'Te tromper, puis réussir au coup suivant.', reward: 10, progress: ({ profile }) => [Math.min(1, profile.oops), 1] },
-  { id: 'curious', name: 'Fureteur', description: 'Un succès caché. Vesper a ses secrets : trouves-en trois.', reward: 20, hidden: true, progress: ({ profile }) => [Math.min(3, profile.eggs.length), 3] },
-  { id: 'clumsy', name: 'Maladroit', description: 'Un succès caché. On dit qu’il a un chapeau.', reward: 15, hidden: true, progress: ({ profile }) => [Math.min(1, profile.hatDrops), 1] },
+  { id: 'clumsy', name: 'Maladroit', description: 'Touche Nilo cinq fois de suite quand il porte un chapeau.', reward: 15, progress: ({ profile }) => [Math.min(1, profile.hatDrops), 1] },
   { id: 'melomane', name: 'Mélomane', description: 'Écoute l’ambiance de 5 lieux de Vesper.', reward: 15, progress: ({ profile }) => [Math.min(5, profile.themes.length), 5] },
 ];
 /** Achievements, read in the current language. */

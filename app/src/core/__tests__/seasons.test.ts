@@ -1,5 +1,5 @@
 // The seasons and yearly events follow the date; an event's progress and rewards are kept.
-import { EVENTS, eventDone, eventKey, eventOn, eventOpen, seasonOn } from '../../game/seasons';
+import { EVENTS, eventDone, eventKey, eventOn, eventOpen, nextEvent, seasonOn } from '../../game/seasons';
 import { FAMILIES, eventPuzzle, eventSize } from '../../game/catalog';
 import { canSubmit, giveHint, hintAvailable, isComplete, startSession, submit } from '../../game/session';
 import { HintLevel } from '../puzzlekit/types';
@@ -75,4 +75,13 @@ test.each(EVENT_CASES)('%s %i : les indices mènent à la solution', (id, n) => 
   }
   if (FAMILIES[p.code].answer) expect(submit(s).correct).toBe(true);
   else expect(isComplete(s)).toBe(true);
+});
+
+test('entre deux fêtes, la prochaine est annoncée avec sa date (rien n’est caché par la date)', () => {
+  const at = (y: number, m: number, d: number) => { const n = nextEvent(new Date(y, m - 1, d, 20)); return [n.event.id, n.start.getFullYear(), n.start.getMonth() + 1, n.start.getDate()]; };
+  expect(at(2026, 10, 9)).toEqual(['halloween', 2026, 10, 25]);
+  expect(at(2026, 11, 5)).toEqual(['noel', 2026, 12, 15]);
+  expect(at(2027, 1, 10)).toEqual(['lanternes', 2027, 3, 28]);
+  expect(at(2027, 4, 20)).toEqual(['halloween', 2027, 10, 25]);
+  expect(at(2026, 12, 31)).toEqual(['lanternes', 2027, 3, 28]);
 });

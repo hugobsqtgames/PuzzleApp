@@ -16,7 +16,7 @@ const MOODS: Mood[] = ['curious', 'joy', 'oops', 'sleep', 'wonder', 'hint', 'thi
 const MOOD_FR: Record<Mood, string> = translated({ curious: 'Curieux', joy: 'Joie', oops: 'Oups', sleep: 'Sommeil', neutral: 'Neutre', think: 'Réflexion', hint: 'Indice', wonder: 'Émerveillement' });
 
 export default function NiloScreen() {
-  const { state, engine, showToast, noteProfile, findEgg } = useStore();
+  const { state, engine, showToast, noteProfile } = useStore();
   const [mood, setMood] = useState<Mood>('curious');
   const [hatFell, setHatFell] = useState(false);
   const [showMood, setShowMood] = useState(false);
@@ -37,13 +37,12 @@ export default function NiloScreen() {
       setTimeout(() => setHatFell(false), 3000);
       return;
     }
-    // Secret: fifteen taps in a row and Nilo's head spins.
+    // Fifteen taps in a row and Nilo's head spins.
     spins.current = [...spins.current.filter((t) => now - t < 8000), now];
     if (spins.current.length >= 15) {
       spins.current = [];
       setMood('oops');
       setDizzy(true);
-      findEgg('dizzy');
       setTimeout(() => setDizzy(false), 4000);
       return;
     }

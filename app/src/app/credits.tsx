@@ -1,6 +1,6 @@
 // Credits: who made Lampion, and who it is for.
-import React, { useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import React from 'react';
+import { View } from 'react-native';
 import { Text } from '../ui/Text';
 import { goBack } from '../ui/nav';
 
@@ -25,30 +25,19 @@ const Line = ({ children, strong }: { children: React.ReactNode; strong?: boolea
 );
 
 export default function Credits() {
-  const { state, findEgg } = useStore();
-  // Secret: the author's name tapped five times.
-  const taps = useRef<number[]>([]);
-  const [cheer, setCheer] = useState(false);
-  const tapName = () => {
-    const now = Date.now();
-    taps.current = [...taps.current.filter((t) => now - t < 3000), now];
-    if (taps.current.length >= 5) { taps.current = []; setCheer(true); findEgg('credits'); }
-  };
+  const { state } = useStore();
   return (
     <Screen scroll place="lighthouse" style={{ gap: 26 }}>
       <BackButton label={tr('Retour')} onPress={() => goBack()} />
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <Nilo size={130} mood={cheer ? 'wonder' : 'joy'} look={look(state)} />
+        <Nilo size={130} mood="joy" look={look(state)} />
         <Text style={[type.display, { fontSize: 44, lineHeight: 50 }]}>Lampion</Text>
         <Text style={[type.dialogue, { color: T.tx2 }]}>{tr('Chaque énigme rallume une lumière.')}</Text>
       </View>
 
       <Block title={tr('Un jeu imaginé et créé par')}>
         {/* The author's name is the same in every language. */}
-        <Pressable onPress={tapName} accessibilityRole="text">
-          <Text style={[type.display, { fontSize: 32, lineHeight: 38, textAlign: 'center' }]}>Hugo BUSQUET</Text>
-        </Pressable>
-        {cheer ? <Text style={[type.dialogue, { color: T.gold, textAlign: 'center' }]}>{tr('Hugo te dit merci d’être allé jusqu’ici. Nilo aussi.')}</Text> : null}
+        <Text style={[type.display, { fontSize: 32, lineHeight: 38, textAlign: 'center' }]}>Hugo BUSQUET</Text>
         <Line>{tr('Histoire, monde, Nilo et chacune des 1 000 lanternes.')}</Line>
       </Block>
 

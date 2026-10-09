@@ -531,7 +531,7 @@ export const EN_WORLD: Record<string, string> = {
   'Utilise 50 Murmures. L’aide fait partie du jeu.': 'Use 50 Whispers. Help is part of the game.',
   'Te tromper, puis réussir au coup suivant.': 'Get it wrong, then succeed on the next try.',
   'Maladroit': 'Butterfingers',
-  'Un succès caché. On dit qu’il a un chapeau.': 'A hidden achievement. They say it has a hat.',
+  'Touche Nilo cinq fois de suite quand il porte un chapeau.': 'Tap Nilo five times in a row while he wears a hat.',
   'Mélomane': 'Music lover',
   'Écoute l’ambiance de 5 lieux de Vesper.': 'Listen to the ambience of 5 places in Vesper.',
   'Ambre': 'Amber',
@@ -637,8 +637,6 @@ export const EN_WORLD: Record<string, string> = {
   'Passerelles': 'Footbridges',
   'Relie les îlots par des passerelles qui ne se croisent pas. Chaque nombre dit combien en partent.': 'Join the islands with footbridges that never cross. Each number says how many leave it.',
   // New wardrobe and hidden achievement
-  'Fureteur': 'Snoop',
-  'Un succès caché. Vesper a ses secrets : trouves-en trois.': 'A hidden achievement. Vesper has its secrets: find three.',
   'Menthe': 'Mint',
   'Lilas': 'Lilac',
   'Rubis': 'Ruby',

@@ -36,7 +36,7 @@ const IDLE_MS = 90_000;
 export default function PuzzleScreen() {
   const store = useStore();
   const session = useSession();
-  const { state, engine, findEgg, markSeen, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
+  const { state, engine, markSeen, updateSession, finishSession, buyHint, leaveSession, showToast, play, haptic, settings, setSettings, note } = store;
   const { width } = useContentSize();
   const { wide, width: wideWidth } = useWide();
   const [sheet, setSheet] = useState<'hints' | 'pause' | 'rule' | 'restart' | 'intro' | null>(null);
@@ -116,8 +116,6 @@ export default function PuzzleScreen() {
     const r = submit(s);
     if (r.correct) { end(s, 0); return; }
     play('error');
-    // Secret: 42 on the scales.
-    if (s.code === 'BA' && s.state.entry === '42') { findEgg('42'); showToast(tr('42 : la réponse à tout… sauf à cette balance.'), 'star'); }
     updateSession(r.session);
     Animated.sequence([6, -6, 4, -4, 0].map((x) => Animated.timing(shake, { toValue: x, duration: 60, useNativeDriver: true }))).start();
     if (r.session.wrongAnswers >= 2 && !offered) {

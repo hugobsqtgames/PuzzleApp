@@ -52,7 +52,7 @@ Captures prêtes (10 par appareil) : `store/iphone-6.3/` (iPhone 6,3 pouces, 120
 > • Des objets cachés dans les salles entièrement éclairées
 > • Des sceaux secrets : relève les chiffres peints dans les décors pour ouvrir les lanternes-clés
 > • Les lettres de l'Allumeur, à retrouver une à une pour savoir où il est parti
-> • Un album, un journal de tes soirées et plus de cinquante succès
+> • Un album, un journal de tes soirées et cinquante succès
 >
 > LE DÉFI DU SOIR
 > Une énigme par jour, la même pour tout le monde. Entretiens ta série soir après soir, rattrape un soir manqué sans stress, et reçois si tu le souhaites un petit rappel à l'heure de ton choix.
@@ -116,7 +116,7 @@ Captures prêtes (10 par appareil) : `store/iphone-6.3/` (iPhone 6,3 pouces, 120
 > • Hidden objects in fully lit rooms
 > • Secret seals: note the numbers painted in the scenery to open the keystone lanterns
 > • The Lamplighter's letters, to find one by one and learn where he went
-> • An album, a journal of your evenings and more than fifty achievements
+> • An album, a journal of your evenings and fifty achievements
 >
 > THE EVENING CHALLENGE
 > One puzzle a day, the same for everyone. Keep your streak going evening after evening, catch up on a missed evening without stress, and get a gentle reminder at the time you choose, if you like.

@@ -68,8 +68,6 @@ interface Store {
   completeOnboarding(): void;
   markSeen(key: string): void;
   noteProfile(patch: (p: Profile) => Profile): void;
-  /** A secret of Vesper found (easter egg): counted once. */
-  findEgg(id: string): void;
   /** Whole days since the previous launch (0 on a first launch): Nilo's welcome back. */
   daysAway: number;
   /** The player found the room's object in the lit scene. */
@@ -443,10 +441,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (names.length) { commit(st); showToast(names.length <= 3 ? tr('Succès : {0}', [names.join(', ')]) : tr('{0} succès débloqués. Retrouve-les dans le Carnet.', [names.length]), 'star'); }
   }, [commit, commitProfile, creditAchievements, showToast]);
 
-  const findEgg = useCallback((id: string) => {
-    if (profileRef.current.eggs.includes(id)) return;
-    noteProfile((p) => ({ ...p, eggs: [...p.eggs, id] }));
-  }, [noteProfile]);
 
   const pickObject = useCallback((roomId: string) => {
     if (profileRef.current.picked.includes(roomId)) return;
@@ -492,9 +486,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<Store>(() => ({
     ready, readOnly, state, engine, settings, profile, result, toast, today, daysAway,
     showToast, openLantern, openDaily, openEvent, openFree, updateSession, leaveSession, finishSession, buyHint, buyCosmetic, equip, setSettings,
-    completeOnboarding, markSeen, noteProfile, findEgg, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), onSound: (cb) => sound.onSound(cb), enterPlace, haptic, resetProgress, exportProgress, importProgress,
+    completeOnboarding, markSeen, noteProfile, pickObject, play: (e) => sound.play(e), note: (i) => sound.note(i), onSound: (cb) => sound.onSound(cb), enterPlace, haptic, resetProgress, exportProgress, importProgress,
   }), [ready, readOnly, state, settings, profile, result, toast, today, daysAway, showToast, openLantern, openDaily, openEvent, openFree, updateSession, leaveSession, finishSession,
-    buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, findEgg, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
+    buyHint, buyCosmetic, equip, setSettings, completeOnboarding, markSeen, noteProfile, pickObject, sound, enterPlace, haptic, resetProgress, exportProgress, importProgress]);
 
   return <Ctx.Provider value={value}><SessionCtx.Provider value={session}>{children}</SessionCtx.Provider></Ctx.Provider>;
 }

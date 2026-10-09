@@ -82,6 +82,17 @@ export function eventOn(d: Date): { event: SeasonEvent; year: number } | null {
   return null;
 }
 
+/** The next event to begin after this date (shown on the home screen between events). */
+export function nextEvent(d: Date): { event: SeasonEvent; start: Date } {
+  const today = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  let best: { event: SeasonEvent; start: Date } | null = null;
+  for (const e of Object.values(EVENTS)) for (const y of [d.getFullYear(), d.getFullYear() + 1]) {
+    const start = new Date(y, Math.floor(e.from / 100) - 1, e.from % 100);
+    if (start > today && (!best || start < best.start)) best = { event: e, start };
+  }
+  return best!;
+}
+
 /** The event's last day, for « jusqu’au 2 novembre ». */
 export function eventEnd(e: SeasonEvent, year: number): Date {
   return new Date(e.from > e.to ? year + 1 : year, Math.floor(e.to / 100) - 1, e.to % 100);

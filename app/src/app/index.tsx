@@ -14,7 +14,7 @@ import { useNow } from '../ui/useNow';
 import { APP_VERSION, whatsNewFor } from '../content/whatsNew';
 import { Fog, SeasonFall } from '../ui/SeasonFall';
 import { EVENT_THEME } from '../ui/eventTheme';
-import { eventDone, eventEnd, eventOn, seasonOn, weatherOn } from '../game/seasons';
+import { eventDone, eventEnd, eventOn, nextEvent, seasonOn, weatherOn } from '../game/seasons';
 import { T, R, type } from '../ui/theme';
 import { current, districtViews, infoOf, locateRoom, roomLabel, buildingName, lowerArticle } from '../game/views';
 import { districtLanterns } from '../core/game/world';
@@ -35,7 +35,7 @@ export const DAILY_UNLOCK_LIGHTS = 6;
 const phaseLabel = (p: SkyPhase) => (p === 'dawn' ? tr('à l’aube') : p === 'day' ? tr('en plein jour') : p === 'dusk' ? tr('au crépuscule') : tr('la nuit'));
 
 export default function Home() {
-  const { state, engine, openLantern, today, findEgg, daysAway, profile, noteProfile, readOnly } = useStore();
+  const { state, engine, openLantern, today, daysAway, profile, noteProfile, readOnly } = useStore();
   const { width } = useContentSize();
   const reduce = useReducedMotion();
   const p = engine.progression;
@@ -83,9 +83,8 @@ export default function Home() {
   const niloLook = morning && dressed.comp === 'none' ? { ...baseLook, comp: 'coffee' } : baseLook;
   const windowXml = useMemo(() => vesperWindowXml(views, 358, 210, phase), [views, phase]);
   const cur = current(p, state);
-  // Secret: between midnight and one, Nilo has fallen asleep on the window sill.
+  // Between midnight and one, Nilo has fallen asleep on the window sill.
   const midnight = hour === 0;
-  useEffect(() => { if (midnight) findEgg('midnight'); }, [midnight, findEgg]);
   if (!state.onboardingDone) return <Redirect href="/welcome" />;
 
   const loc = cur.lantern ? p.locate(cur.lantern.puzzle) : null;
@@ -123,7 +122,21 @@ export default function Home() {
       </View>
       <Icon name="chev" size={18} color={T.tx3} />
     </Pressable>
-  ) : null;
+  ) : (() => {
+    // Between festivals: the next one is announced, with its dates (nothing in the game is hidden by date).
+    const up = nextEvent(now);
+    return (
+      <Pressable accessibilityRole="button" onPress={() => { tap(); router.push('/event'); }}
+        style={({ pressed }) => [{ backgroundColor: T.s1, borderWidth: 1, borderColor: T.line, borderRadius: R.l, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 14 }, pressed ? { opacity: 0.85 } : null]}>
+        <SvgXml xml={EVENT_THEME[up.event.id].art(false, false)} width={40} height={40} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={[type.cap, { color: up.event.flame }]}>{tr('Prochaine fête · dès le {0}', [up.start.toLocaleDateString(lang() === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long' })])}</Text>
+          <Text style={type.headline}>{tr(up.event.name)}</Text>
+        </View>
+        <Icon name="chev" size={18} color={T.tx3} />
+      </Pressable>
+    );
+  })();
 
   // After an update: what is new, once.
   const news = profile.seenVersion !== null && profile.seenVersion !== APP_VERSION ? whatsNewFor(APP_VERSION) : null;

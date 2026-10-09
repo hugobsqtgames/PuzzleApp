@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, Platform, Pressable, Share, View } from 'react-native';
 import { Text, TextInput } from '../ui/Text';
 import { goBack } from '../ui/nav';
@@ -59,21 +59,10 @@ function LinkRow({ label, onPress, color = T.tx, icon = 'chev' }: { label: strin
 }
 
 export default function Settings() {
-  const { settings, setSettings, note, resetProgress, exportProgress, importProgress, showToast, readOnly, findEgg, state, engine } = useStore();
+  const { settings, setSettings, note, resetProgress, exportProgress, importProgress, showToast, readOnly, state, engine } = useStore();
   const [sheet, setSheet] = useState<'time' | 'import' | 'lang' | 'chime' | null>(null);
   const [text, setText] = useState('');
   const hh = (n: number) => String(n).padStart(2, '0');
-  const versionTaps = useRef<number[]>([]);
-  const tapVersion = () => {
-    const now = Date.now();
-    versionTaps.current = [...versionTaps.current.filter((t) => now - t < 4000), now];
-    if (versionTaps.current.length >= 7) {
-      versionTaps.current = [];
-      findEgg('version');
-      showToast(tr('Mode développeur ? Il n’y en a pas. Mais merci d’avoir cherché.'), 'star');
-    }
-  };
-
   const toggleReminder = async (on: boolean) => {
     if (!on) { setSettings({ reminder: false, reminderOffered: true }); return; }
     const ok = (await permissionStatus()) === 'granted' || (await askPermission());
@@ -173,10 +162,7 @@ export default function Settings() {
       <Group title={tr('Lampion')}>
         <LinkRow label={tr('Crédits')} icon="star" onPress={() => router.push('/credits')} />
       </Group>
-      {/* Secret: the version tapped seven times. */}
-      <Pressable onPress={tapVersion} accessibilityRole="text">
-        <Text style={[type.foot, { textAlign: 'center', marginTop: 16, marginBottom: 8 }]}>Lampion {APP_VERSION} · {tr('contenu')} v{CONTENT_VERSION}</Text>
-      </Pressable>
+      <Text style={[type.foot, { textAlign: 'center', marginTop: 16, marginBottom: 8 }]}>Lampion {APP_VERSION} · {tr('contenu')} v{CONTENT_VERSION}</Text>
 
       <Sheet visible={sheet === 'time'} onClose={() => setSheet(null)}>
         <Text style={[type.title2, { marginBottom: 12 }]}>{tr('Heure du rappel')}</Text>
