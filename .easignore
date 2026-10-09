@@ -1,0 +1,24 @@
+# What EAS Build uploads: only the app. The App Store images and videos, the website, the
+# prototype and the tools stay out of the upload (they are not part of the app).
+/store/
+/site/
+/prototype/
+/docs/
+/tools/
+/Content/
+
+# Same as .gitignore (an .easignore replaces it for EAS).
+.DS_Store
+node_modules/
+site/dist/
+app/.expo/
+app/dist/
+app/web-build/
+app/expo-env.d.ts
+app/ios/
+app/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
