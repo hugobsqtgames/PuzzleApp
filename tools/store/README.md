@@ -25,3 +25,10 @@ Il faut Playwright (`PLAYWRIGHT=/chemin/vers/playwright`, `CHROMIUM=/chemin/vers
 ## Vidéo de présentation
 
 Voir `promo/README.md` (storyboard, commandes, conseils App Store Connect).
+
+## En-tête et résultats de recherche (iOS 27)
+
+`node ../tools/store/creative.js` (et `LANG_=en` pour l'anglais) → `store/creative/` :
+`creative-header-*.png` (en-tête 21:9, 3840 × 1646), `creative-search-*.png` (résultats de recherche
+3:2, 3840 × 2560), `creative-universal-*.png` (16:9, 5244 × 2950, valable pour les deux). Formats de la
+page « Creative assets specifications » d'Apple ; titre et téléphones au centre, là où rien n'est rogné.
