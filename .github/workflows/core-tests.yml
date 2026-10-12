@@ -25,4 +25,8 @@ jobs:
       - name: Lint
         run: npx expo lint
       - name: Tests (puzzle engine, shipped content, save, scenes, English)
-        run: npx jest --ci
+        run: npx jest --ci --testPathIgnorePatterns free.test newFamilies.test
+      # The tests that time the work done on the phone run alone, one file after the other: run
+      # beside the others, they would time a crowded test machine rather than the game.
+      - name: Tests (timed - Free play, Sliding Tiles hints)
+        run: npx jest --ci --runInBand free.test newFamilies.test

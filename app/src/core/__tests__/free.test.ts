@@ -42,10 +42,11 @@ test('aucune grille préparée sur le téléphone ne bloque l’écran (chaque e
       return Date.now() - t;
     };
     for (let i = 0; i < 25; i++) {
-      // A try is the same work every time: a slow one is timed again, so that a cold start or a
-      // busy test machine is not taken for a grid that freezes the phone.
-      const ms = timed(i);
-      if (ms > 1000 && timed(i) > 1000) { slow.push(`${code} ${tier}: ${ms} ms`); break; }
+      // A try is the same work every time: a slow one is timed again (the fastest of three counts),
+      // so that a cold start or a busy test machine is not taken for a grid that freezes the phone.
+      let ms = timed(i);
+      for (let again = 0; again < 2 && ms > 1000; again++) ms = Math.min(ms, timed(i));
+      if (ms > 1000) { slow.push(`${code} ${tier}: ${ms} ms`); break; }
     }
   }
   expect(slow).toEqual([]);
