@@ -670,7 +670,7 @@ export const EN_WORLD: Record<string, string> = {
   'La Nuit des Citrouilles': 'The Night of Pumpkins',
   'Les citrouilles du Marché se sont éteintes. Sept énigmes à résoudre, à ton rythme, pour les rallumer.': 'The Market\'s pumpkins have gone out. Seven puzzles to solve, at your own pace, to light them again.',
   'La Veillée de Vesper': 'The Vesper Vigil',
-  'Douze soirs de veillée : chaque soir, une nouvelle lanterne s’allume au-dessus de la place.': 'Twelve evenings of vigil: each evening, a new lantern lights up above the square.',
+  'Douze soirs de veillée : à chaque énigme, une nouvelle lanterne s’allume au-dessus de la place.': 'Twelve evenings of vigil: with each puzzle, a new lantern lights up above the square.',
   // Keepers' words, what's new
   '« …chapitre un… il faisait nuit… »': '“…chapter one… it was night…”',
   '« …ne pliez pas les pages… merci… »': '“…don’t fold the pages… thank you…”',

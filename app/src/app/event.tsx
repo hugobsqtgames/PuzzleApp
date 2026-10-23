@@ -5,7 +5,7 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '../ui/Text';
 import { goBack } from '../ui/nav';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 
 import { useStore } from '../game/store';
@@ -14,7 +14,7 @@ import { BackButton, Button, Card, Gauge, Icon, Nilo, tap } from '../ui/componen
 import { T, R, type } from '../ui/theme';
 import { FAMILIES, eventPuzzle, eventSize } from '../game/catalog';
 import { COSMETICS, achievementContext, look, owns } from '../game/rewards';
-import { eventDone, eventEnd, eventOn, eventOpen } from '../game/seasons';
+import { EVENTS, type EventId, type SeasonEvent, eventDone, eventEnd, eventOn, nextStart } from '../game/seasons';
 import { SeasonFall } from '../ui/SeasonFall';
 import { EVENT_THEME } from '../ui/eventTheme';
 import { useNow } from '../ui/useNow';
@@ -27,24 +27,46 @@ export default function EventScreen() {
   const { state, engine, profile, openEvent, showToast } = useStore();
   const now = useNow();
   const { width } = useContentSize();
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const running = eventOn(now);
+  // Every festival can be played at any date: its dates only bring its mood and its place on
+  // the home screen. Nothing in the game is held back by the date.
+  const edition = (ev: SeasonEvent) => (running && running.event.id === ev.id ? running.year : nextStart(ev, now).getFullYear());
 
-  if (!running) {
+  if (!id || !(id in EVENTS)) {
     return (
       <Screen scroll place="lighthouse" style={{ gap: 16 }}>
         <BackButton label={tr('Accueil')} onPress={() => goBack()} />
-        <Text style={type.title1}>{tr('Événements')}</Text>
-        <Text style={[type.body, { color: T.tx2 }]}>{tr('Aucun événement en ce moment. Le Printemps des Lanternes revient le 28 mars, la Nuit des Citrouilles le 25 octobre, la Veillée de Vesper le 15 décembre.')}</Text>
+        <Text style={type.title1}>{tr('Fêtes de Vesper')}</Text>
+        <Text style={[type.body, { color: T.tx2 }]}>{tr('Chaque fête revient à ses dates, avec son ambiance. Ses énigmes, elles, se jouent toute l’année.')}</Text>
+        {Object.values(EVENTS).map((ev) => {
+          const y = edition(ev), n = eventSize(ev.id), lit = eventDone(state, ev.id, y, n).filter(Boolean).length;
+          const from = new Date(y, Math.floor(ev.from / 100) - 1, ev.from % 100);
+          const now_ = running?.event.id === ev.id;
+          return (
+            <Pressable key={ev.id} accessibilityRole="button" onPress={() => { tap(); router.push({ pathname: '/event', params: { id: ev.id } }); }}
+              style={({ pressed }) => [{ backgroundColor: T.s1, borderWidth: 1, borderColor: now_ ? ev.flame : T.line, borderRadius: R.l, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 14 }, pressed ? { opacity: 0.85 } : null]}>
+              <SvgXml xml={EVENT_THEME[ev.id].art(lit > 0, true)} width={48} height={48} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[type.cap, { color: ev.flame }]}>{now_ ? tr('En ce moment') : tr('Du {0} au {1}', [dayMonth(from), dayMonth(eventEnd(ev, y))])}</Text>
+                <Text style={type.headline}>{tr(ev.name)}</Text>
+                <Text style={type.sub}>{EVENT_THEME[ev.id].count(lit, n)}</Text>
+              </View>
+              <Icon name="chev" size={18} color={T.tx3} />
+            </Pressable>
+          );
+        })}
       </Screen>
     );
   }
 
-  const { event: e, year } = running;
+  const e = EVENTS[id as EventId];
+  const live = running?.event.id === e.id;
+  const year = edition(e);
   const size = eventSize(e.id);
   const done = eventDone(state, e.id, year, size);
-  const open = eventOpen(e, year, now, size);
   const solved = done.filter(Boolean).length;
-  const next = done.findIndex((d, i) => !d && i < open);
+  const next = done.findIndex((d) => !d);
   const ctx = achievementContext(state, engine.progression, profile);
   const play = (n: number) => { tap(); if (openEvent(e.id, year, n)) router.push('/puzzle'); else showToast(tr('Cette énigme n’a pas pu être préparée.'), 'info'); };
   const th = EVENT_THEME[e.id];
@@ -58,7 +80,7 @@ export default function EventScreen() {
       <BackButton label={tr('Accueil')} onPress={() => goBack()} />
       <View style={{ alignItems: 'center', gap: 10 }}>
         <Nilo size={110} mood="joy" look={th.dress(look(state))} still />
-        <Text style={[type.cap, { color: e.flame, textAlign: 'center' }]}>{tr('Événement · jusqu’au {0}', [dayMonth(eventEnd(e, year))])}</Text>
+        <Text style={[type.cap, { color: e.flame, textAlign: 'center' }]}>{live ? tr('Événement · jusqu’au {0}', [dayMonth(eventEnd(e, year))]) : tr('Du {0} au {1}', [dayMonth(start), dayMonth(eventEnd(e, year))])}</Text>
         <Text style={[type.display, { fontSize: 32, lineHeight: 38, textAlign: 'center' }]}>{tr(e.name)}</Text>
         <Text style={[type.body, { color: T.tx2, textAlign: 'center' }]}>{tr(e.story)}</Text>
       </View>
@@ -66,15 +88,13 @@ export default function EventScreen() {
       <Card style={{ gap: 14, borderColor: e.flame }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
           {done.map((lit, n) => {
-            const available = n < open;
-            const opensOn = new Date(start.getTime() + n * 86_400_000);
             const code = eventPuzzle(e.id, n)?.code;
-            const label = lit ? tr('{0}, rallumée', [n + 1]) : available ? tr('{0}, à rallumer : {1}', [n + 1, code ? FAMILIES[code].name : '']) : tr('{0}, s’ouvre le {1}', [n + 1, dayMonth(opensOn)]);
+            const label = lit ? tr('{0}, rallumée', [n + 1]) : tr('{0}, à rallumer : {1}', [n + 1, code ? FAMILIES[code].name : '']);
             return (
-              <Pressable key={n} accessibilityRole="button" accessibilityLabel={label} disabled={!available} onPress={() => play(n)}
-                style={({ pressed }) => [{ width: cell, alignItems: 'center', gap: 4, opacity: available ? 1 : 0.5 }, pressed ? { opacity: 0.7 } : null]}>
-                <SvgXml xml={th.art(lit, available)} width={cell * 0.8} height={cell * 0.8} />
-                <Text style={[type.foot, { color: lit ? T.gold : available ? T.tx : T.tx3 }]}>{available || lit ? n + 1 : dayMonth(opensOn)}</Text>
+              <Pressable key={n} accessibilityRole="button" accessibilityLabel={label} onPress={() => play(n)}
+                style={({ pressed }) => [{ width: cell, alignItems: 'center', gap: 4 }, pressed ? { opacity: 0.7 } : null]}>
+                <SvgXml xml={th.art(lit, true)} width={cell * 0.8} height={cell * 0.8} />
+                <Text style={[type.foot, { color: lit ? T.gold : T.tx }]}>{n + 1}</Text>
               </Pressable>
             );
           })}
@@ -84,8 +104,7 @@ export default function EventScreen() {
       </Card>
 
       {next >= 0 ? <Button title={th.next(next + 1)} icon="light" onPress={() => play(next)} />
-        : solved === size ? <Text style={[type.dialogue, { textAlign: 'center', color: T.gold }]}>{th.complete()}</Text>
-          : <Text style={[type.dialogue, { textAlign: 'center', color: T.tx2 }]}>{tr('Reviens demain soir : une nouvelle lanterne t’attend.')}</Text>}
+        : <Text style={[type.dialogue, { textAlign: 'center', color: T.gold }]}>{th.complete()}</Text>}
 
       <Text style={type.cap}>{tr('Récompenses')}</Text>
       <Card style={{ gap: 0, paddingVertical: 4 }}>

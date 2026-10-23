@@ -123,7 +123,7 @@ export default function Success() {
 
   const next = () => {
     if (follow.length) { router.replace({ pathname: '/found', params: { step: '0' } }); return; }
-    if (s.kind === 'event') { router.dismissTo('/event'); return; }
+    if (s.kind === 'event') { router.dismissTo({ pathname: '/event', params: { id: s.id.split('.')[1] } }); return; }
     if (s.kind === 'free') { router.dismissTo('/free'); return; }
     if (s.kind === 'daily') {
       if (!settings.reminderOffered && !result.replay) { setOffer(true); return; }

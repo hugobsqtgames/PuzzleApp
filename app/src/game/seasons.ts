@@ -67,7 +67,7 @@ export const EVENTS: Record<EventId, SeasonEvent> = {
   },
   noel: {
     id: 'noel', name: 'La Veillée de Vesper', flame: '#FFE6B0', particle: 'snow', from: 1215, to: 106, pace: 'evening',
-    story: 'Douze soirs de veillée : chaque soir, une nouvelle lanterne s’allume au-dessus de la place.',
+    story: 'Douze soirs de veillée : à chaque énigme, une nouvelle lanterne s’allume au-dessus de la place.',
     milestones: [[3, 'event.noel.start', 'comp.snowflake'], [6, 'event.noel.half', 'hat.santa'], [12, 'event.noel.complete', 'scarf.holly']],
   },
 };
@@ -80,6 +80,16 @@ export function eventOn(d: Date): { event: SeasonEvent; year: number } | null {
     if (inside) return { event: e, year: e.from > e.to && x <= e.to ? d.getFullYear() - 1 : d.getFullYear() };
   }
   return null;
+}
+
+/** The next first day of this event after this date. */
+export function nextStart(e: SeasonEvent, d: Date): Date {
+  const today = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  for (const y of [d.getFullYear(), d.getFullYear() + 1]) {
+    const start = new Date(y, Math.floor(e.from / 100) - 1, e.from % 100);
+    if (start > today) return start;
+  }
+  return new Date(d.getFullYear() + 1, Math.floor(e.from / 100) - 1, e.from % 100);
 }
 
 /** The next event to begin after this date (shown on the home screen between events). */

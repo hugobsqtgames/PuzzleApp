@@ -112,7 +112,7 @@ export default function Home() {
   const evSize = running ? eventSize(running.event.id) : 0;
   const evSolved = running ? eventDone(state, running.event.id, running.year, evSize).filter(Boolean).length : 0;
   const eventCard = running && evSize ? (
-    <Pressable accessibilityRole="button" onPress={() => { tap(); router.push('/event'); }}
+    <Pressable accessibilityRole="button" onPress={() => { tap(); router.push({ pathname: '/event', params: { id: running.event.id } }); }}
       style={({ pressed }) => [{ backgroundColor: T.s1, borderWidth: 1, borderColor: running.event.flame, borderRadius: R.l, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }, pressed ? { opacity: 0.85 } : null]}>
       <SvgXml xml={EVENT_THEME[running.event.id].art(true, true)} width={48} height={48} />
       <View style={{ flex: 1, gap: 2 }}>

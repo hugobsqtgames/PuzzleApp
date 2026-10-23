@@ -33,12 +33,12 @@ function District({ id }: { id: string }) {
   // French agrees the keeper's words with her or him (L’Horlogère, La Marchande…).
   const [talk, setTalk] = useState(0);
   const keeperFeminine = !!info.keeper && (info.keeper.name.startsWith('La ') || info.keeper.name === 'L’Horlogère');
-  // The Grenier de l'Allumeur is at the top of the Phare: shown with it, but only once the
-  // last district (the Observatoire) has opened. Before that it stays a surprise.
+  // The Grenier de l'Allumeur is at the top of the Phare: always shown with it (locked until
+  // its lights and letters are gathered), so that no part of the game is out of sight.
   const total = p.totalLights(state), letters = p.letters(state);
   const grenierDistrict = d.id === 'phare' ? districtById('grenier') : null;
   const grenierOpen = !!grenierDistrict && p.isDistrictUnlocked(grenierDistrict, total, letters);
-  const grenier = grenierDistrict && (grenierOpen || p.isDistrictUnlocked(districtById('obs'), total, letters)) ? grenierDistrict : null;
+  const grenier = grenierDistrict;
   const rows = buildingRows(p, state, d);
   const all = districtLanterns(d), lit = p.lights(all, state);
   const complete = lit === all.length;

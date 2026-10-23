@@ -199,21 +199,21 @@ Décoché (Lampion n'utilise pas Game Center).
 | Notes | **le texte anglais ci-dessous, en entier** (les vérificateurs lisent l'anglais) |
 | Pièce jointe | rien |
 
-#### Notes à coller (anglais, 3 921 caractères sur 4 000 autorisés, pour la build 1.0.0 (3))
+#### Notes à coller (anglais, 3 977 caractères sur 4 000 autorisés, pour la build 1.0.0 (4))
 
 ```
 Thank you for reviewing Lampion.
 
 WHAT IT IS
-A calm, offline logic-puzzle game for iPhone and iPad, in English and French (it follows the device language; Settings > Language to switch). The city of Vesper has gone dark; the player relights its 1,000 lanterns by solving puzzles (26 kinds: switches, codes, sliding tiles, bridges, a melody to play back...). No timer, no lives. Portrait orientation by design.
+A calm, offline logic-puzzle game for iPhone and iPad, in English and French (it follows the device language; Settings > Language to switch). The city of Vesper has gone dark; the player relights its 1,000 lanterns by solving puzzles (26 kinds: switches, codes, sliding tiles, bridges, a melody to play back...). No timer, no lives.
 
 NO ACCOUNT, NO SIGN-IN, NO NETWORK
-- No login of any kind: the app opens straight into the game. No demo account is needed.
-- The app makes no network request. All content ships inside the app; it works in airplane mode.
+- No login: the app opens straight into the game. No demo account is needed.
+- No network request: all content ships inside the app; it works in airplane mode.
 - No ads, no analytics, no tracking, no third-party SDK. Privacy label: Data Not Collected.
 
-NO HIDDEN FEATURES
-There is no developer menu, debug mode, secret gesture, remote configuration or server. The app behaves the same for every user. The only things that depend on the date are the visible seasonal touches and the three festivals described below, all announced in the app. Build 3 removes the playful hidden taps of the previous build (one of them, seven taps on the version number, showed a joke message saying there is no developer mode).
+NOTHING HIDDEN, NOTHING ENABLED LATER
+Everything in the app can be reached on the day of review. There is no developer menu, debug mode, secret gesture, remote configuration, server or date that unlocks a feature. Build 4 makes the three seasonal festivals playable all year round (they were limited to their dates before) and shows the final Attic area from the start (locked like the other districts). Earlier builds' joke easter eggs are gone. The only things that follow the calendar are decorations (falling leaves, snow...) and the daily puzzle, which is a new puzzle each day.
 
 NO IN-APP PURCHASES
 "Shards" are an in-game reward earned only by playing (puzzles, evening challenge, achievements). They pay for hints and cosmetic items for the mascot, Nilo. They can never be bought with real money and have no value outside the game.
@@ -226,13 +226,13 @@ HOW TO TRY IT (about 3 minutes)
 5. Bottom bar: Map (the city), Free play (any puzzle type already met, at a chosen difficulty), Notebook (achievements, statistics, found objects, album), Settings.
 
 SOUND
-One puzzle type (Chimes) asks to replay a short melody. It also works with the sound off: each bell lights up while it rings. Settings has "Sound captions" too.
+The Chimes puzzle (replay a melody) also works with the sound off: each bell lights up as it rings.
 
 PROGRESSIVE CONTENT (expected behaviour)
-Districts open with the number of lanterns lit: the Lighthouse first, the Library at 24, then others up to 494. A locked district shows how many lanterns are still needed. Keystone seals and the final area come late in the game. This is the game's progression, not a missing or broken feature.
+Districts open with the number of lanterns lit: the Lighthouse first, the Library at 24, then others up to 494. A locked district shows how many lanterns are still needed. Keystone seals and the final Attic (shown, locked, in the Lighthouse) come late in the game. This is the game's progression, not a missing or broken feature.
 
-SEASONAL EVENTS
-Three yearly festivals with their own puzzles: spring lanterns (28 Mar - 10 Apr), Halloween (25 Oct - 2 Nov), winter (15 Dec - 6 Jan). Between them, the home screen shows "Next festival" with its date, and opens the Events screen listing all three. To play one now, set the device date within a festival period.
+FESTIVALS
+Three festivals with their own puzzles and rewards: spring lanterns, Halloween and winter. All three are playable at any date: Home > the festival card ("Next festival" or the current one) opens "Vesper's festivals", which lists them; tap one, then any of its puzzles. During its dates (28 Mar - 10 Apr, 25 Oct - 2 Nov, 15 Dec - 6 Jan) a festival also brings its decorations to the city.
 
 PERMISSIONS AND SYSTEM FEATURES
 - Notifications: local only (an evening reminder). Never requested at launch: after the first evening challenge, the app asks in its own words; the iOS prompt appears only if the player says yes. Changeable in Settings.
@@ -244,7 +244,7 @@ PERMISSIONS AND SYSTEM FEATURES
 ACCESSIBILITY
 VoiceOver labels on every control, Dynamic Type, colour aid (symbols on colours), sound captions, Reduce Motion respected.
 
-Contact details are in the App Review Information section. Thank you!
+Thank you!
 ```
 
 #### La même chose en français (pour toi, à ne pas coller)
@@ -337,5 +337,33 @@ For completeness: the app has no server, no network request, no remote configura
 
 Build 1.0.0 (3) is attached to this version. Thank you for your time.
 
+Hugo Busquet
+```
+
+
+---
+
+## Deuxième refus « Guideline 5.6 » (build 3) : la réponse
+
+Cause probable : du contenu lié au calendrier (les fêtes jouables seulement à leurs dates, et nos
+remarques qui conseillaient de changer la date de l'appareil) et le Grenier qui n'apparaissait qu'à la
+fin. La build 4 rend les trois fêtes jouables toute l'année et montre le Grenier dès le départ.
+
+```
+Hello,
+
+Thank you for your review. I want to be fully transparent: Lampion has no hidden feature and nothing is meant to change after review. I believe what looked hidden was content tied to the calendar, and build 1.0.0 (4) removes that completely:
+
+1. Festivals playable all year round. The app has three seasonal festivals with their own puzzles. In earlier builds they could only be played during their dates (for example Halloween from October 25), so they could not be seen during review, and my review notes even suggested changing the device date. In build 4 all three festivals and all their puzzles are playable at any date, from Home > festival card > "Vesper's festivals".
+
+2. Final area shown from the start. The last area of the game (the Attic, at the top of the Lighthouse) used to appear only near the end. It is now always shown, locked like the other districts, with what is needed to open it.
+
+3. Easter eggs removed (build 3). Small joke taps (including seven taps on the version number) are gone, and the seasonal app icon is off unless the player turns it on.
+
+The app has no server, no network request, no remote configuration, no account, no ads and no in-app purchase. Everything ships in the binary and is the same for every user and every date; only decorations (leaves, snow) and the daily puzzle follow the calendar.
+
+If something else raised the concern, could you tell me which feature or behaviour it was? I will address it right away. I would also welcome a phone call if that is easier.
+
+Thank you,
 Hugo Busquet
 ```
