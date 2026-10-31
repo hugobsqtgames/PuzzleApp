@@ -47,7 +47,14 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-audio",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": false,
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
       "expo-asset",
       [
         "expo-splash-screen",
