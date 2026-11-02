@@ -199,7 +199,7 @@ Décoché (Lampion n'utilise pas Game Center).
 | Notes | **le texte anglais ci-dessous, en entier** (les vérificateurs lisent l'anglais) |
 | Pièce jointe | rien |
 
-#### Notes à coller (anglais, 3 977 caractères sur 4 000 autorisés, pour la build 1.0.0 (4))
+#### Notes à coller (anglais, 3 976 caractères sur 4 000 autorisés, pour la build 1.0.0 (6) et suivantes)
 
 ```
 Thank you for reviewing Lampion.
@@ -213,7 +213,7 @@ NO ACCOUNT, NO SIGN-IN, NO NETWORK
 - No ads, no analytics, no tracking, no third-party SDK. Privacy label: Data Not Collected.
 
 NOTHING HIDDEN, NOTHING ENABLED LATER
-Everything in the app can be reached on the day of review. There is no developer menu, debug mode, secret gesture, remote configuration, server or date that unlocks a feature. Build 4 makes the three seasonal festivals playable all year round (they were limited to their dates before) and shows the final Attic area from the start (locked like the other districts). Earlier builds' joke easter eggs are gone. The only things that follow the calendar are decorations (falling leaves, snow...) and the daily puzzle, which is a new puzzle each day.
+Everything in the app can be reached on the day of review. There is no developer menu, debug mode, secret gesture, remote configuration, server or date that unlocks a feature. The three seasonal festivals are playable all year round and the final Attic is shown from the start (locked like the other districts); earlier joke easter eggs are gone. The only things that follow the calendar are decorations (falling leaves, snow...) and the daily puzzle, which is a new puzzle each day.
 
 NO IN-APP PURCHASES
 "Shards" are an in-game reward earned only by playing (puzzles, evening challenge, achievements). They pay for hints and cosmetic items for the mascot, Nilo. They can never be bought with real money and have no value outside the game.
@@ -226,7 +226,7 @@ HOW TO TRY IT (about 3 minutes)
 5. Bottom bar: Map (the city), Free play (any puzzle type already met, at a chosen difficulty), Notebook (achievements, statistics, found objects, album), Settings.
 
 SOUND
-The Chimes puzzle (replay a melody) also works with the sound off: each bell lights up as it rings.
+No background audio: sound plays only while the app is open. The Chimes puzzle (replay a melody) also works with the sound off: each bell lights up as it rings.
 
 PROGRESSIVE CONTENT (expected behaviour)
 Districts open with the number of lanterns lit: the Lighthouse first, the Library at 24, then others up to 494. A locked district shows how many lanterns are still needed. Keystone seals and the final Attic (shown, locked, in the Lighthouse) come late in the game. This is the game's progression, not a missing or broken feature.
