@@ -148,8 +148,16 @@ Vidéos (aperçus d'app), les mêmes pour les deux langues (elles sont en franç
 | iPhone avec Dynamic Island **et** iPhone Duo | `store/video/presentation-iphone.mp4` (886 × 1920) |
 | iPad – 13 pouces | `store/video/presentation-ipad.mp4` (1200 × 1600) |
 
+Ces vidéos sont en **plein écran** : seulement l'app filmée, avec des titres par-dessus, sans
+cadre de téléphone (règle 2.3.4, refus de la build 6). Avant d'envoyer, supprime **toutes** les
+anciennes vidéos, dans chaque taille, y compris celles qu'on ne voit qu'avec **Afficher toutes
+les tailles dans le gestionnaire de médias** (*View All Sizes in Media Manager*).
+
 Pour la vidéo : une fois envoyée, clique sur **Modifier l'image d'affiche** (*Poster Frame*) et
-choisis vers **4,5 s** (le téléphone avec l'accueil de Lampion bien visible).
+choisis vers **3 s** (l'accueil de Lampion sous le titre).
+
+Captures : aucune ne doit parler de prix (« gratuit », « free » compris, règle 2.3.7). Les jeux
+actuels n'en contiennent plus ; remplace les anciens dans chaque taille et chaque langue.
 
 ### 5.2 Textes (par langue)
 

@@ -43,7 +43,11 @@ Le montage (moments, mouvements de caméra, textes) est dans `stage.html` (iPhon
 
 ## À savoir pour App Store Connect
 
-- **Image d'affiche** : choisir un instant parlant (par exemple 4,5 s, l'accueil avec le titre).
+- **Image d'affiche** : choisir un instant parlant (par exemple 3 s, l'accueil avec le titre).
 - **Règle 2.3.4 d'Apple** : un aperçu ne doit montrer que des captures de l'app ; textes et
-  narration sont permis. Ici chaque écran est réel. Le cadre de téléphone et la mise en scène
-  restent une interprétation : s'il était refusé, `PHONES` peut passer en plein écran.
+  narration sont permis, **pas de cadre d'appareil**. La version avec téléphone (`stage.html`,
+  `stage-ipad.html`) a été refusée pour ça (build 6). Les vidéos de `store/video/` sont donc la
+  version plein écran, `stage-flat.html` : 28 s, les clips filmés en plein cadre, coupés en
+  fondu, un titre en haut sur un dégradé. `FLAT=1 node render.js` (et `FLAT=1 IPAD=1`) →
+  `store/out/promo-flat-{iphone,ipad}.mp4`. Les points de coupe dépendent du film : constantes
+  `C` en tête du script.

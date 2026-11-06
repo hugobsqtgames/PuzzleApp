@@ -1,0 +1,128 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!--
+  Lampion — App Store preview, full screen (Guideline 2.3.4: only screen captures of the app, with
+  text overlays; no device frame). The same story as stage.html, told with the real app filling the
+  screen: the clips filmed by record.js, cut and faded, a title over the top of the picture.
+  render.js (FLAT=1, IPAD=1 for the iPad) calls renderAt(t) for each frame.
+-->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { overflow: hidden; background: #0D0F1E; }
+  #shot { position: absolute; inset: 0; }
+  #shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #shot { z-index: 0; }
+  #texts { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+  #band { position: absolute; left: 0; right: 0; top: 0; pointer-events: none; z-index: 5;
+    background: linear-gradient(180deg, rgba(9,10,21,.94) 0%, rgba(9,10,21,.86) 55%, rgba(9,10,21,0) 100%); }
+  .txt { position: absolute; left: 0; right: 0; text-align: center; padding: 0 56px; }
+  .k { color: #F4B45E; letter-spacing: .18em; text-transform: uppercase; font-weight: 700; font-family: 'Liberation Sans', sans-serif; }
+  .t { color: #F6EEDC; font-family: 'Bitstream Charter', Georgia, serif; font-weight: 700; line-height: 1.08; }
+  .w { display: inline-block; white-space: pre; }
+</style></head>
+<body>
+<div id="shot"><img class="a"><img class="b"></div>
+<div id="band"></div>
+<div id="texts"></div>
+<script>
+const P = window.PROMO; // { clips, ipad }
+const W = innerWidth, H = innerHeight;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const soft = (k) => 0.5 - Math.cos(Math.PI * k) / 2;
+const outE = (k) => 1 - (1 - k) ** 3;
+
+function clipFrame(name, ct) {
+  const c = P.clips[name];
+  let lo = 0, hi = c.frames.length - 1;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (c.frames[m].t <= ct) lo = m; else hi = m - 1; }
+  return `${c.dir}/${c.frames[lo].file}`;
+}
+// The cut points depend on the footage: iPad clips run a little later than the iPhone ones.
+const C = P.ipad ? { puzzle: 3.1, bells: 8.97, lantern: 12.2, bridges: 0.28 } : { puzzle: 3.0, bells: 8.95, lantern: 12.15, bridges: 0.25 };
+const shot = (clip, at, from, speed = 1, tr = 'dip') => ({ clip, at, from, speed, tr });
+const T = 28.0;
+const SHOTS = [
+  shot('home', 0, 0.3, 1, 'none'),
+  shot('map', 5.0, 0.3),
+  shot('carillon', 9.0, 0.6),
+  shot('carillon', 10.8, C.puzzle),
+  shot('carillon', 12.0, C.bells, 1, 'cut'),
+  shot('carillon', 14.6, C.lantern),
+  shot('bridges', 17.2, C.bridges, 1.4),
+  shot('spring', 21.0, 0.3),
+  shot('springHome', 24.6, 0.3),
+];
+const TEXTS = [
+  { at: 0.4, out: 4.6, k: 'Lampion', t: 'Chaque énigme\nrallume une lumière' },
+  { at: 5.3, out: 8.7, k: 'Une ville à réveiller', t: 'Huit quartiers,\nune seule nuit' },
+  { at: 9.3, out: 14.2, k: 'Des énigmes justes', t: 'La logique,\njamais le hasard' },
+  { at: 17.5, out: 20.7, k: '26 familles d’énigmes', t: 'Écoute, observe,\ndéduis' },
+  { at: 21.3, out: 24.3, k: 'Saisons et fêtes', t: 'Vesper vit\nau fil de l’année' },
+  { at: 24.9, out: 99, k: 'Sans compte · Sans pub · Sans pistage', t: 'Rallume Vesper.' },
+];
+const DIP = 0.4;
+
+const f = P.ipad ? 1.25 : 1;
+const band = document.getElementById('band');
+band.style.height = Math.round(H * (P.ipad ? 0.3 : 0.27)) + 'px';
+const texts = document.getElementById('texts');
+for (const tx of TEXTS) {
+  const el = document.createElement('div'); el.className = 'txt'; el.style.top = Math.round(H * 0.055) + 'px';
+  const words = (s) => s.split('\n').map((line) => line.split(' ').map((w) => `<span class="w">${w} </span>`).join('')).join('<br>');
+  el.innerHTML = `<div class="k" style="font-size:${26 * f}px">${words(tx.k)}</div><div class="t" style="font-size:${64 * f}px;margin-top:${16 * f}px">${words(tx.t)}</div>`;
+  texts.appendChild(el); tx.el = el; tx.words = [...el.querySelectorAll('.w')];
+}
+const [imgA, imgB] = document.querySelectorAll('#shot img');
+const src = (s, t) => clipFrame(s.clip, s.from + Math.max(0, t - s.at) * s.speed);
+
+async function renderAt(t) {
+  const waits = [];
+  let cur = 0;
+  for (let i = 0; i < SHOTS.length; i++) if (t >= SHOTS[i].at) cur = i;
+  const s = SHOTS[cur];
+  const k = cur > 0 && s.tr === 'dip' ? clamp((t - s.at) / DIP) : 1;
+  const a = src(s, t);
+  if (imgA.getAttribute('src') !== a) { imgA.setAttribute('src', a); waits.push(imgA.decode().catch(() => {})); }
+  imgA.style.opacity = s.tr === 'dip' && cur > 0 ? soft(clamp(k * 2 - 1)) : 1;
+  if (k < 1) {
+    const prev = SHOTS[cur - 1], b = src(prev, s.at - 1 / 30);
+    if (imgB.getAttribute('src') !== b) { imgB.setAttribute('src', b); waits.push(imgB.decode().catch(() => {})); }
+    imgB.style.opacity = 1 - soft(clamp(k * 2)); imgB.style.zIndex = 1; imgA.style.zIndex = 2;
+  } else imgB.style.opacity = 0;
+  // The band behind the titles: in with the first title, out at the very end never (the last
+  // title stays); it follows the titles' visibility so that no empty band sits over the app.
+  let vis = 0;
+  for (const tx of TEXTS) {
+    const inK = clamp((t - tx.at + 0.2) / 0.5), outK = clamp((t - tx.out) / 0.4);
+    const v = inK * (1 - outK);
+    vis = Math.max(vis, v);
+    if (v <= 0) { tx.el.style.display = 'none'; continue; }
+    tx.el.style.display = 'block';
+    tx.el.style.opacity = 1 - soft(outK);
+    tx.words.forEach((w, i) => {
+      const kk = outE(clamp((t - tx.at - i * 0.06) / 0.5));
+      w.style.opacity = kk; w.style.transform = `translateY(${(1 - kk) * 18}px)`;
+    });
+  }
+  band.style.opacity = soft(clamp(vis));
+  await Promise.all(waits);
+}
+function cues() {
+  const out = [];
+  SHOTS.forEach((s, i) => {
+    const end = i + 1 < SHOTS.length ? SHOTS[i + 1].at : T;
+    for (const e of P.clips[s.clip].events) {
+      const t = s.at + (e.t - s.from) / s.speed;
+      if (t < s.at || t >= end) continue;
+      if (e.kind === 'bell') out.push({ t, file: `sfx_bell_${e.bell}.m4a`, vol: 0.9 });
+      if (e.kind === 'tap') out.push({ t, file: 'sfx_manipulate_marche.m4a', vol: 0.35 });
+      if (e.kind === 'solved') out.push({ t: t + 0.05, file: s.clip === 'carillon' ? 'sfx_lanternLit_horlo.m4a' : 'sfx_lanternLit_marche.m4a', vol: 0.85 });
+    }
+  });
+  return out;
+}
+window.cues = cues;
+window.renderAt = renderAt;
+window.DURATION = T;
+</script>
+</body></html>

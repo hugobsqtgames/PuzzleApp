@@ -14,8 +14,10 @@ const ROOT = process.cwd();
 const AUDIO = path.join(__dirname, '../../../app/assets/audio');
 const url = (p) => 'file://' + path.resolve(p);
 const IPAD = !!process.env.IPAD;
+// FLAT=1: the full-screen preview (stage-flat.html: the app filling the screen, titles over it).
+const FLAT = !!process.env.FLAT;
 const SIZE = IPAD ? { width: 1200, height: 1600 } : { width: 886, height: 1920 };
-const NAME = IPAD ? 'ipad' : 'iphone';
+const NAME = (FLAT ? 'flat-' : '') + (IPAD ? 'ipad' : 'iphone');
 
 (async () => {
   const clipsDir = path.join(ROOT, IPAD ? 'store/promo-clips-ipad' : 'store/promo-clips');
@@ -26,12 +28,12 @@ const NAME = IPAD ? 'ipad' : 'iphone';
   }
   const stills = {};
   for (const n of ['vitraux', 'carillon', 'constellations', 'ombres']) stills[n] = url(path.join(ROOT, `store/${IPAD ? 'ipad' : 'app'}-${n}.png`));
-  const PROMO = { clips, stills, icon: url(path.join(__dirname, '../../../app/assets/icon.png')) };
+  const PROMO = { clips, stills, ipad: IPAD, icon: url(path.join(__dirname, '../../../app/assets/icon.png')) };
 
   const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
   const pg = await b.newPage({ viewport: SIZE, deviceScaleFactor: 1 });
   await pg.addInitScript((p) => { window.PROMO = p; }, PROMO);
-  await pg.goto(url(path.join(__dirname, IPAD ? 'stage-ipad.html' : 'stage.html')));
+  await pg.goto(url(path.join(__dirname, FLAT ? 'stage-flat.html' : IPAD ? 'stage-ipad.html' : 'stage.html')));
   await pg.evaluate(() => document.fonts.ready);
   const T = await pg.evaluate(() => window.DURATION);
   // SNAP=3,9.5,15 : a few frames as images (store/out/snap-<t>.png), to check the framing.

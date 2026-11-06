@@ -19,11 +19,11 @@ const SLIDES = [
   { k: '101 salles', t: 'Pas deux salles<br>pareilles', s: 'Chaque salle a son décor, son histoire et ses lanternes cachées.', shots: ['room-serre.b4.r4', 'room-biblio.b4.r3', 'room-marche.b1.r1'] },
   { k: 'Des énigmes justes', t: 'La logique,<br>jamais le hasard', s: 'Chaque puzzle se résout par le raisonnement. Pas de chrono, prends ton temps.', shots: ['vitraux'] },
   { k: '26 familles d’énigmes', t: 'Écoute, observe,<br>déduis', s: 'Mélodies, vitraux, ombres, passerelles, rubans, constellations…', shots: ['carillon', 'passerelles', 'ombres'] },
-  { k: 'Nilo', t: 'Un compagnon<br>qui veille sur toi', s: 'Nilo cligne, s’étonne, se réjouit… et murmure un indice quand tu bloques.', shots: ['nilo', 'hint-shown'] },
+  { k: 'Nilo', t: 'Un compagnon<br>qui veille sur toi', s: 'Nilo cligne, s’étonne, se réjouit… et murmure un indice quand tu bloques.', shots: ['nilo', 'differences'] },
   { k: 'Plus qu’une lanterne', t: 'Objets cachés<br>et sceaux secrets', s: 'Fouille les décors, relève les chiffres des salles, ouvre les lanternes-clés.', shots: ['room-etabli', 'seal'] },
   { k: 'Saisons et fêtes', t: 'Vesper vit<br>au fil de l’année', s: 'Printemps des Lanternes, Nuit des Citrouilles, Veillée de Vesper : trois rendez-vous chaque année.', shots: ['event-halloween', 'event-lanternes', 'event-noel'] },
   { k: 'Chaque soir', t: 'Un défi du soir,<br>le même pour tous', s: 'Une nouvelle énigme chaque jour, une série à entretenir, un carnet à remplir.', shots: ['daily', 'carnet'] },
-  { k: 'Rien que le jeu', t: 'Sans compte. Sans pub.<br>Sans pistage.', s: 'Tout reste sur ton appareil. Mode Libre, maison à décorer, et tout se joue hors ligne.', shots: ['house', 'success', 'free'] },
+  { k: 'Rien que le jeu', t: 'Sans compte. Sans pub.<br>Sans pistage.', s: 'Tout reste sur ton appareil. Une maison à décorer, et tout se joue hors ligne.', shots: ['house', 'success', 'rubans'] },
 ];
 const SLIDES_EN = [
   { k: 'Lampion', t: 'Every puzzle<br>brings back a light', s: 'Vesper has fallen asleep. It’s up to you to relight its lanterns, one by one.' },
@@ -35,7 +35,7 @@ const SLIDES_EN = [
   { k: 'More than a lantern', t: 'Hidden objects<br>and secret seals', s: 'Search the scenery, note each room’s number, open the keystone lanterns.' },
   { k: 'Seasons and festivals', t: 'Vesper lives<br>through the year', s: 'The Lantern Spring, the Night of Pumpkins, the Vesper Vigil: three events every year.' },
   { k: 'Every evening', t: 'An evening challenge,<br>the same for all', s: 'A new puzzle every day, a streak to keep, a notebook to fill.' },
-  { k: 'Just the game', t: 'No account. No ads.<br>No tracking.', s: 'Everything stays on your device. Free play, a house to decorate, and it all works offline.' },
+  { k: 'Just the game', t: 'No account. No ads.<br>No tracking.', s: 'Everything stays on your device. A house to decorate, and it all works offline.' },
 ];
 if (EN) SLIDES.forEach((sl, i) => Object.assign(sl, SLIDES_EN[i]));
 const stars = (() => { let s = 7, o = ''; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 140; i++) { const x = r() * 100, y = r() * 62, z = 1 + r() * 3.2, a = 0.25 + r() * 0.6; o += `<i style="left:${x}%;top:${y}%;width:${z}px;height:${z}px;opacity:${a}"></i>`; } return o; })();

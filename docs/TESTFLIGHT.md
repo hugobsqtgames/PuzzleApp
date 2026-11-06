@@ -94,7 +94,7 @@ Dans App Store Connect → Lampion → la version **1.0** :
 - Textes : tout est dans `store/FICHE_APP_STORE.md` (sous-titre, description, mots-clés, notes
   de version, texte promotionnel).
 - Captures : `store/iphone-6.9/` (obligatoire), `store/iphone-6.5/`, `store/ipad-13/`.
-- Vidéo : `store/video/presentation-iphone.mp4` (aperçu iPhone ; image d'affiche vers 4,5 s).
+- Vidéo : `store/video/presentation-iphone.mp4` (aperçu iPhone plein écran ; image d’affiche vers 3 s).
 - Confidentialité : **Aucune donnée collectée**. Âge : **4+**. Prix : **gratuit**.
 - URL de confidentialité : la page `confidentialite.html` du site GitHub Pages du projet.
 - URL d'assistance (obligatoire) : la page d'accueil du site. Apple veut un moyen de te joindre :
